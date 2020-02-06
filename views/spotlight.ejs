@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Openskies Flight Spotlight</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href='https://fonts.googleapis.com/css?family=Karla' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+
+    <link type="text/css" rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/style.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/base.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/tail.datetime-default-blue.min.css">
+
+    <link rel="stylesheet" href="/assets/js/humane/flatty.css">
+
+    <script type="text/javascript" src="/assets/js/jquery/jquery.min.js"></script>
+    
+    <script type="text/javascript" src="/assets/js/tail.datetime/tail.datetime-full.min.js"></script>
+    <script type="text/javascript" src="/assets/js/humane/humane.min.js">
+    </script>
+    <script src="/assets/Build/Cesium/Cesium.js"></script>
+    <style>
+        @import url(/assets/Build/Cesium/Widgets/widgets.css);
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col-sm-2 col-md-2 main">
+
+                <h1 class="page-header">Flight Spotlight</h1>
+                <section class="information">
+                    Welcome <%= userProfile.nickname %> (<a href="/logout">logout</a>)
+                    <hr>
+                    <h4>Area of Interest</h4>
+                    <textarea rows="4" cols="30" id="geo_polygon_string" name="styled-textarea">Paste a valid GeoPolygonString of the area of interest here.</textarea>
+                    <br><br>
+                    <h4>Earliest Time</h4>
+                    <input type="text" id="earliest_date_time" class="form-control js-date-picker" value="Oct 24, 2048">
+                    <br>
+                    <h4>Latest Time</h4>
+                    <input type="text" id="latest_date_time" class="form-control js-date-picker" value="Oct 24, 2048">
+                    <br>
+                    <p>
+                        <button class="button" onclick="submitGJ()">Retrive Flights</button>
+                    </p>
+
+                    <div id="toolbar">
+                        <h4>Basemap</h4>
+                        <table>
+                            <tbody data-bind="foreach: layers">
+                                <tr data-bind="css: { up: $parent.upLayer === $data, down: $parent.downLayer === $data }">
+
+                                    <td>
+                                        <span data-bind="text: name, visible: !$parent.isSelectableLayer($data)"></span>
+                                        <select data-bind="visible: $parent.isSelectableLayer($data), options: $parent.baseLayers, optionsText: 'name', value: $parent.selectedLayer"></select>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                </section>
+
+
+                </div>
+
+            </div>
+
+            <div class="col-sm-10 col-md-10 sidebar">
+                <div id="cesiumContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setCameraHeadingPitch(id) {
+            var headingAngle;
+            var pitchAngle;
+            switch (id) {
+                case 'def':
+                    headingAngle = Cesium.Math.toRadians(20.0);
+                    pitchAngle = Cesium.Math.toRadians(-45.0);
+                    break;
+                case 'td':
+                    headingAngle = 0.0;
+                    pitchAngle = -Cesium.Math.PI_OVER_TWO;
+                    break;
+                case 'ne':
+                    headingAngle = Cesium.Math.toRadians(45);
+                    pitchAngle = Cesium.Math.toRadians(-45.0);
+                    break;
+                case 'se':
+                    headingAngle = Cesium.Math.toRadians(135);
+                    pitchAngle = Cesium.Math.toRadians(-45.0);
+                    break;
+                case 'sw':
+                    headingAngle = Cesium.Math.toRadians(225);
+                    pitchAngle = Cesium.Math.toRadians(-45.0);
+                    break;
+                case 'nw':
+                    headingAngle = Cesium.Math.toRadians(315);
+                    pitchAngle = Cesium.Math.toRadians(-45.0);
+                    break;
+
+            }
+
+            camera.setView({
+                destination: Cesium.Cartesian3.fromDegrees(cameralng, cameralat, 5000.0),
+                orientation: {
+                    heading: headingAngle,
+                    pitch: pitchAngle,
+                    roll: 0.0
+                }
+            });
+
+
+        }
+        var mapbox = new Cesium.MapboxImageryProvider({
+            mapId: 'cygnus2936.curedn3y',
+            accessToken: 'pk.eyJ1IjoiY3lnbnVzMjkzNiIsImEiOiJjaWgzanBwY2YweTJvNHBtM2x5MjdtemxjIn0.bwFfvQYX-M2EPyK2aee8DQ'
+        });
+        var bing = new Cesium.BingMapsImageryProvider({
+            url: 'https://dev.virtualearth.net',
+            key: 'Am2dMceshjeLX_Sogy2NHjJ8_yMBVWAm3b2x4LdV0hbAQZiFlkkD_FyoJEyApRm5',
+            mapStyle: Cesium.BingMapsStyle.AERIAL_WITH_LABELS
+        });
+        Cesium.BingMapsApi.defaultKey = 'Am2dMceshjeLX_Sogy2NHjJ8_yMBVWAm3b2x4LdV0hbAQZiFlkkD_FyoJEyApRm5';
+        var viewer = new Cesium.Viewer('cesiumContainer', {
+            "geocoder": false,
+            "homeButton": false,
+            "baseLayerPicker": false,
+            "infoBox": false,
+            "sceneModePicker": false,
+            "animation": false,
+            "selectionIndicator": false,
+            "fullscreenButton": false,
+            "timeline": false,
+            "navigationHelpButton": false,
+        });
+        var allPolygons;
+
+
+        
+        
+        var imageryLayers = viewer.imageryLayers;
+        var scene = viewer.scene;
+        var clock = viewer.clock;
+        var camera = viewer.camera;
+
+        var cameralat;
+        var cameralng;
+
+        var viewModel = {
+            layers: [],
+            baseLayers: [],
+            upLayer: null,
+            downLayer: null,
+            selectedLayer: null,
+            isSelectableLayer: function(layer) {
+                return baseLayers.indexOf(layer) >= 0;
+            }
+        };
+
+        function setupLayers() {
+            // Create all the base layers that this example will support.
+            // These base layers aren't really special.  It's possible to have multiple of them
+            // enabled at once, just like the other layers, but it doesn't make much sense because
+            // all of these layers cover the entire globe and are opaque.
+            addBaseLayerOption('Bing Maps Aerial', undefined); // the current base layer
+            addBaseLayerOption('Mapbox Streets', mapbox);
+
+        }
+        Cesium.knockout.track(viewModel);
+
+        function addBaseLayerOption(name, imageryProvider) {
+            var layer;
+            if (typeof imageryProvider === 'undefined') {
+                layer = imageryLayers.get(0);
+                viewModel.selectedLayer = layer;
+            } else {
+                layer = new Cesium.ImageryLayer(imageryProvider);
+            }
+
+            layer.name = name;
+            baseLayers.push(layer);
+        }
+        var baseLayers = viewModel.baseLayers;
+
+        function updateLayerList() {
+            var numLayers = imageryLayers.length;
+            viewModel.layers.splice(0, viewModel.layers.length);
+            for (var i = numLayers - 1; i >= 0; --i) {
+                viewModel.layers.push(imageryLayers.get(i));
+            }
+        }
+
+        setupLayers();
+        updateLayerList();
+        var toolbar = document.getElementById('toolbar');
+        Cesium.knockout.applyBindings(viewModel, toolbar);
+
+        Cesium.knockout.getObservable(viewModel, 'selectedLayer').subscribe(function(baseLayer) {
+            // Handle changes to the drop-down base layer selector.
+            var activeLayerIndex = 0;
+            var numLayers = viewModel.layers.length;
+            for (var i = 0; i < numLayers; ++i) {
+                if (viewModel.isSelectableLayer(viewModel.layers[i])) {
+                    activeLayerIndex = i;
+                    break;
+                }
+            }
+            var activeLayer = viewModel.layers[activeLayerIndex];
+            var show = activeLayer.show;
+            var alpha = activeLayer.alpha;
+            imageryLayers.remove(activeLayer, false);
+            imageryLayers.add(baseLayer, numLayers - activeLayerIndex - 1);
+            baseLayer.show = show;
+            baseLayer.alpha = alpha;
+            updateLayerList();
+        });
+
+        function submitGJ() {
+            var gj = document.getElementById("gjTA").value;
+            var gjerrors = geojsonhint.hint(gj);
+            if (gjerrors.length > 0) {
+                humane.log("The GeoJSON you have entered is invalid.. ", {
+                    addnCls: 'humane-flatty-error'
+                });
+            } else {
+                gj = JSON.parse(gj);
+
+                start3dWorker(gj);
+            }
+        }
+
+        function start3dWorker(allFeaturesList) {
+            humane.log("Processing..", {
+                addnCls: 'humane-flatty-info'
+            });
+            var threeDWorker = new Worker('/assets/workers/3dlib.js');
+            threeDWorker.onerror = function(e) {
+                console.log('Error: Line ' + e.lineno + ' in ' + e.filename + ': ' + e.message);
+            };
+            threeDWorker.postMessage({
+                'allFeaturesList': JSON.stringify(allFeaturesList)
+            });
+            threeDWorker.addEventListener('message', function(e) {
+                //  console.log(e.data);
+                var gjsonData = e.data.polygons;
+                var latlng = e.data.center;
+                setMapCenter(latlng);
+                updateGLData(JSON.parse(gjsonData));
+            }, false);
+        }
+
+        function setMapCenter(latlng) {
+
+           
+            // set new center
+            latlng = JSON.parse(latlng);
+            var lat = latlng[0];
+            var lng = latlng[1];
+            cameralat = lat;
+            cameralng = lng;
+
+            var headingAngle = Cesium.Math.toRadians(20.0);
+            var pitchAngle = Cesium.Math.toRadians(-45.0);
+            camera.setView({
+                destination: Cesium.Cartesian3.fromDegrees(lng, lat, 5000.0),
+                orientation: {
+                    heading: headingAngle,
+                    pitch: pitchAngle,
+                    roll: 0.0
+                }
+            });
+        }
+
+        var randomid = function() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0,
+                    v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            })
+        };
+
+        function coordsToDegreesArray(coords) {
+            var degreesArray = [];
+            const clen = coords.length;
+            for (var x = 0; x < clen; x++) {
+                var curCoords = coords[x];
+                degreesArray.push(curCoords[0]);
+                degreesArray.push(curCoords[1]);
+            }
+            return degreesArray;
+        }
+
+        function generatePolygonfromFeature(featureData) {
+
+        }
+
+        function hexToRgb(hex) {
+            // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+            var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+            hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+                return r + r + g + g + b + b;
+            });
+
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        function updateGLData(gjsonData) {
+
+            humane.log("Rendering Scene..", {
+                addnCls: 'humane-flatty-success'
+            });
+            // get the geo JSON
+            var allpolicies = [];
+            var feats = gjsonData.features;
+            const flen = feats.length;
+            var allGeometryInstances = [];
+            // var name = randomid();
+            for (var x = 0; x < flen; x++) {
+                var curFeat = feats[x];
+                var projectorpolicy = curFeat['properties']['areatype'];
+                var degreesArray = coordsToDegreesArray(curFeat['geometry']['coordinates'][0]); // todo create for multipolygons    
+                var rgb = hexToRgb(curFeat.properties.color);
+                var color;
+                if (projectorpolicy === 'project') {
+                    color = Cesium.Color.fromBytes(rgb.r, rgb.g, rgb.b, 90);
+                } else {
+                    color = Cesium.Color.fromBytes(rgb.r, rgb.g, rgb.b, 50);
+                }
+                var extrudedPolygon = new Cesium.PolygonGeometry({
+                    polygonHierarchy: new Cesium.PolygonHierarchy(
+                        Cesium.Cartesian3.fromDegreesArray(degreesArray)
+                    )
+                });
+                var polygonInstance = new Cesium.GeometryInstance({
+                    geometry: extrudedPolygon,
+                    id: randomid(),
+                    attributes: {
+                        color: Cesium.ColorGeometryInstanceAttribute.fromColor(color)
+                    }
+                });
+                allGeometryInstances.push(polygonInstance);
+            }
+            scene.primitives.add(new Cesium.GroundPrimitive({
+                geometryInstances: allGeometryInstances,
+                allowPicking: false,
+                interleave: true,
+                compressVertices: false,
+            }));
+
+        }
+    </script>
+    <script>
+
+        tail.DateTime("#earliest_date_time", {
+            /* No Custom Settings Defined */
+
+            stayOpen: true,                     // Keeps the Calendar Popup Open
+            position: "bottom" ,
+            dateFormat: "M. dd, YYYY"
+        });
+        tail.DateTime("#latest_date_time", {
+            /* No Custom Settings Defined */
+
+            stayOpen: true,                     // Keeps the Calendar Popup Open
+            position: "bottom" ,
+            dateFormat: "M. dd, YYYY"
+        });
+    </script>
+</body>
+
+</html>
