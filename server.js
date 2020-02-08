@@ -2,48 +2,46 @@
     'use strict';
     /*jshint node:true*/
 
-    var express = require('express');
-    var bodyParser = require('body-parser');
+    var express = require('express');    
     var compression = require('compression');
     // var url = require('url');
     // var req = require('request');
     // var async = require('async');
-
     const expressSession = require("express-session");
     const passport = require("passport");
     const Auth0Strategy = require("passport-auth0");
-    
+    const validator = require('express-validator')
     require("dotenv").config();
 
     const authRouter = require("./routes/auth");
     const session = {
-        secret: "LoxodontaElephasMammuthusPalaeoloxodonPrimelephas",
+        secret: process.env.APP_SECRET,
         cookie: {},
         resave: false,
         saveUninitialized: false
       };
-      
+    
 
-      const strategy = new Auth0Strategy(
-        {
-          domain: process.env.AUTH0_DOMAIN,
-          clientID: process.env.AUTH0_CLIENT_ID,
-          clientSecret: process.env.AUTH0_CLIENT_SECRET,
-          callbackURL:
-            process.env.AUTH0_CALLBACK_URL || "http://local.test:5000/callback"
-        },
-        function(accessToken, refreshToken, extraParams, profile, done) {
-          /**
-           * Access tokens are used to authorize users to an API
-           * (resource server)
-           * accessToken is the token to call the Auth0 API
-           * or a secured third-party API
-           * extraParams.id_token has the JSON Web Token
-           * profile has all the information from the user
-           */
-          return done(null, profile);
-        }
-      );
+    const strategy = new Auth0Strategy(
+    {
+        domain: process.env.AUTH0_DOMAIN,
+        clientID: process.env.AUTH0_CLIENT_ID,
+        clientSecret: process.env.AUTH0_CLIENT_SECRET,
+        callbackURL:
+        process.env.AUTH0_CALLBACK_URL || "http://local.test:5000/callback"
+    },
+    function(accessToken, refreshToken, extraParams, profile, done) {
+        /**
+         * Access tokens are used to authorize users to an API
+         * (resource server)
+         * accessToken is the token to call the Auth0 API
+         * or a secured third-party API
+         * extraParams.id_token has the JSON Web Token
+         * profile has all the information from the user
+         */
+        return done(null, profile);
+    }
+    );
 
 
     var yargs = require('yargs').options({
@@ -81,6 +79,9 @@
         next();
       });
       
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }))
+
     if (app.get("env") === "production") {
         // Serve secure cookies, requires HTTPS
         session.cookie.secure = true;
@@ -92,10 +93,8 @@
     app.use(express.static(__dirname + '/views'));
 
     app.use('/assets', express.static('static'));
-    app.use(bodyParser.urlencoded({
-        extended: false
-    }));
 
+    
     app.use(expressSession(session));
 
     passport.use(strategy);
@@ -110,9 +109,6 @@
     passport.deserializeUser((user, done) => {
     done(null, user);
     });
-
-    app.use(bodyParser.json());
-
     app.use("/", authRouter);
 
 

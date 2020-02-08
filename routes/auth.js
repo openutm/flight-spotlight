@@ -12,6 +12,7 @@ const util = require("util");
 const querystring = require("querystring");
 require("dotenv").config();
 var URL = require('url').URL;
+const { check, validationResult } = require('express-validator');
 
 
 router.get("/", (req, res) => {
@@ -23,8 +24,24 @@ router.get("/spotlight", secured(), (req, response, next) => {
 
   response.render('spotlight', {
       title: "Spotlight",
-      userProfile: userProfile
+      userProfile: userProfile,
+      errors: {},
+      data: {}
     });
+
+});
+
+router.post("/spotlight", secured(), [
+      check('name').isLength({ min: 3 }),
+      check('email').isEmail(),
+      check('age').isNumeric()
+    ], (req, response, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+
+  response.send('Got a POST request');
 
 });
 /* GET user profile. */

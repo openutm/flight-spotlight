@@ -30,7 +30,6 @@
         "request": "^2.69.0",
         "compression": "^1.6.1",
         "yargs": "^4.3.2",
-        "body-parser": "^1.15.1",
         "async": "^1.5.2",
         "ejs": "^2.5.1",
         "passport": "^0.4.1",

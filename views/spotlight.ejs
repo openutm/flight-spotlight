@@ -36,18 +36,39 @@
                 <section class="information">
                     Welcome <%= userProfile.nickname %> (<a href="/logout">logout</a>)
                     <hr>
-                    <h4>Area of Interest</h4>
-                    <textarea rows="4" cols="30" id="geo_polygon_string" name="styled-textarea">Paste a valid GeoPolygonString of the area of interest here.</textarea>
-                    <br><br>
-                    <h4>Earliest Time</h4>
-                    <input type="text" id="earliest_date_time" class="form-control js-date-picker" value="Oct 24, 2048">
-                    <br>
-                    <h4>Latest Time</h4>
-                    <input type="text" id="latest_date_time" class="form-control js-date-picker" value="Oct 24, 2048">
-                    <br>
-                    <p>
-                        <button class="button" onclick="submitGJ()">Retrive Flights</button>
-                    </p>
+          
+                    <form id="dss-query-form" method="post" action="/spotlight" novalidate>
+                        
+                        <div class="form-field <%= errors.aoi ? 'form-field-invalid' : '' %>">
+                          <label for="aoi">Area of Interest</label>
+                          <textarea rows="4" cols="30" id="geo_polygon_string" value="<%= data.aoi %>" name="styled-textarea">Paste a valid GeoPolygonString of the area of interest here.</textarea>
+                          <% if (errors.aoi) { %>
+                            <div class="error"><%= errors.aoi.msg %></div>
+                          <% } %>
+                        </div>
+                        
+                        <div class="form-field <%= errors.earliest_date_time ? 'form-field-invalid' : '' %>">
+                            <label for="aoi">Earliest Time</label>
+                            <input type="text" id="earliest_date_time" class="form-control js-date-picker" value="Oct 24, 2048">
+                            <% if (errors.earliest_date_time) { %>
+                              <div class="error"><%= errors.earliest_date_time.msg %></div>
+                            <% } %>
+                          </div>
+                          
+                        <div class="form-field <%= errors.latest_date_time ? 'form-field-invalid' : '' %>">
+                            <label for="aoi">Latest Time</label>
+                            <input type="text" id="latest_date_time" class="form-control js-date-picker" value="Oct 24, 2048">
+                            <% if (errors.latest_date_time) { %>
+                              <div class="error"><%= errors.latest_date_time.msg %></div>
+                            <% } %>
+                          </div>
+                          <br><br>
+                        <div class="form-actions">
+                            <button class="button" type="submit">Retrive Flights</button>
+                        </div>
+                      </form>
+
+
 
                     <div id="toolbar">
                         <h4>Basemap</h4>
@@ -141,10 +162,7 @@
             "timeline": false,
             "navigationHelpButton": false,
         });
-        var allPolygons;
-
-
-        
+        var allPolygons;       
         
         var imageryLayers = viewer.imageryLayers;
         var scene = viewer.scene;
@@ -237,26 +255,6 @@
             }
         }
 
-        function start3dWorker(allFeaturesList) {
-            humane.log("Processing..", {
-                addnCls: 'humane-flatty-info'
-            });
-            var threeDWorker = new Worker('/assets/workers/3dlib.js');
-            threeDWorker.onerror = function(e) {
-                console.log('Error: Line ' + e.lineno + ' in ' + e.filename + ': ' + e.message);
-            };
-            threeDWorker.postMessage({
-                'allFeaturesList': JSON.stringify(allFeaturesList)
-            });
-            threeDWorker.addEventListener('message', function(e) {
-                //  console.log(e.data);
-                var gjsonData = e.data.polygons;
-                var latlng = e.data.center;
-                setMapCenter(latlng);
-                updateGLData(JSON.parse(gjsonData));
-            }, false);
-        }
-
         function setMapCenter(latlng) {
 
            
@@ -298,10 +296,7 @@
             return degreesArray;
         }
 
-        function generatePolygonfromFeature(featureData) {
-
-        }
-
+        
         function hexToRgb(hex) {
             // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
             var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
@@ -316,53 +311,44 @@
                 b: parseInt(result[3], 16)
             } : null;
         }
+     
 
         function updateGLData(gjsonData) {
 
             humane.log("Rendering Scene..", {
                 addnCls: 'humane-flatty-success'
             });
-            // get the geo JSON
-            var allpolicies = [];
-            var feats = gjsonData.features;
-            const flen = feats.length;
-            var allGeometryInstances = [];
-            // var name = randomid();
-            for (var x = 0; x < flen; x++) {
-                var curFeat = feats[x];
-                var projectorpolicy = curFeat['properties']['areatype'];
-                var degreesArray = coordsToDegreesArray(curFeat['geometry']['coordinates'][0]); // todo create for multipolygons    
-                var rgb = hexToRgb(curFeat.properties.color);
-                var color;
-                if (projectorpolicy === 'project') {
-                    color = Cesium.Color.fromBytes(rgb.r, rgb.g, rgb.b, 90);
-                } else {
-                    color = Cesium.Color.fromBytes(rgb.r, rgb.g, rgb.b, 50);
-                }
-                var extrudedPolygon = new Cesium.PolygonGeometry({
-                    polygonHierarchy: new Cesium.PolygonHierarchy(
-                        Cesium.Cartesian3.fromDegreesArray(degreesArray)
-                    )
-                });
-                var polygonInstance = new Cesium.GeometryInstance({
-                    geometry: extrudedPolygon,
-                    id: randomid(),
-                    attributes: {
-                        color: Cesium.ColorGeometryInstanceAttribute.fromColor(color)
-                    }
-                });
-                allGeometryInstances.push(polygonInstance);
-            }
-            scene.primitives.add(new Cesium.GroundPrimitive({
-                geometryInstances: allGeometryInstances,
-                allowPicking: false,
-                interleave: true,
-                compressVertices: false,
-            }));
 
+            var promise = Cesium.GeoJsonDataSource.load(gjsonData);
+            promise.then(function(dataSource) {
+                viewer.dataSources.add(dataSource);
+                var allGeometryInstances = [];
+                var allpolicies = [];
+                //Get the array of entities
+                var entities = dataSource.entities.values;
+                for (var i = 0; i < entities.length; i++) {
+                    var curFeat = entities[i];
+                    // var projectorpolicy = curFeat['properties']['areatype'];
+                    var curProps = curFeat.properties.getValue();
+                    var rgb = hexToRgb(curProps.roofColor);
+                    var color;
+                    if (curProps.isBuilding == 0) {
+                        color = Cesium.Color.fromBytes(rgb.r, rgb.g, rgb.b, 100);
+                    } else {
+                        color = Cesium.Color.fromBytes(rgb.r, rgb.g, rgb.b);
+                    }
+                    // curFeat.polygon.perPositionHeight = true;
+                    curFeat.polygon.material = color;
+                    curFeat.polygon.outline = false;
+                    curFeat.polygon.extrudedHeight = curProps.height;
+                }
+            }).otherwise(function(error) {
+                //Display any errrors encountered while loading.
+                // window.alert(error);
+                console.log(error);
+            });
         }
-    </script>
-    <script>
+        
 
         tail.DateTime("#earliest_date_time", {
             /* No Custom Settings Defined */
@@ -378,6 +364,21 @@
             position: "bottom" ,
             dateFormat: "M. dd, YYYY"
         });
+        const $form = $('#dss-query-form')
+
+        $form.on('submit', submitHandler)
+
+        function submitHandler (e) {
+        e.preventDefault()
+
+        $.ajax({
+            url: '/spotlight',
+            type:'POST',
+            data: $form.serialize()
+        }).done(response => {
+            console.log(response)
+        })
+        }
     </script>
 </body>
 
