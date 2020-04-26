@@ -10,6 +10,11 @@ const router = express.Router();
 const passport = require("passport");
 const util = require("util");
 const querystring = require("querystring");
+var Tile38 = require('tile38');
+var client = new Tile38();
+var moment = require('moment');
+const bbox = require("@turf/bbox");
+
 require("dotenv").config();
 var URL = require('url').URL;
 const { check, validationResult } = require('express-validator');
@@ -23,26 +28,42 @@ router.get("/spotlight", secured(), (req, response, next) => {
   const { _raw, _json, ...userProfile } = req.user;
 
   response.render('spotlight', {
-      title: "Spotlight",
-      userProfile: userProfile,
-      errors: {},
-      data: {}
-    });
+    title: "Spotlight",
+    userProfile: userProfile,
+    errors: {},
+    data: {}
+  });
 
 });
 
 router.post("/spotlight", secured(), [
-      check('name').isLength({ min: 3 }),
-      check('email').isEmail(),
-      check('age').isNumeric()
-    ], (req, response, next) => {
+  check('geo_json').isJSON(),
+  check('start_date_time').isISO8601(),
+  check('end_date_time').isISO8601()
+], (req, response, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(422).json({ errors: errors.array() });
+    return response.status(422).json({ errors: errors.array() });
   }
+  else {
 
-  response.send('Got a POST request');
+    const aoi = JSON.parse(req.body.geo_json);
 
+    var start_date_time = moment(req.body.start_date_time).format('x');
+    var end_date_time = moment(req.body.end_date_time).format('x');
+    const aoi_bbox = bbox(aoi['features'][0]);
+    
+    
+    let query = client.intersectsQuery('fleet').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).limit(100).where('time_stamp', start_date_time, end_date_time);
+    query.execute().then(results => {
+      console.log(results);
+      response.send('Got a POST request');
+    }).catch(err => {
+      console.error("something went wrong! " + err);
+
+      return response.status(500);
+    });
+  };
 });
 /* GET user profile. */
 router.get('/user', secured(), function (req, res, next) {
@@ -54,14 +75,14 @@ router.get('/user', secured(), function (req, res, next) {
 });
 
 router.get(
-    "/login",
-    passport.authenticate("auth0", {
-      scope: "openid email profile"
-    }),
-    (req, res) => {
-      res.redirect("/");
-    }
-  );
+  "/login",
+  passport.authenticate("auth0", {
+    scope: "openid email profile"
+  }),
+  (req, res) => {
+    res.redirect("/");
+  }
+);
 
 
 router.get("/callback", (req, res, next) => {
@@ -85,28 +106,28 @@ router.get("/callback", (req, res, next) => {
 
 
 router.get("/logout", (req, res) => {
-    req.logOut();
-  
-    let returnTo = req.protocol + "://" + req.hostname;
-    const port = req.connection.localPort;
-  
-    if (port !== undefined && port !== 80 && port !== 443) {
-      returnTo =
-        process.env.NODE_ENV === "production"
-          ? `${returnTo}/`
-          : `${returnTo}:${port}/`;
-    }
-  
-    const logoutURL = new URL(
-      util.format("https://%s/logout", process.env.AUTH0_DOMAIN)
-    );
-    const searchString = querystring.stringify({
-      client_id: process.env.AUTH0_CLIENT_ID,
-      returnTo: returnTo
-    });
-    logoutURL.search = searchString;
-  
-    res.redirect(logoutURL);
+  req.logOut();
+
+  let returnTo = req.protocol + "://" + req.hostname;
+  const port = req.connection.localPort;
+
+  if (port !== undefined && port !== 80 && port !== 443) {
+    returnTo =
+      process.env.NODE_ENV === "production"
+        ? `${returnTo}/`
+        : `${returnTo}:${port}/`;
+  }
+
+  const logoutURL = new URL(
+    util.format("https://%s/logout", process.env.AUTH0_DOMAIN)
+  );
+  const searchString = querystring.stringify({
+    client_id: process.env.AUTH0_CLIENT_ID,
+    returnTo: returnTo
   });
+  logoutURL.search = searchString;
+
+  res.redirect(logoutURL);
+});
 
 module.exports = router;

@@ -37,34 +37,22 @@
                     Welcome <%= userProfile.nickname %> (<a href="/logout">logout</a>)
                     <hr>
           
-                    <form id="dss-query-form" method="post" action="/spotlight" novalidate>
+                    <form id="dss-query-form" method="post" action="/spotlight">
                         
-                        <div class="form-field <%= errors.aoi ? 'form-field-invalid' : '' %>">
-                          <label for="aoi">Area of Interest</label>
-                          <textarea rows="4" cols="30" id="geo_polygon_string" value="<%= data.aoi %>" name="styled-textarea">Paste a valid GeoPolygonString of the area of interest here.</textarea>
-                          <% if (errors.aoi) { %>
-                            <div class="error"><%= errors.aoi.msg %></div>
-                          <% } %>
-                        </div>
-                        
-                        <div class="form-field <%= errors.earliest_date_time ? 'form-field-invalid' : '' %>">
-                            <label for="aoi">Earliest Time</label>
-                            <input type="text" id="earliest_date_time" class="form-control js-date-picker" value="Oct 24, 2048">
-                            <% if (errors.earliest_date_time) { %>
-                              <div class="error"><%= errors.earliest_date_time.msg %></div>
-                            <% } %>
-                          </div>
+                       
+                          <label for="geo_polygon_string">Area of Interest</label>
+                          <textarea rows="4" cols="20" id="geo_polygon_string" value="<%= data.geo_polygon_string %>" name="geo_polygon_string" placeholder="Paste a valid GeoJSON of the area of interest here."></textarea>
+                       
+                            <label for="earliest_date_time">Earliest Time</label>
+                            <input type="text" id="earliest_date_time" class="form-control js-date-picker" value="<%= new Date()%>">
+
+                            <label for="latest_date_time">Latest Time</label>
+                            <input type="text" id="latest_date_time" class="form-control js-date-picker" value="<%= new Date()%> ">
                           
-                        <div class="form-field <%= errors.latest_date_time ? 'form-field-invalid' : '' %>">
-                            <label for="aoi">Latest Time</label>
-                            <input type="text" id="latest_date_time" class="form-control js-date-picker" value="Oct 24, 2048">
-                            <% if (errors.latest_date_time) { %>
-                              <div class="error"><%= errors.latest_date_time.msg %></div>
-                            <% } %>
-                          </div>
                           <br><br>
                         <div class="form-actions">
-                            <button class="button" type="submit">Retrive Flights</button>
+                        
+                            <button class="button" id="retrive_flights" type="submit">Retrive Flights</button>
                         </div>
                       </form>
 
@@ -98,6 +86,7 @@
     </div>
 
     <script>
+    
         function setCameraHeadingPitch(id) {
             var headingAngle;
             var pitchAngle;
@@ -296,7 +285,8 @@
             return degreesArray;
         }
 
-        
+
+
         function hexToRgb(hex) {
             // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
             var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
@@ -364,19 +354,31 @@
             position: "bottom" ,
             dateFormat: "M. dd, YYYY"
         });
-        const $form = $('#dss-query-form')
 
-        $form.on('submit', submitHandler)
-
+        const dss_form = $('#dss-query-form');
+        dss_form.on('submit', submitHandler);
         function submitHandler (e) {
         e.preventDefault()
-
+        var data = {};
+        data['geo_json'] = document.getElementById('geo_polygon_string').value;
+        data['start_date_time'] = tail.DateTime("#earliest_date_time").fetchDate().toISOString();
+        data['end_date_time'] = tail.DateTime("#latest_date_time").fetchDate().toISOString();
+        
+        
         $.ajax({
             url: '/spotlight',
             type:'POST',
-            data: $form.serialize()
+            data: data
         }).done(response => {
-            console.log(response)
+            console.log(response);
+        }).fail(error => {
+            if (error.status ==422)
+            {
+                humane.log("Invalid GeoJSON provided",{
+                addnCls: 'humane-flatty-error'
+            });
+            }
+            console.log(error);
         })
         }
     </script>

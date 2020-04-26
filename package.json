@@ -1,12 +1,15 @@
 {
     "name": "flight-spotlight",
     "version": "0.0.1",
-    "description": "A viewer to query InterUSS API to download all flight declarations and show on a custom map.",
+    "description": "A viewer to query InterUSS API and other data sources to download all flight declarations and show on a custom map.",
     "homepage": "",
     "license": "Apache-2.0",
     "author": {
         "name": "Hrishikesh Ballal",
         "url": "http://www.hrishikeshballal.net"
+    },
+    "scripts": {
+        "start": "node server.js"
     },
     "keywords": [
         "3D",
@@ -35,9 +38,10 @@
         "passport": "^0.4.1",
         "passport-auth0": "^1.3.2",
         "express-session": "^1.17.0",
-        "dotenv": "^8.2.0"
-    },
-    "scripts": {
-        "start": "node server.js"
+        "dotenv": "^8.2.0",
+        "express-validator": "^6.4.0",
+        "@turf/bbox": "^3.0.12",
+        "tile38": "^0.7.0",
+        "moment": "^2.24.0"
     }
 }

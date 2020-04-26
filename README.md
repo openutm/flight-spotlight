@@ -1,6 +1,6 @@
 # Flight Spotlight
 
-This is a Javascript based DSS extenstion to query all flights plans in a DSS network and display on a 3D Globe. It uses CesiumJS to display the flight data in 3D and as an navigable list.
+A project to see all flights in a area, including querying flights in a DSS and a custom database. It uses CesiumJS to display the flight data in 3D and as an navigable list.
 
 ## Installation
 

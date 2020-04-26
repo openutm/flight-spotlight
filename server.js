@@ -10,7 +10,7 @@
     const expressSession = require("express-session");
     const passport = require("passport");
     const Auth0Strategy = require("passport-auth0");
-    const validator = require('express-validator')
+
     require("dotenv").config();
 
     const authRouter = require("./routes/auth");
