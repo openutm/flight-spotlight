@@ -11,13 +11,14 @@
     <link type="text/css" rel="stylesheet" href="assets/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="assets/css/style.css">
     <link rel="stylesheet" type="text/css" href="assets/css/base.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/tail.datetime-default-blue.min.css">
+    
 
     <link rel="stylesheet" href="/assets/js/humane/flatty.css">
 
     <script type="text/javascript" src="/assets/js/jquery/jquery.min.js"></script>
     
-    <script type="text/javascript" src="/assets/js/tail.datetime/tail.datetime-full.min.js"></script>
+    
+    <script type="text/javascript" src="/assets/js/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="/assets/js/humane/humane.min.js">
     </script>
     <script src="/assets/Build/Cesium/Cesium.js"></script>
@@ -43,19 +44,12 @@
                           <label for="geo_polygon_string">Area of Interest</label>
                           <textarea rows="4" cols="20" id="geo_polygon_string" value="<%= data.geo_polygon_string %>" name="geo_polygon_string" placeholder="Paste a valid GeoJSON of the area of interest here."></textarea>
                        
-                            <label for="earliest_date_time">Earliest Time</label>
-                            <input type="text" id="earliest_date_time" class="form-control js-date-picker" value="<%= new Date()%>">
-
-                            <label for="latest_date_time">Latest Time</label>
-                            <input type="text" id="latest_date_time" class="form-control js-date-picker" value="<%= new Date()%> ">
-                          
                           <br><br>
                         <div class="form-actions">
-                        
-                            <button class="button" id="retrive_flights" type="submit">Retrive Flights</button>
+                            <button class="button" id="retrive_flights" type="submit">Stream flights</button>
                         </div>
                       </form>
-
+                      <br><hr><br>
 
 
                     <div id="toolbar">
@@ -86,7 +80,37 @@
     </div>
 
     <script>
-    
+        var socketHost = location.origin.replace(/^http/, 'ws');
+        
+        const email  = '<%= userProfile.displayName %>';
+        var socket = io.connect(socketHost);
+        socket.on('connect_failed', function() {
+            errorMsg('Data connection failed, please contact your administrator.');
+        });
+        socket.on('disconnect', function() {
+            console.log('disconnected');
+        });
+        socket.on('welcome', function(msg) {
+            console.log('Welcome message:', msg);
+        });
+        socket.on('connect', function() {
+            socket.emit('room', email);
+        });
+        socket.on('connect_timeout', function() {
+            console.log("timed out");
+
+        });
+        socket.on('message', function(data) {
+            console.log('here')
+            if(data.type =='message') {
+                console.log(data);
+            }
+            else if (data.type =='progress'){
+                console.log(data.percentcomplete);
+                
+            }
+        });
+        
         function setCameraHeadingPitch(id) {
             var headingAngle;
             var pitchAngle;
@@ -151,7 +175,6 @@
             "timeline": false,
             "navigationHelpButton": false,
         });
-        var allPolygons;       
         
         var imageryLayers = viewer.imageryLayers;
         var scene = viewer.scene;
@@ -230,20 +253,7 @@
             updateLayerList();
         });
 
-        function submitGJ() {
-            var gj = document.getElementById("gjTA").value;
-            var gjerrors = geojsonhint.hint(gj);
-            if (gjerrors.length > 0) {
-                humane.log("The GeoJSON you have entered is invalid.. ", {
-                    addnCls: 'humane-flatty-error'
-                });
-            } else {
-                gj = JSON.parse(gj);
-
-                start3dWorker(gj);
-            }
-        }
-
+     
         function setMapCenter(latlng) {
 
            
@@ -266,13 +276,6 @@
             });
         }
 
-        var randomid = function() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                var r = Math.random() * 16 | 0,
-                    v = c == 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            })
-        };
 
         function coordsToDegreesArray(coords) {
             var degreesArray = [];
@@ -303,73 +306,31 @@
         }
      
 
-        function updateGLData(gjsonData) {
 
-            humane.log("Rendering Scene..", {
-                addnCls: 'humane-flatty-success'
-            });
-
-            var promise = Cesium.GeoJsonDataSource.load(gjsonData);
-            promise.then(function(dataSource) {
-                viewer.dataSources.add(dataSource);
-                var allGeometryInstances = [];
-                var allpolicies = [];
-                //Get the array of entities
-                var entities = dataSource.entities.values;
-                for (var i = 0; i < entities.length; i++) {
-                    var curFeat = entities[i];
-                    // var projectorpolicy = curFeat['properties']['areatype'];
-                    var curProps = curFeat.properties.getValue();
-                    var rgb = hexToRgb(curProps.roofColor);
-                    var color;
-                    if (curProps.isBuilding == 0) {
-                        color = Cesium.Color.fromBytes(rgb.r, rgb.g, rgb.b, 100);
-                    } else {
-                        color = Cesium.Color.fromBytes(rgb.r, rgb.g, rgb.b);
-                    }
-                    // curFeat.polygon.perPositionHeight = true;
-                    curFeat.polygon.material = color;
-                    curFeat.polygon.outline = false;
-                    curFeat.polygon.extrudedHeight = curProps.height;
-                }
-            }).otherwise(function(error) {
-                //Display any errrors encountered while loading.
-                // window.alert(error);
-                console.log(error);
-            });
-        }
-        
-
-        tail.DateTime("#earliest_date_time", {
-            /* No Custom Settings Defined */
-
-            stayOpen: true,                     // Keeps the Calendar Popup Open
-            position: "bottom" ,
-            dateFormat: "M. dd, YYYY"
-        });
-        tail.DateTime("#latest_date_time", {
-            /* No Custom Settings Defined */
-
-            stayOpen: true,                     // Keeps the Calendar Popup Open
-            position: "bottom" ,
-            dateFormat: "M. dd, YYYY"
-        });
 
         const dss_form = $('#dss-query-form');
         dss_form.on('submit', submitHandler);
         function submitHandler (e) {
-        e.preventDefault()
+        e.preventDefault();
         var data = {};
-        data['geo_json'] = document.getElementById('geo_polygon_string').value;
-        data['start_date_time'] = tail.DateTime("#earliest_date_time").fetchDate().toISOString();
-        data['end_date_time'] = tail.DateTime("#latest_date_time").fetchDate().toISOString();
-        
+        let geo_json = document.getElementById('geo_polygon_string').value;
+        data['geo_json']  = geo_json;
+        data['email'] = email;
         
         $.ajax({
             url: '/spotlight',
             type:'POST',
             data: data
         }).done(response => {
+
+               let aoi =  viewer.dataSources.add(Cesium.GeoJsonDataSource.load(JSON.parse(geo_json), {
+                        stroke: Cesium.Color.HOTPINK,
+                        fill: Cesium.Color.PINK.withAlpha(0.5),
+                        strokeWidth: 3
+                    }));
+
+                viewer.flyTo(aoi);
+
             console.log(response);
         }).fail(error => {
             if (error.status ==422)

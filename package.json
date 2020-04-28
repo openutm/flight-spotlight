@@ -42,6 +42,7 @@
         "express-validator": "^6.4.0",
         "@turf/bbox": "^3.0.12",
         "tile38": "^0.7.0",
-        "moment": "^2.24.0"
+        "moment": "^2.24.0",
+        "socket.io": "2.0.4"
     }
 }

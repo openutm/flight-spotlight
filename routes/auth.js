@@ -38,8 +38,7 @@ router.get("/spotlight", secured(), (req, response, next) => {
 
 router.post("/spotlight", secured(), [
   check('geo_json').isJSON(),
-  check('start_date_time').isISO8601(),
-  check('end_date_time').isISO8601()
+  
 ], (req, response, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -48,21 +47,44 @@ router.post("/spotlight", secured(), [
   else {
 
     const aoi = JSON.parse(req.body.geo_json);
-
-    var start_date_time = moment(req.body.start_date_time).format('x');
-    var end_date_time = moment(req.body.end_date_time).format('x');
+    const email = req.body.email;
+    // var start_date_time = moment(req.body.start_date_time).format('x');
+    // var end_date_time = moment(req.body.end_date_time).format('x');
     const aoi_bbox = bbox(aoi['features'][0]);
-    
-    
-    let query = client.intersectsQuery('fleet').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).limit(100).where('time_stamp', start_date_time, end_date_time);
-    query.execute().then(results => {
-      console.log(results);
-      response.send('Got a POST request');
-    }).catch(err => {
-      console.error("something went wrong! " + err);
+   
+    var io = req.app.get('socketio');
 
-      return response.status(500);
+    // console.log(typeof(aoi_bbox[0]));
+    // console.log(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3])
+    // let query = client.intersectsQuery('fleet').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).limit(100);
+    // query.execute().then(results => {
+    //   console.log(results);
+    //   response.send('Got a POST request');
+    // }).catch(err => {
+    //   console.error("something went wrong! " + err);
+    //   return response.status(500);
+    // });
+
+    let query = client.intersectsQuery('fleet').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).detect('enter','exit');
+    let fence = query.executeFence((err, results) => {
+      // this callback will be called multiple times
+      
+      if (err) {
+        console.error("something went wrong! " + err);
+      } else {
+        
+        
+        io.sockets.in(email).emit("message",{'type': 'message' , "results":results});
+        
+      }
     });
+
+    // if you want to be notified when the connection gets closed, register a callback function with onClose()
+    fence.onClose(() => {
+      console.log("geofence was closed");
+    });
+    response.send('Successfully subscribed to updates');
+
   };
 });
 /* GET user profile. */

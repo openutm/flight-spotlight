@@ -11,6 +11,8 @@
     const passport = require("passport");
     const Auth0Strategy = require("passport-auth0");
 
+    const socketServer = require('socket.io');
+    const socketIO = new socketServer();
     require("dotenv").config();
 
     const authRouter = require("./routes/auth");
@@ -122,6 +124,37 @@
     // });
 
     var server = app.listen(process.env.PORT || 5000); // for Heroku
+
+    var io = socketIO.listen(server);
+    app.set('socketio', io);
+    
+    io.on('connection', function (socket) {
+        socket.on('room', function (room) {
+            socket.join(room);
+            sendWelcomeMsg(room);
+        });
+        socket.on('message', function (msg) {
+            var room = msg.room;
+            var data = msg.data;
+            sendStdMsg(room, data);
+        });
+    });
+
+    function sendWelcomeMsg(room) {
+        io.sockets.in(room).emit('welcome', 'Joined ' + room);
+    }
+
+    function sendStdMsg(room, synthesisid) {
+        io.sockets.in(room).emit('message', { 'type': 'message', 'synthesisid': synthesisid });
+    }
+    function sendProgressMsg(room, percentcomplete) {
+
+        io.sockets.in(room).emit('message', { 'type': 'progress', 'percentcomplete': percentcomplete });
+    }
+
+
+
+
     server.on('error', function (e) {
         if (e.code === 'EADDRINUSE') {
             console.log('Error: Port %d is already in use, select a different port.', argv.port);
