@@ -100,59 +100,29 @@
             console.log("timed out");
 
         });
-        socket.on('message', function(data) {
-            console.log('here')
-            if(data.type =='message') {
-                console.log(data);
+        socket.on('message', function(flight_data) {
+            
+            if(flight_data.type =='message') {
+                
+                    console.log('here');
+                    const cur_result = flight_data.results.object;
+                    
+                        viewer.entities.add({
+                            position : Cesium.Cartesian3.fromDegrees(cur_result.coordinates[1], cur_result.coordinates[0], cur_result.coordinates[2]),
+                            point : {
+                                pixelSize : 5,
+                                color : Cesium.Color.RED,
+                                outlineWidth:0
+                            }
+                    });
             }
-            else if (data.type =='progress'){
-                console.log(data.percentcomplete);
+            else if (flight_data.type =='progress'){
+                console.log(flight_data.percentcomplete);
                 
             }
         });
         
-        function setCameraHeadingPitch(id) {
-            var headingAngle;
-            var pitchAngle;
-            switch (id) {
-                case 'def':
-                    headingAngle = Cesium.Math.toRadians(20.0);
-                    pitchAngle = Cesium.Math.toRadians(-45.0);
-                    break;
-                case 'td':
-                    headingAngle = 0.0;
-                    pitchAngle = -Cesium.Math.PI_OVER_TWO;
-                    break;
-                case 'ne':
-                    headingAngle = Cesium.Math.toRadians(45);
-                    pitchAngle = Cesium.Math.toRadians(-45.0);
-                    break;
-                case 'se':
-                    headingAngle = Cesium.Math.toRadians(135);
-                    pitchAngle = Cesium.Math.toRadians(-45.0);
-                    break;
-                case 'sw':
-                    headingAngle = Cesium.Math.toRadians(225);
-                    pitchAngle = Cesium.Math.toRadians(-45.0);
-                    break;
-                case 'nw':
-                    headingAngle = Cesium.Math.toRadians(315);
-                    pitchAngle = Cesium.Math.toRadians(-45.0);
-                    break;
-
-            }
-
-            camera.setView({
-                destination: Cesium.Cartesian3.fromDegrees(cameralng, cameralat, 5000.0),
-                orientation: {
-                    heading: headingAngle,
-                    pitch: pitchAngle,
-                    roll: 0.0
-                }
-            });
-
-
-        }
+        
         var mapbox = new Cesium.MapboxImageryProvider({
             mapId: 'cygnus2936.curedn3y',
             accessToken: 'pk.eyJ1IjoiY3lnbnVzMjkzNiIsImEiOiJjaWgzanBwY2YweTJvNHBtM2x5MjdtemxjIn0.bwFfvQYX-M2EPyK2aee8DQ'
@@ -253,30 +223,6 @@
             updateLayerList();
         });
 
-     
-        function setMapCenter(latlng) {
-
-           
-            // set new center
-            latlng = JSON.parse(latlng);
-            var lat = latlng[0];
-            var lng = latlng[1];
-            cameralat = lat;
-            cameralng = lng;
-
-            var headingAngle = Cesium.Math.toRadians(20.0);
-            var pitchAngle = Cesium.Math.toRadians(-45.0);
-            camera.setView({
-                destination: Cesium.Cartesian3.fromDegrees(lng, lat, 5000.0),
-                orientation: {
-                    heading: headingAngle,
-                    pitch: pitchAngle,
-                    roll: 0.0
-                }
-            });
-        }
-
-
         function coordsToDegreesArray(coords) {
             var degreesArray = [];
             const clen = coords.length;
@@ -331,7 +277,7 @@
 
                 viewer.flyTo(aoi);
 
-            console.log(response);
+
         }).fail(error => {
             if (error.status ==422)
             {

@@ -51,7 +51,7 @@ router.post("/spotlight", secured(), [
     // var start_date_time = moment(req.body.start_date_time).format('x');
     // var end_date_time = moment(req.body.end_date_time).format('x');
     const aoi_bbox = bbox(aoi['features'][0]);
-   
+    
     var io = req.app.get('socketio');
 
     // console.log(typeof(aoi_bbox[0]));
