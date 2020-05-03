@@ -49,7 +49,11 @@
                             <button class="button" id="retrive_flights" type="submit">Stream flights</button>
                         </div>
                       </form>
-                      <br><hr><br>
+                      <br>
+                       <div class="d-none loading-spinner" id="spinner-cont">
+                        <img src="/assets/img/spinner.gif" height="40px">
+                       </div>
+                      <hr><br>
 
 
                     <div id="toolbar">
@@ -66,11 +70,22 @@
                             </tbody>
                         </table>
 
+                        </div>
+
+                        <div id="credentials">
+                            <p>
+                            <a class="btn btn-primary" data-toggle="collapse" href="#jwt_tokens" role="button" aria-expanded="false" aria-controls="jwt_tokens">
+                                Display Token
+                            </a>
+                            </p>
+                            <div class="collapse" id="jwt_tokens">
+                            <div class="card card-body">
+                                
+                            </div>
+                            </div>
+                        </div>
+
                 </section>
-
-
-                </div>
-
             </div>
 
             <div class="col-sm-10 col-md-10 sidebar">
@@ -104,8 +119,9 @@
             
             if(flight_data.type =='message') {
                 
-                    console.log('here');
                     const cur_result = flight_data.results.object;
+                    console.log(flight_data)
+                    // console.log(Math.floor(Date.now() / 1000) +":  " + cur_result.coordinates[1], cur_result.coordinates[0], cur_result.coordinates[2]);
                     
                         viewer.entities.add({
                             position : Cesium.Cartesian3.fromDegrees(cur_result.coordinates[1], cur_result.coordinates[0], cur_result.coordinates[2]),
@@ -268,7 +284,6 @@
             type:'POST',
             data: data
         }).done(response => {
-
                let aoi =  viewer.dataSources.add(Cesium.GeoJsonDataSource.load(JSON.parse(geo_json), {
                         stroke: Cesium.Color.HOTPINK,
                         fill: Cesium.Color.PINK.withAlpha(0.5),
@@ -276,6 +291,11 @@
                     }));
 
                 viewer.flyTo(aoi);
+
+                $("#spinner-cont").removeClass('d-none');
+                 humane.log("Scanning flights in AOI",{
+                addnCls: 'humane-flatty-success'
+            });
 
 
         }).fail(error => {

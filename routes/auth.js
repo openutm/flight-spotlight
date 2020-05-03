@@ -12,29 +12,78 @@ const util = require("util");
 const querystring = require("querystring");
 var Tile38 = require('tile38');
 var client = new Tile38();
-var moment = require('moment');
+
 const bbox = require("@turf/bbox");
+const jwt = require('express-jwt');
+const jwksRsa = require('jwks-rsa');
+const jwtAuthz = require('express-jwt-authz');
 
 require("dotenv").config();
 var URL = require('url').URL;
 const { check, validationResult } = require('express-validator');
 
+const checkJwt = jwt({
+  // Dynamically provide a signing key based on the kid in the header and the singing keys provided by the JWKS endpoint.
+  secret: jwksRsa.expressJwtSecret({
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: 'https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json'
+  }),
+
+  // Validate the audience and the issuer.
+  audience: process.env.AUTH0_AUDIENCE,
+  issuer: 'https://${process.env.AUTH0_DOMAIN}/',
+  algorithms: ['RS256']
+});
 
 router.get("/", (req, res) => {
   res.render("home", { title: "Home" });
 });
 
 router.get("/spotlight", secured(), (req, response, next) => {
+ 
   const { _raw, _json, ...userProfile } = req.user;
-
+ 
   response.render('spotlight', {
     title: "Spotlight",
     userProfile: userProfile,
+    access_token: access_token,
     errors: {},
     data: {}
   });
 
 });
+
+router.post("/air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic']), [
+  check('lat_dd').isFloat({ min: -180.00, max: 180.00 }),
+  check('lon_dd').isFloat({ min: -180.00, max: 180.00 }),
+  check('altitude_mm').isFloat({ min: 0 }),
+  check('timestamp').isInt({gt: 1, allow_leading_zeroes: false }),
+  check('traffic_source').isInt({gt: 1, lt: 10 }),
+  check('source_type').isInt({gt: 0, lt: 1 }),
+  check('icao_addresss').isAlphanumeric()
+  
+], (req, response, next) => {
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return response.status(422).json({ errors: errors.array() });
+  }
+  else {
+    const req_body =req.body;
+    const lat_dd = req_body.lat_dd;
+    const lon_dd = req_body.lon_dd;
+    const altitude_mm = req_body.altitude_mm;
+    const timestamp = req_body.timestamp;
+    const traffic_source = req_body.traffic_source;
+    const source_type = req_body.source_type;
+    const icao_addresss = req_body.icao_addresss;
+    client.set('fleet', icao_addresss, [lat_dd, lon_dd, altitude_mm], { 'source_type': source_type, 'traffic_source': traffic_source},{expire: 300});
+    response.send('OK');
+  }
+});
+
 
 router.post("/spotlight", secured(), [
   check('geo_json').isJSON(),
@@ -48,32 +97,17 @@ router.post("/spotlight", secured(), [
 
     const aoi = JSON.parse(req.body.geo_json);
     const email = req.body.email;
-    // var start_date_time = moment(req.body.start_date_time).format('x');
-    // var end_date_time = moment(req.body.end_date_time).format('x');
+
     const aoi_bbox = bbox(aoi['features'][0]);
     
     var io = req.app.get('socketio');
 
-    // console.log(typeof(aoi_bbox[0]));
-    // console.log(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3])
-    // let query = client.intersectsQuery('fleet').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).limit(100);
-    // query.execute().then(results => {
-    //   console.log(results);
-    //   response.send('Got a POST request');
-    // }).catch(err => {
-    //   console.error("something went wrong! " + err);
-    //   return response.status(500);
-    // });
-
-    let query = client.intersectsQuery('fleet').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).detect('enter','exit');
+    let query = client.intersectsQuery('fleet').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).detect('inside');
     let fence = query.executeFence((err, results) => {
       // this callback will be called multiple times
-      
       if (err) {
         console.error("something went wrong! " + err);
-      } else {
-        
-        
+      } else {  
         io.sockets.in(email).emit("message",{'type': 'message' , "results":results});
         
       }

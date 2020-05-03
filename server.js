@@ -14,6 +14,8 @@
     const socketServer = require('socket.io');
     const socketIO = new socketServer();
     require("dotenv").config();
+    const bodyParser = require("body-parser");
+    
 
     const authRouter = require("./routes/auth");
     const session = {
@@ -41,7 +43,8 @@
          * extraParams.id_token has the JSON Web Token
          * profile has all the information from the user
          */
-        return done(null, profile);
+        var accessToken = extraParams.accessToken;
+        return done(null,profile);
     }
     );
 
@@ -89,6 +92,10 @@
         session.cookie.secure = true;
         }
 
+    app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({
+        extended: true
+    }));
     // var ejs = require('ejs');
     app.set('view engine', 'ejs');
 
