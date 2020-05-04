@@ -43,7 +43,7 @@
          * extraParams.id_token has the JSON Web Token
          * profile has all the information from the user
          */
-        var accessToken = extraParams.accessToken;
+        // var accessToken = extraParams.accessToken;
         return done(null,profile);
     }
     );

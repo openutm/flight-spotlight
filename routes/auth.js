@@ -44,11 +44,13 @@ router.get("/", (req, res) => {
 router.get("/spotlight", secured(), (req, response, next) => {
  
   const { _raw, _json, ...userProfile } = req.user;
- 
+  const bing_key = process.env.BING_KEY || 'get-yours-at-https://www.bingmapsportal.com/';
+  const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
   response.render('spotlight', {
     title: "Spotlight",
     userProfile: userProfile,
-    access_token: access_token,
+    bing_key: bing_key, 
+    mapbox_key:mapbox_key,
     errors: {},
     data: {}
   });

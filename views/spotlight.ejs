@@ -72,18 +72,6 @@
 
                         </div>
 
-                        <div id="credentials">
-                            <p>
-                            <a class="btn btn-primary" data-toggle="collapse" href="#jwt_tokens" role="button" aria-expanded="false" aria-controls="jwt_tokens">
-                                Display Token
-                            </a>
-                            </p>
-                            <div class="collapse" id="jwt_tokens">
-                            <div class="card card-body">
-                                
-                            </div>
-                            </div>
-                        </div>
 
                 </section>
             </div>
@@ -141,14 +129,14 @@
         
         var mapbox = new Cesium.MapboxImageryProvider({
             mapId: 'cygnus2936.curedn3y',
-            accessToken: 'pk.eyJ1IjoiY3lnbnVzMjkzNiIsImEiOiJjaWgzanBwY2YweTJvNHBtM2x5MjdtemxjIn0.bwFfvQYX-M2EPyK2aee8DQ'
+            accessToken: '<%= mapbox_key %>'
         });
         var bing = new Cesium.BingMapsImageryProvider({
             url: 'https://dev.virtualearth.net',
-            key: 'Am2dMceshjeLX_Sogy2NHjJ8_yMBVWAm3b2x4LdV0hbAQZiFlkkD_FyoJEyApRm5',
-            mapStyle: Cesium.BingMapsStyle.AERIAL_WITH_LABELS
+            key: '<%= bing_key %>',
+            mapStyle: Cesium.BingMapsStyle.AERIAL
         });
-        Cesium.BingMapsApi.defaultKey = 'Am2dMceshjeLX_Sogy2NHjJ8_yMBVWAm3b2x4LdV0hbAQZiFlkkD_FyoJEyApRm5';
+        
         var viewer = new Cesium.Viewer('cesiumContainer', {
             "geocoder": false,
             "homeButton": false,
@@ -186,7 +174,8 @@
             // These base layers aren't really special.  It's possible to have multiple of them
             // enabled at once, just like the other layers, but it doesn't make much sense because
             // all of these layers cover the entire globe and are opaque.
-            addBaseLayerOption('Bing Maps Aerial', undefined); // the current base layer
+            addBaseLayerOption('----', undefined); // the current base layer
+            addBaseLayerOption('Bing Maps Aerial', bing); // the current base layer
             addBaseLayerOption('Mapbox Streets', mapbox);
 
         }
