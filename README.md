@@ -9,7 +9,7 @@ This project uses Node JS and Express JS, a Tile 38 server, and can connect to a
    1. Clone the repository and use `npm install | npm i` 
    2. In Github switch the branch to `testrun`, this branch turns off all identity and authentication capabilities. You can use `git checkout testrun`
    3. Create a process.env file using `touch process.env`
-      1. Take a look at the .env.sample file to fill in your details. You will need the Bing / Mapbox keys for basemaps, you can igonre the Identity and Authorization settings. 
+      1. Take a look at the [.env.sample](https://github.com/openskies-sh/flight-spotlight/blob/master/.env.sample) file to fill in your details. You will need the Bing / Mapbox keys for basemaps, you can igonre the Identity and Authorization settings. 
    4. Download a precompiled binary of the [Tile 38](https://www.tile38.com) server for your system. You can follow the instructions [in the releases page](https://github.com/tidwall/tile38/releases). Sample for Linux below:
 
       ```shell
