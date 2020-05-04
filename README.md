@@ -4,7 +4,7 @@ A project to see all flights in a area _in realtime_ by subscribing to updates t
 
 ## Self host / Installation
 
-This project uses Node JS and Express JS, a Tile 38 server, and can connect to a DSS instance. If you are using a DSS instance, you will need a JWT token to connect to the airspace. For that, you will need a approved UTM / U-Space OAUTH server (e.g. [Flight Passport](https://www.github.com/openskies-sh/flight_passport)). The following steps are for self host / test. In these steps we will not connect to the DSS and turn off all authentication
+This project uses Node JS and Express JS, a Tile 38 server, and can connect to a DSS instance. If you are using a DSS instance, you will need a JWT token to connect to the airspace. For that, you will need a approved UTM / U-Space OAUTH server (e.g. [Flight Passport](https://www.github.com/openskies-sh/flight_passport)). The following steps are for self host / test. In these steps we will not connect to the DSS and turn off all authentication:
 
 1. In Github switch the branch to `selfhost-testrun`, this branch turns off all identity and authentication capabilities. 
 2. Clone the branch / repository and use `npm install | npm i` 
