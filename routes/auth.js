@@ -12,14 +12,14 @@ const util = require("util");
 const querystring = require("querystring");
 var Tile38 = require('tile38');
 var client = new Tile38();
-
 const bbox = require("@turf/bbox");
 const jwt = require('express-jwt');
 const jwksRsa = require('jwks-rsa');
 const jwtAuthz = require('express-jwt-authz');
-
 require("dotenv").config();
 var URL = require('url').URL;
+
+
 const { check, validationResult } = require('express-validator');
 
 const checkJwt = jwt({

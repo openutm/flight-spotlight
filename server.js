@@ -15,9 +15,8 @@
     const socketIO = new socketServer();
     require("dotenv").config();
     const bodyParser = require("body-parser");
-    
-
     const authRouter = require("./routes/auth");
+    
     const session = {
         secret: process.env.APP_SECRET,
         cookie: {},
@@ -48,7 +47,6 @@
     }
     );
 
-
     var yargs = require('yargs').options({
         'port': {
             'default': 5000,
@@ -76,7 +74,6 @@
         return yargs.showHelp();
     }
 
-
     var app = express();
     app.use(compression());
     app.use((req, res, next) => {
@@ -102,7 +99,6 @@
     app.use(express.static(__dirname + '/views'));
 
     app.use('/assets', express.static('static'));
-
     
     app.use(expressSession(session));
 

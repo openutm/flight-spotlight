@@ -21,10 +21,12 @@ This project uses Node JS and Express JS, a Tile 38 server, and can connect to a
 5. Run the local server using `npm start`
 6. Navigate to `http://localhost:5000/spotlight` in your browser to launch the application. You should see a globe and a control to input a Area of Interest (AOI).
 7. Copy paste the sample GeoJSON AOI from the importers [folder](https://www.github.com/openskies-sh/flight-spotlight/importers/aoi-example.geojson)
-8. Open a new terminal window and navigate to the importers directory and type in `python import_flight_json.py` file to upload flight information and see it on a map.
+8. Install redis dependency in Python `pip install redis`
+9. Open a new terminal window and navigate to the importers directory and type in `python import_flight_json.py` file to upload flight information and see it on a map.
 
 ### Under the hood
-Take a look at the raw [JSON file](https://www.github.com/openskies-sh/flight-spotlight/importers/aoi-example.geojson) for sample flight data. This file follows the format as specified in the Airtraffic data protoocol and has a series of observations. Every five seconds this data is uploaded to the server and shown on a map. 
+
+Take a look at the raw [JSON file](https://www.github.com/openskies-sh/flight-spotlight/importers/micro_flight_data.json) for sample flight data. This file follows the format as specified in the [Airtraffic data protocol](https://github.com/openskies-sh/airtraffic-data-protocol-development/blob/master/Airtraffic-Data-Protocol.md) and has a series of observations. Every five seconds this data is uploaded to the server and if the uploaded data intersects the aoi polygon bounds, then the flight is shown on the globe. 
 
 In the production version there is a POST request to post this data in realtime. 
 
