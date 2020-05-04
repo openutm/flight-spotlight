@@ -20,9 +20,10 @@ This project uses Node JS and Express JS, a Tile 38 server, and can connect to a
       ```
    5. Run the local server using `npm start`
    6. Navigate to `http://localhost:5000/spotlight` in your browser to launch the application. You should see a globe and a control to input a Area of Interest (AOI).
-   7. Copy paste the sample GeoJSON AOI from the importers [folder](https://www.github.com/openskies-sh/flight-spotlight/importers/aoi-example.geojson)
-   8. Install redis dependency in Python `pip install redis`
-   9. Open a new terminal window and navigate to the importers directory and type in `python import_flight_json.py` file to upload flight information and see it on a map.
+   7. Copy paste the sample GeoJSON AOI from the importers [folder](https://raw.githubusercontent.com/openskies-sh/flight-spotlight/master/importers/aoi.geojson)
+   8. Click the __Stream flights__ button. 
+   8. This part needs Python3. In another terminal install the redis dependency in Python `pip install redis`
+   9. Navigate to the importers directory and type in `python import_flight_json.py` file to upload flight information and see it on a map. This script parses the JSON flight details and uploads the data every five seconds. The flights should be appear as point on the globe.
 
 ### Under the hood
 
