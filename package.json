@@ -43,7 +43,7 @@
         "@turf/bbox": "^3.0.12",
         "tile38": "^0.7.0",
         "socket.io": "^2.0.4",
-        "express-jwt": "^5.3.3",
+        "express-jwt": "^6.0.0",
         "jwks-rsa": "^1.8.0",
         "body-parser": "^1.19.0",
         "express-jwt-authz": "^2.3.1"
