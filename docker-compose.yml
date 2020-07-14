@@ -4,12 +4,14 @@ services:
         image: tile38/tile38
         ports:
             - 9851:9851
-        command: [ "tile38-server" ,"-p", "9851"]
-    app:
+        command: [ "tile38-server"]
+    web:
+      env_file: 
+        - web-env.env
       container_name: flight-spotlight
       restart: always
       build: .
       ports:
-        - "3000:3000"
+        - "5000:5000"
       depends_on:
         - tile38

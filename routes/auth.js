@@ -101,7 +101,6 @@ router.post("/spotlight", secured(), [
     const email = req.body.email;
 
     const aoi_bbox = bbox(aoi['features'][0]);
-    console.log(aoi_bbox);
     
     var io = req.app.get('socketio');
 
