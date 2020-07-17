@@ -5,6 +5,7 @@ services:
         ports:
             - 9851:9851
         command: [ "tile38-server"]
+        network_mode: host
     web:
       env_file: 
         - web-env.env
@@ -15,3 +16,5 @@ services:
         - "5000:5000"
       depends_on:
         - tile38
+      network_mode: host
+      
