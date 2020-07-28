@@ -28,12 +28,12 @@ const checkJwt = jwt({
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 5,
-    jwksUri: 'https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json'
+    jwksUri: 'https://${process.env.PASSPORT_DOMAIN}/.well-known/jwks.json'
   }),
 
   // Validate the audience and the issuer.
-  audience: process.env.AUTH0_AUDIENCE,
-  issuer: 'https://${process.env.AUTH0_DOMAIN}/',
+  audience: process.env.PASSPORT_AUDIENCE,
+  issuer: 'https://${process.env.PASSPORT_DOMAIN}/',
   algorithms: ['RS256']
 });
 
@@ -132,32 +132,24 @@ router.get('/user', secured(), function (req, res, next) {
   });
 });
 
-router.get(
-  "/login",
-  passport.authenticate("auth0", {
-    scope: "openid email profile"
-  }),
-  (req, res) => {
-    res.redirect("/");
-  }
-);
+// Perform the login, after login Auth0 will redirect to callback
+router.get('/login', passport.authenticate('oauth2', {
+  session: true,
+  scope: ''
+}), function (req, res) {
+  res.redirect('/');
+});
 
 
-router.get("/callback", (req, res, next) => {
-  passport.authenticate("auth0", (err, user, info) => {
-    if (err) {
-      return next(err);
-    }
-    if (!user) {
-      return res.redirect("/login");
-    }
-    req.logIn(user, (err) => {
-      if (err) {
-        return next(err);
-      }
+router.get('/callback', function (req, res, next) {
+  passport.authenticate('oauth2', function (err, user, info) {
+    if (err) { return next(err); }
+    if (!user) { return res.redirect('/login'); }
+    req.logIn(user, function (err) {
+      if (err) { return next(err); }
       const returnTo = req.session.returnTo;
       delete req.session.returnTo;
-      res.redirect(returnTo || "/spotlight");
+      res.redirect(returnTo || '/spotlight');
     });
   })(req, res, next);
 });

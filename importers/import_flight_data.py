@@ -3,6 +3,7 @@
 import redis
 import csv
 import time
+
 class Tile38Uploader():
     
     def __init__(self):
@@ -32,11 +33,6 @@ class Tile38Uploader():
                 time.sleep(5)
                 
                 
-                
-        # # print result
-    # print result
-    # # get data
-    # print client.execute_command('GET', 'fleet', 'truck')
 
 if __name__ == '__main__':
     my_uploader = Tile38Uploader()

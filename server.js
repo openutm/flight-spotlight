@@ -9,8 +9,11 @@
     // var async = require('async');
     const expressSession = require("express-session");
     const passport = require("passport");
-    const Auth0Strategy = require("passport-auth0");
 
+
+    var OAuth2Strategy = require('passport-oauth2');
+    var flash = require('connect-flash');
+    var userInViews = require('./lib/middleware/userInViews');
     const socketServer = require('socket.io');
     const socketIO = new socketServer();
     require("dotenv").config();
@@ -24,28 +27,38 @@
         saveUninitialized: false
       };
     
-
-    const strategy = new Auth0Strategy(
-    {
-        domain: process.env.AUTH0_DOMAIN,
-        clientID: process.env.AUTH0_CLIENT_ID,
-        clientSecret: process.env.AUTH0_CLIENT_SECRET,
-        callbackURL:
-        process.env.AUTH0_CALLBACK_URL || "http://local.test:5000/callback"
-    },
-    function(accessToken, refreshToken, extraParams, profile, done) {
-        /**
-         * Access tokens are used to authorize users to an API
-         * (resource server)
-         * accessToken is the token to call the Auth0 API
-         * or a secured third-party API
-         * extraParams.id_token has the JSON Web Token
-         * profile has all the information from the user
-         */
-        // var accessToken = extraParams.accessToken;
-        return done(null,profile);
-    }
-    );
+        let strategy = new OAuth2Strategy({
+            authorizationURL: process.env.PASSPORT_URL + process.env.PASSPORT_AUTHORIZATION_URL,
+            tokenURL: process.env.PASSPORT_URL + process.env.PASSPORT_TOKEN_URL,
+            clientID: process.env.PASSPORT_WEB_CLIENT_ID,
+            clientSecret: process.env.PASSPORT_WEB_CLIENT_SECRET,
+            callbackURL: process.env.CALLBACK_URL,
+            passReqToCallback: true,
+        },
+            function (accessToken, refreshToken, params,userProfile, cb) {
+            return cb(null, userProfile);
+            }
+        );
+        
+        strategy.userProfile = function (accesstoken, done) {
+            // choose your own adventure, or use the Strategy's oauth client
+            const headers = {
+            'User-Agent': 'request',
+            'Authorization': 'Bearer ' + accesstoken,
+            };
+            this._oauth2._request("GET", process.env.PASSPORT_URL + process.env.PASSPORT_USERINFO_URL, headers, null, null, (err, data) => {
+            if (err) { return done(err); }
+            try {
+                data = JSON.parse(data);
+            }
+            catch (e) {
+                return done(e);
+            }
+            done(null, data);
+            });
+        };
+        
+        
 
     var yargs = require('yargs').options({
         'port': {
@@ -83,7 +96,19 @@
       
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }))
+    app.use(flash());
 
+    // Handle auth failure error messages
+    app.use(function (req, res, next) {
+      if (req && req.query && req.query.error) {
+        req.flash('error', req.query.error);
+      }
+      if (req && req.query && req.query.error_description) {
+        req.flash('error_description', req.query.error_description);
+      }
+      next();
+    });
+    
     if (app.get("env") === "production") {
         // Serve secure cookies, requires HTTPS
         session.cookie.secure = true;
