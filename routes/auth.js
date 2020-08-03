@@ -16,6 +16,7 @@ const bbox = require("@turf/bbox");
 const jwt = require('express-jwt');
 const jwksRsa = require('jwks-rsa');
 const jwtAuthz = require('express-jwt-authz');
+const request = require('request');
 require("dotenv").config();
 var URL = require('url').URL;
 
@@ -85,6 +86,36 @@ router.post("/air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic']),
     response.send('OK');
   }
 });
+
+
+router.post("/get_registry_data",secured(), [
+  check('operator_id').isAlphanumeric(),
+  check('token').isAlphanumeric()
+  
+], (req, response, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return response.status(422).json({ errors: errors.array() });
+  }
+  else {
+
+    const req_body =req.body;
+    request.post( {
+      'headers': {'Content-Type' : 'application/x-www-form-urlencoded' },
+      'url':     'https://aircraftregistry.herokuapp.com/api/v1/operator',
+      'auth': {
+        'bearer': req_body.token
+      },
+      'form': { 'operator_id': req_body.operator_id},
+      method: 'POST'
+    }, function (e, r, body) {
+      console.log(body);
+    });
+    
+
+  }
+});
+
 
 
 router.post("/spotlight", secured(), [
