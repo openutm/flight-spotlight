@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document goes through a step-by-step process to setup and create a server to install Flight Spotlight. Flight Spotlight is a Node JS Application and uses the [Tile 38](https://www.tile38.com) server as a backend. In addition, access is protected by the [Flight Passport](https://github.com/openskies-sh/flight_passport), you can choose to install your own server (not covered in this guide) or you can use [Openskies ID](https://id.openskies.sh) to get started. We will refer to well known guides on [DigitalOcean](https://www.digitalocean.com/) since they provide a great basis to start. 
+This document goes through a step-by-step process to setup and create a server to install Flight Spotlight. Flight Spotlight is a Node JS Application and uses the [Tile 38](https://www.tile38.com) server as a backend. In addition, access is protected by the [Flight Passport](https://github.com/openskies-sh/flight_passport), you can choose to install your own server (not covered in this guide) or you can use [Openskies ID](https://id.openskies.sh) to get started. We will refer to well known guides on [DigitalOcean](https://www.digitalocean.com/) since they provide a great basis to start.
 
 ### Outcome and Experience
 
@@ -25,8 +25,9 @@ Flight Spotlight is a Node JS based application. In this section we will install
 
 We will download the opensource [Tile 38](https://tile38.com) server, this server acts as a backend the Node frontend.
 
-1. Tile 38 is avaiable as a Docker service, if you are familiar with Docker, you can use that. 
-2. We will follow the instrcutions on the releases page. 
+1. Tile 38 is avaiable as a Docker service, if you are familiar with Docker, you can use that.
+2. We will follow the instrcutions on the releases page.
+   
     ```
     curl -L  https://github.com/tidwall/tile38/releases/download/1.21.1/tile38-1.21.1-linux-amd64.tar.gz -o tile38.tar.gz
     tar xzvf tile38.tar.gz
