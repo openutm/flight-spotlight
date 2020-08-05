@@ -7,10 +7,12 @@
     - [1.1 Setup Ubuntu Server](#11-setup-ubuntu-server)
     - [1.2 Install NodeJS](#12-install-nodejs)
     - [1.3 Download and Run Tile 38 Server](#13-download-and-run-tile-38-server)
-    - [1.4 Setup Tile 38 as a service](#14-setup-tile-38-as-a-service)
-    - [1.5 Download and sync repository from Github](#15-download-and-sync-repository-from-github)
-    - [1.6 Install PM2](#16-install-pm2)
-    - [1.7 Install NGINX as reverse proxy](#17-install-nginx-as-reverse-proxy)
+  - [Stage 2 Intial Setup](#stage-2-intial-setup)
+    - [2.1 Setup Tile 38 as a service](#21-setup-tile-38-as-a-service)
+    - [2.2 Download and sync repository from Github](#22-download-and-sync-repository-from-github)
+  - [Stage 3 Install Webserver and reverse proxy](#stage-3-install-webserver-and-reverse-proxy)
+    - [3.1 Install PM2](#31-install-pm2)
+    - [3.2 Install NGINX as reverse proxy](#32-install-nginx-as-reverse-proxy)
 
 ## Introduction
 
@@ -48,8 +50,12 @@ We will download the opensource [Tile 38](https://tile38.com) server, this serve
 
     ```
 3. You should see the server running in the console. Press `Ctrl+C` on the console to exit out. You have now downloaded and run the Tile38 server locally.
+   
+## Stage 2 Intial Setup
 
-### 1.4 Setup Tile 38 as a service
+Now that the basic server is setup, we will install the software
+
+### 2.1 Setup Tile 38 as a service
 
 In this section we will setup Tile38 server as a Linux service.
 
@@ -91,7 +97,7 @@ In this section we will setup Tile38 server as a Linux service.
 
     ```
 
-### 1.5 Download and sync repository from Github
+### 2.2 Download and sync repository from Github
 
 1. Go to the home directory by pressing `cd`
 2. Clone the git repository `git clone https://github.com/openskies-sh/flight-spotlight.git`
@@ -102,7 +108,11 @@ In this section we will setup Tile38 server as a Linux service.
 
 We are now ready to install PM2 to daemonize the install PM2
 
-### 1.6 Install PM2
+## Stage 3 Install Webserver and reverse proxy
+
+We will now install Nginx and point it to the PM2 reverse proxy
+
+### 3.1 Install PM2
 
 We will follow the [PM2 guide](https://www.digitalocean.com/community/tutorials/nodejs-pm2) for this section 
 
@@ -112,7 +122,7 @@ We will follow the [PM2 guide](https://www.digitalocean.com/community/tutorials/
 4. Paste the env command in the console
 5. Save the PM2 process list and environments `p2 save`
 
-### 1.7 Install NGINX as reverse proxy
+### 3.2 Install NGINX as reverse proxy
 
 In this section we will install Nginx and have the node app as a reverse proxy, we will follow the steps detailed in the [install NGINX](https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-ubuntu-20-04) guide.
 
