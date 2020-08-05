@@ -1,5 +1,17 @@
 # Flight Spotlight Installation Instructions
 
+- [Flight Spotlight Installation Instructions](#flight-spotlight-installation-instructions)
+  - [Introduction](#introduction)
+    - [Outcome and Experience](#outcome-and-experience)
+  - [Stage 1 Intial Setup](#stage-1-intial-setup)
+    - [1.1 Setup Ubuntu Server](#11-setup-ubuntu-server)
+    - [1.2 Install NodeJS](#12-install-nodejs)
+    - [1.3 Download and Run Tile 38 Server](#13-download-and-run-tile-38-server)
+    - [1.4 Setup Tile 38 as a service](#14-setup-tile-38-as-a-service)
+    - [1.5 Download and sync repository from Github](#15-download-and-sync-repository-from-github)
+    - [1.6 Install PM2](#16-install-pm2)
+    - [1.7 Install NGINX as reverse proxy](#17-install-nginx-as-reverse-proxy)
+
 ## Introduction
 
 This document goes through a step-by-step process to setup and create a server to install Flight Spotlight. Flight Spotlight is a Node JS Application and uses the [Tile 38](https://www.tile38.com) server as a backend. In addition, access is protected by the [Flight Passport](https://github.com/openskies-sh/flight_passport), you can choose to install your own server (not covered in this guide) or you can use [Openskies ID](https://id.openskies.sh) to get started. We will refer to well known guides on [DigitalOcean](https://www.digitalocean.com/) since they provide a great basis to start.
