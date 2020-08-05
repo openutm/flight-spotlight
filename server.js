@@ -13,7 +13,7 @@
 
     var OAuth2Strategy = require('passport-oauth2');
     var flash = require('connect-flash');
-    var userInViews = require('./lib/middleware/userInViews');
+    // var userInViews = require('./lib/middleware/userInViews');
     const socketServer = require('socket.io');
     const socketIO = new socketServer();
     require("dotenv").config();
