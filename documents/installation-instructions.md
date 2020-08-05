@@ -86,8 +86,36 @@ In this section we will setup Tile38 server as a Linux service.
 3. Change the directory to flight-spotlight by `cd flight-spotlight`
 4. Install the dependencies run `npm install | npm i`
 5. Create process.env using `touch process.env` and fill in the variables, for more information take a look at [.env.sample](https://github.com/openskies-sh/flight-spotlight/blob/master/.env.sample)
-6. You can test the installation by typing `npm start`, the server should start 
+6. You can test the installation by typing `npm start`, the server should start
 
-    ```
+We are now ready to install PM2 to daemonize the install PM2
 
-    ```
+### 1.6 Install PM2
+
+We will follow the [PM2 guide](https://www.digitalocean.com/community/tutorials/nodejs-pm2) for this section 
+
+1. Install PM2 globally `npm install -g pm2`
+2. Setup the app for pm2 `pm2 start server.js`
+3. Start PM2 with systemd `pm2 startup systemd`
+4. Paste the env command in the console
+5. Save the PM2 process list and environments `p2 save`
+
+### 1.7 Install NGINX as reverse proxy
+
+In this section we will install Nginx and have the node app as a reverse proxy, we will follow the steps detailed in the [install NGINX](https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-ubuntu-20-04) guide.
+
+1. We will setup the default site at `sudo nano /etc/nginx/sites-available/default`
+2. Paste the following block this will point nginx to the pm2 installation
+   ```
+    location / {
+            proxy_pass http://localhost:3000;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+        }
+
+   ```
+3. Check for nginx settings file `sudo nginx -t`
+4. Restart nginx `sudo systemctl restart nginx`
