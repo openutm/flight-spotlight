@@ -52,7 +52,6 @@
         "debug": "~4.1.1",
         "http-errors": "~1.7.3",
         "morgan": "~1.9.0",
-        "passport-oauth2": "^1.5.0",
-        "tldextract": "^0.0.5"
+        "passport-oauth2": "^1.5.0"
     }
 }
