@@ -5,7 +5,9 @@ import csv
 import time
 import requests 
 from dotenv import load_dotenv, find_dotenv
+
 from os import environ as env
+
 ENV_FILE = find_dotenv()
 if ENV_FILE:
     load_dotenv(ENV_FILE)
@@ -16,7 +18,7 @@ class PassportCredentialsGetter():
         pass
 
     def get_write_credentials(self):
-        payload = "grant_type=client_credentials&client_id="+ env.get('PASSPORT_CLIENT_ID')+"&client_secret="+ env.get('PASSPORT_CLIENT_SECRET')+"&audience="+ env.get('PASSPORT_AUDIENCE')+"&scope="+ env.get('PASSPORT_SCOPE')
+        payload = "grant_type=client_credentials&client_id="+ env.get('PASSPORT_WRITE_CLIENT_ID')+"&client_secret="+ env.get('PASSPORT_WRITE_CLIENT_SECRET')+"&audience="+ env.get('PASSPORT_WRITE_AUDIENCE')+"&scope="+ env.get('PASSPORT_SCOPE')
         
         headers = { 'content-type': "application/x-www-form-urlencoded"}
         url = env.get('PASSPORT_URL') +'/oauth/token/'

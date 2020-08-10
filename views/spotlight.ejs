@@ -85,7 +85,7 @@
     <script>
         var socketHost = location.origin.replace(/^http/, 'ws');
         
-        const email  = '<%= userProfile.displayName %>';
+        const email  = '<%= userProfile.email %>';
         var socket = io.connect(socketHost);
         socket.on('connect_failed', function() {
             errorMsg('Data connection failed, please contact your administrator.');
@@ -267,20 +267,28 @@
         data['email'] = email;
         
         $.ajax({
-            url: '/spotlight',
+            url: '/set_aoi',
             type:'POST',
             data: data
         }).done(response => {
                let aoi =  viewer.dataSources.add(Cesium.GeoJsonDataSource.load(JSON.parse(geo_json), {
-                        stroke: Cesium.Color.HOTPINK,
-                        fill: Cesium.Color.PINK.withAlpha(0.5),
+                        stroke: Cesium.Color.GRAY,
+                        fill: Cesium.Color.GRAY.withAlpha(0.3),
                         strokeWidth: 3
                     }));
 
                 viewer.flyTo(aoi);
 
+                // let geo_fence =  viewer.dataSources.add(Cesium.GeoJsonDataSource.load(JSON.parse(response.geo_fence), {
+                //         stroke: Cesium.Color.HOTPINK,
+                //         fill: Cesium.Color.PINK.withAlpha(0.3),
+                //         strokeWidth: 3
+                //     }));
+
+
+
                 $("#spinner-cont").removeClass('d-none');
-                 humane.log("Scanning flights in AOI",{
+                 humane.log(response['msg'],{
                 addnCls: 'humane-flatty-success'
             });
 

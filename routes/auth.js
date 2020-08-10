@@ -19,7 +19,7 @@ const jwtAuthz = require('express-jwt-authz');
 const request = require('request');
 require("dotenv").config();
 var URL = require('url').URL;
-
+let geojsonhint = require("@mapbox/geojsonhint");
 
 const { check, validationResult } = require('express-validator');
 
@@ -47,6 +47,7 @@ router.get("/spotlight", secured(), (req, response, next) => {
   const { _raw, _json, ...userProfile } = req.user;
   const bing_key = process.env.BING_KEY || 'get-yours-at-https://www.bingmapsportal.com/';
   const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
+  
   response.render('spotlight', {
     title: "Spotlight",
     userProfile: userProfile,
@@ -58,7 +59,7 @@ router.get("/spotlight", secured(), (req, response, next) => {
 
 });
 
-router.post("/air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic']), [
+router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic']), [
   check('lat_dd').isFloat({ min: -180.00, max: 180.00 }),
   check('lon_dd').isFloat({ min: -180.00, max: 180.00 }),
   check('altitude_mm').isFloat({ min: 0 }),
@@ -78,7 +79,6 @@ router.post("/air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic']),
     const lat_dd = req_body.lat_dd;
     const lon_dd = req_body.lon_dd;
     const altitude_mm = req_body.altitude_mm;
-    const timestamp = req_body.timestamp;
     const traffic_source = req_body.traffic_source;
     const source_type = req_body.source_type;
     const icao_addresss = req_body.icao_addresss;
@@ -88,40 +88,49 @@ router.post("/air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic']),
 });
 
 
-router.post("/get_registry_data",secured(), [
-  check('operator_id').isAlphanumeric(),
-  check('token').isAlphanumeric()
-  
-], (req, response, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return response.status(422).json({ errors: errors.array() });
-  }
-  else {
 
-    const req_body =req.body;
-    request.post( {
-      'headers': {'Content-Type' : 'application/x-www-form-urlencoded' },
-      'url':     'https://aircraftregistry.herokuapp.com/api/v1/operator',
-      'auth': {
-        'bearer': req_body.token
-      },
-      'form': { 'operator_id': req_body.operator_id},
-      method: 'POST'
-    }, function (e, r, body) {
-      console.log(body);
-    });
+
+// router.post("/get_registry_data",secured(), [
+//   check('operator_id').isAlphanumeric(),
+//   check('token').isAlphanumeric()
+  
+// ], (req, response, next) => {
+//   const errors = validationResult(req);
+//   if (!errors.isEmpty()) {
+//     return response.status(422).json({ errors: errors.array() });
+//   }
+//   else {
+
+//     const req_body =req.body;
+//     request.post( {
+//       'headers': {'Content-Type' : 'application/x-www-form-urlencoded' },
+//       'url':     'https://aircraftregistry.herokuapp.com/api/v1/operator',
+//       'auth': {
+//         'bearer': req_body.token
+//       },
+//       'form': { 'operator_id': req_body.operator_id},
+//       method: 'POST'
+//     }, function (e, r, body) {
+//       console.log(body);
+//     });
     
 
-  }
-});
+//   }
+// });
 
 
-
-router.post("/spotlight", secured(), [
-  check('geo_json').isJSON(),
+router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
+  let options = {};
   
-], (req, response, next) => {
+  let errors = geojsonhint.hint(submitted_aoi, options);
+  
+  if (errors.length > 0 ) {
+    throw new Error('Invalid GeoJSON supplied.');
+  } else {
+    return true;
+  }
+  
+}),  (req, response, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return response.status(422).json({ errors: errors.array() });
@@ -134,26 +143,51 @@ router.post("/spotlight", secured(), [
     const aoi_bbox = bbox(aoi['features'][0]);
     
     var io = req.app.get('socketio');
+   
 
     let query = client.intersectsQuery('fleet').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).detect('inside');
-    let fence = query.executeFence((err, results) => {
+    let flight_aoi_fence = query.executeFence((err, results) => {
       // this callback will be called multiple times
       if (err) {
         console.error("something went wrong! " + err);
       } else {  
-        io.sockets.in(email).emit("message",{'type': 'message' , "results":results});
+        io.sockets.in(email).emit("message",{'type': 'message' , "type":"aoi","results":results});
         
       }
     });
 
+    // set geofence alerts 
+
+    // const geo_fence = '{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[30.142621994018555,-1.985209815625593],[30.156269073486328,-1.985209815625593],[30.156269073486328,-1.9534712184928378],[30.142621994018555,-1.9534712184928378],[30.142621994018555,-1.985209815625593]]]}}]}';
+    
+    // let geo_fence_query = client.intersectsQuery('fleet').object(JSON.parse(geo_fence)).detect('inside');
+    // let flight_geo_fence = geo_fence_query.executeFence((err, results) => {
+    //   // this callback will be called multiple times
+    //   if (err) {
+    //     console.error("something went wrong! " + err);
+    //   } else {  
+    //     io.sockets.in(email).emit("message",{'type': 'message' , "type":"geo_fence","results":results});
+        
+    //   }
+    // });
+
+
+    // // if you want to be notified when the connection gets closed, register a callback function with onClose()
+    // flight_geo_fence.onClose(() => {
+    //   console.log("Flight Geofence was closed");
+    // });
+
     // if you want to be notified when the connection gets closed, register a callback function with onClose()
-    fence.onClose(() => {
-      console.log("geofence was closed");
+    flight_aoi_fence.onClose(() => {
+      console.log("AOI geofence was closed");
     });
-    response.send('Successfully subscribed to updates');
+    
+    response.send({'msg':"Scanning flights in AOI and Geofences"});
 
   };
 });
+
+
 /* GET user profile. */
 router.get('/user', secured(), function (req, res, next) {
   const { _raw, _json, ...userProfile } = req.user;

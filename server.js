@@ -17,6 +17,7 @@
     const socketServer = require('socket.io');
     const socketIO = new socketServer();
     require("dotenv").config();
+    // var userInViews = require('./lib/middleware/userInViews');
     const bodyParser = require("body-parser");
     const authRouter = require("./routes/auth");
     
@@ -197,7 +198,8 @@
         process.exit(1);
     });
 
-    server.on('close', function () {
+    server.on('close', function (e) {
+        
         console.log('Cesium development server stopped.');
     });
 
