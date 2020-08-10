@@ -139,50 +139,51 @@ router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
 
     const aoi = JSON.parse(req.body.geo_json);
     const email = req.body.email;
-
+    
     const aoi_bbox = bbox(aoi['features'][0]);
     
     var io = req.app.get('socketio');
    
 
-    let query = client.intersectsQuery('fleet').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).detect('inside');
-    let flight_aoi_fence = query.executeFence((err, results) => {
-      // this callback will be called multiple times
-      if (err) {
-        console.error("something went wrong! " + err);
-      } else {  
-        io.sockets.in(email).emit("message",{'type': 'message' , "type":"aoi","results":results});
-        
-      }
-    });
-
-    // set geofence alerts 
-
-    // const geo_fence = '{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[30.142621994018555,-1.985209815625593],[30.156269073486328,-1.985209815625593],[30.156269073486328,-1.9534712184928378],[30.142621994018555,-1.9534712184928378],[30.142621994018555,-1.985209815625593]]]}}]}';
-    
-    // let geo_fence_query = client.intersectsQuery('fleet').object(JSON.parse(geo_fence)).detect('inside');
-    // let flight_geo_fence = geo_fence_query.executeFence((err, results) => {
+    // let aoi_query = client.intersectsQuery('fleet').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).detect('inside');
+    // let flight_aoi_fence = aoi_query.executeFence((err, results) => {
     //   // this callback will be called multiple times
     //   if (err) {
     //     console.error("something went wrong! " + err);
     //   } else {  
-    //     io.sockets.in(email).emit("message",{'type': 'message' , "type":"geo_fence","results":results});
+
+    //     io.sockets.in(email).emit("message",{'type': 'message' , "message_type":"aoi","results":results});
         
     //   }
     // });
 
+    // set geofence alerts 
 
-    // // if you want to be notified when the connection gets closed, register a callback function with onClose()
-    // flight_geo_fence.onClose(() => {
-    //   console.log("Flight Geofence was closed");
-    // });
+    const geo_fence = '{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[30.142621994018555,-1.985209815625593],[30.156269073486328,-1.985209815625593],[30.156269073486328,-1.9534712184928378],[30.142621994018555,-1.9534712184928378],[30.142621994018555,-1.985209815625593]]]}}]}';
+    
+    let geo_fence_query = client.intersectsQuery('fleet').object(JSON.parse(geo_fence)).detect('inside');
+    let flight_geo_fence = geo_fence_query.executeFence((err, results) => {
+      // this callback will be called multiple times
+      if (err) {
+        console.error("something went wrong! " + err);
+      } else {  
+        io.sockets.in(email).emit("message",{'type': 'message' , "message_type":"geo_fence","results":results});
+        
+      }
+    });
+
 
     // if you want to be notified when the connection gets closed, register a callback function with onClose()
-    flight_aoi_fence.onClose(() => {
-      console.log("AOI geofence was closed");
+    flight_geo_fence.onClose(() => {
+      console.log("Flight Geofence was closed");
     });
+
+    // if you want to be notified when the connection gets closed, register a callback function with onClose()
+    // flight_aoi_fence.onClose(() => {
+    //   console.log("AOI geofence was closed");
+    // });
     
-    response.send({'msg':"Scanning flights in AOI and Geofences"});
+    response.send({'msg':"Scanning flights in AOI and Geofences", "geo_fence":geo_fence});
 
   };
 });

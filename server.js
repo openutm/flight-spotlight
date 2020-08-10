@@ -13,7 +13,7 @@
 
     var OAuth2Strategy = require('passport-oauth2');
     var flash = require('connect-flash');
-    // var userInViews = require('./lib/middleware/userInViews');
+    var userInViews = require('./lib/middleware/userInViews');
     const socketServer = require('socket.io');
     const socketIO = new socketServer();
     require("dotenv").config();
@@ -144,15 +144,15 @@
 
 
 
-    // var server = app.listen(process.env.PORT || 5000, argv.public ? undefined : 'localhost', function() {
-    //     if (argv.public) {
-    //         console.log('Cesium development server running publicly.  Connect to http://localhost:%d/', server.address().port);
-    //     } else {
-    //         console.log('Cesium development server running locally.  Connect to http://localhost:%d/', server.address().port);
-    //     }
-    // });
+    var server = app.listen(process.env.PORT || 5000, argv.public ? undefined : 'localhost', function() {
+        if (argv.public) {
+            console.log('Cesium development server running publicly.  Connect to http://localhost:%d/', server.address().port);
+        } else {
+            console.log('Cesium development server running locally.  Connect to http://localhost:%d/', server.address().port);
+        }
+    });
 
-    var server = app.listen(process.env.PORT || 5000); // for Heroku
+    // var server = app.listen(process.env.PORT || 5000); // for Heroku
 
     var io = socketIO.listen(server);
     app.set('socketio', io);
