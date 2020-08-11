@@ -111,8 +111,7 @@
     app.use("/", authRouter);
 
     // Constants
-    
-    var server = app.listen(process.env.PORT || 5000); // for Heroku
+    var server = app.listen(process.env.PORT || 5000, '0.0.0.0',); // for Heroku
 
     var io = socketIO.listen(server);
     app.set('socketio', io);
