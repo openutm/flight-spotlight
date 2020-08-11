@@ -4,40 +4,16 @@ services:
         image: tile38/tile38
         ports:
             - "9851:9851"
-            
+
         command: [ "tile38-server"]
         container_name : "tile38"
-        networks:
-          - default
-          - internal
-        # volumes:
-        #   - web_data:/usr/src/app/appdata
-          
-    web:    
+
+    web:
       command : npm start
-      env_file: 
+      env_file:
         - .env
       image: openskies/flight-spotlight
       container_name: flight-spotlight
       ports:
         - "5000:5000"
-      expose:
-          - 5000
       network_mode: "host"
-      # volumes:
-      #   - web_data:/usr/src/app/appdata
-
-      
-networks:  
-  internal:
-    external: false
-
-  # app-network:
-  #   driver: bridge
-
-# volumes:
-#   web_data:
-#     external: true
-
-# volumes:
-#   app-volume: 
