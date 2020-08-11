@@ -12,9 +12,10 @@ services:
     web:
       env_file: 
         - web-env.env
-      image: flight-spotlight/flight-spotlight
+      command: npm start
+      image: openskies/flight-spotlight
       container_name: flight-spotlight
-      restart: always
+      
       ports:
         - "5000:5000"
       depends_on:
