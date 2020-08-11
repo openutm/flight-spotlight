@@ -52,7 +52,6 @@
         "requirejs": "^2.2.0",
         "socket.io": "^2.0.4",
         "tile38": "^0.7.0",
-        "yargs": "^4.3.2",
         "@mapbox/geojsonhint": "^3.0.0"
     }
 }
