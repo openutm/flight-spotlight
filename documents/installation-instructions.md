@@ -35,7 +35,7 @@ This guide assumes that you have access to a Ubuntu virtual server and have root
 
 We recommend that you use Flight Spotlight Docker Compose for installation and running it. This method is recommended since all the orchestration is done by Docker and installation is straight forward. We will install Docker tools on Ubuntu now. To install Docker on Ubuntu 20.04 follow the steps in the [Install Docker guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04)
 
-1. Follow Step 1 in the guide above, once you have installed `docker-ce` you should be able to run `sudo systemctl status docker` to see Docker running. 
+1. Follow Step 1 in the guide above, once you have installed `docker-ce` you should be able to run `sudo systemctl status docker` to see Docker running.
 2. We will now install Docker Compose, you can choose to install directly from repository or use the apt command `sudo apt install docker-compose`
 3. Check Docker compose is installed properly `docker-compose version`
 
@@ -43,9 +43,9 @@ We now have Ubuntu, Docker and Docker Compose Installed
 
 ## Stage 3 Clone Repository
 
-We will clone the Github repsository and download load the latest Docker Compose file. 
+We will clone the Github repsository and download load the latest Docker Compose file.
 
-### 3.1 Download the software and setup Environment variables 
+### 3.1 Download the software and setup Environment variables
 
 1. In the console execute the following command `git clone https://github.com/openskies-sh/flight-spotlight` 
 2. Enter the directory `cd flight-spotlight`
@@ -53,7 +53,7 @@ We will clone the Github repsository and download load the latest Docker Compose
 4. Open the .env file and fill out the credentials `nano .env`
 5. You will need help to fill out the all the links, since this is associated with Authentication, in short, it will ask you to point to a Flight Spotlight or any other OAUTH2 provider for credentails.
 6. Finally run the installation by typing `docker-compose up`
-7. There are additional options for Docker Compose e.g. `docker-compose up -d`, it is recommended that you familairize yourself with the software. 
+7. There are additional options for Docker Compose e.g. `docker-compose up -d`, it is recommended that you familairize yourself with the software.
 
 ## Stage 4 Final Stage Configure NGINX Reverse Proxy
 
@@ -81,6 +81,7 @@ In this section we will install Nginx and have the node app as a reverse proxy, 
 4. Restart nginx `sudo systemctl restart nginx`
 
 ### 4.2 Install Lets Encrypt Certificate for SSL 
+
 TBC, more information [here](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-20-04)
 
-Go to the IP of the instance and you should see Flight Spotlight instance running. 
+Go to the IP of the instance and you should see Flight Spotlight instance running.
