@@ -47,7 +47,7 @@ We will clone the Github repsository and download load the latest Docker Compose
 
 ### 3.1 Download the software and setup Environment variables
 
-1. In the console execute the following command `git clone https://github.com/openskies-sh/flight-spotlight` 
+1. In the console execute the following command `git clone https://github.com/openskies-sh/flight-spotlight`
 2. Enter the directory `cd flight-spotlight`
 3. Copy the sample .env file: `cp .env.sample .env`
 4. Open the .env file and fill out the credentials `nano .env`
