@@ -4,13 +4,9 @@
 
     var express = require('express');    
     var compression = require('compression');
-    // var url = require('url');
-    // var req = require('request');
-    // var async = require('async');
+    
     const expressSession = require("express-session");
     const passport = require("passport");
-
-
     var OAuth2Strategy = require('passport-oauth2');
     var flash = require('connect-flash');
     var userInViews = require('./lib/middleware/userInViews');
@@ -60,34 +56,6 @@
         };
         
         
-
-    var yargs = require('yargs').options({
-        'port': {
-            'default': 5000,
-            'description': 'Port to listen on.'
-        },
-        'public': {
-            'type': 'boolean',
-            'description': 'Run a public server that listens on all interfaces.'
-        },
-        'upstream-proxy': {
-            'description': 'A standard proxy server that will be used to retrieve data.  Specify a URL including port, e.g. "http://proxy:8000".'
-        },
-        'bypass-upstream-proxy-hosts': {
-            'description': 'A comma separated list of hosts that will bypass the specified upstream_proxy, e.g. "lanhost1,lanhost2"'
-        },
-        'help': {
-            'alias': 'h',
-            'type': 'boolean',
-            'description': 'Show this help.'
-        }
-    });
-    var argv = yargs.argv;
-
-    if (argv.help) {
-        return yargs.showHelp();
-    }
-
     var app = express();
     app.use(compression());
     app.use((req, res, next) => {
@@ -142,17 +110,8 @@
     });
     app.use("/", authRouter);
 
-
-
-    var server = app.listen(process.env.PORT || 5000, argv.public ? undefined : 'localhost', function() {
-        if (argv.public) {
-            console.log('Cesium development server running publicly.  Connect to http://localhost:%d/', server.address().port);
-        } else {
-            console.log('Cesium development server running locally.  Connect to http://localhost:%d/', server.address().port);
-        }
-    });
-
-    // var server = app.listen(process.env.PORT || 5000); // for Heroku
+    // Constants
+    var server = app.listen(process.env.PORT || 5000); // for Heroku
 
     var io = socketIO.listen(server);
     app.set('socketio', io);
@@ -185,15 +144,6 @@
 
 
     server.on('error', function (e) {
-        if (e.code === 'EADDRINUSE') {
-            console.log('Error: Port %d is already in use, select a different port.', argv.port);
-            console.log('Example: node server.js --port %d', argv.port + 1);
-        } else if (e.code === 'EACCES') {
-            console.log('Error: This process does not have permission to listen on port %d.', argv.port);
-            if (argv.port < 1024) {
-                console.log('Try a port number higher than 1024.');
-            }
-        }
         console.log(e);
         process.exit(1);
     });

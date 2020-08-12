@@ -4,21 +4,16 @@ services:
         image: tile38/tile38
         ports:
             - "9851:9851"
-        expose:
-            - 9851
+
         command: [ "tile38-server"]
         container_name : "tile38"
-        network_mode: host
+
     web:
-      env_file: 
-        - web-env.env
-      image: flight-spotlight/flight-spotlight
+      command : npm start
+      env_file:
+        - .env
+      image: openskies/flight-spotlight
       container_name: flight-spotlight
-      restart: always
       ports:
         - "5000:5000"
-      depends_on:
-        - tile38
-        
-      network_mode: host
-      
+      network_mode: "host"
