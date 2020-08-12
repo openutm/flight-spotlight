@@ -144,31 +144,30 @@ router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
     var io = req.app.get('socketio');
 
     
-    const geo_fence_fc = { "type": "FeatureCollection", "features": [{ "type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [[[30.142621994018555, -1.985209815625593], [30.156269073486328, -1.985209815625593], [30.156269073486328, -1.9534712184928378], [30.142621994018555, -1.9534712184928378], [30.142621994018555, -1.985209815625593]]] } }] };
+    // const geo_fence_fc = { "type": "FeatureCollection", "features": [{ "type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [[[30.142621994018555, -1.985209815625593], [30.156269073486328, -1.985209815625593], [30.156269073486328, -1.9534712184928378], [30.142621994018555, -1.9534712184928378], [30.142621994018555, -1.985209815625593]]] } }] };
 
-    let intersected_geo_fence = intersect(geo_fence_fc.features[0], aoi['features'][0]);
+    // let intersected_geo_fence = intersect(geo_fence_fc.features[0], aoi['features'][0]);
 
-    console.log(JSON.stringify(intersected_geo_fence))
+    // console.log(JSON.stringify(intersected_geo_fence))
 
-    for (let g = 0; g < intersected_geo_fence.features.length; g++) {
-      const cur_fence = geo_fence_fc.features[g];
-      let flipped_fence = flip(cur_fence);
-      console.log(JSON.stringify(flipped_fence));
-      let geo_fence_query = client.intersectsQuery('fleet').object(flipped_fence).detect('inside');
-      let flight_geo_fence = geo_fence_query.executeFence((errors, gf_results) => {
-        if (errors) {
-          console.error("Error encountered " + err);
-        } else {
-          console.log(gf_results.id + ": " + gf_results.detect + " Geofenced polygon area");
+    // for (let g = 0; g < intersected_geo_fence.features.length; g++) {
+    //   const cur_fence = geo_fence_fc.features[g];
+    //   let flipped_fence = flip(cur_fence);
+    //   console.log(JSON.stringify(flipped_fence));
+    //   let geo_fence_query = client.intersectsQuery('fleet').object(flipped_fence).detect('inside');
+    //   let flight_geo_fence = geo_fence_query.executeFence((errors, gf_results) => {
+    //     if (errors) {
+    //       console.error("Error encountered " + err);
+    //     } else {
+    //       console.log(gf_results.id + ": " + gf_results.detect + " Geofenced polygon area");
 
-        }
-      });
-      flight_geo_fence.onClose(() => {
-        console.log("Flight Geofence was closed");
-      });
+    //     }
+    //   });
+    //   flight_geo_fence.onClose(() => {
+    //     console.log("Flight Geofence was closed");
+    //   });
 
-
-    }
+    // }
 
 
     let aoi_query = client.intersectsQuery('fleet').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).detect('inside');
