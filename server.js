@@ -13,7 +13,7 @@
     const socketServer = require('socket.io');
     const socketIO = new socketServer();
     require("dotenv").config();
-    // var userInViews = require('./lib/middleware/userInViews');
+    var userInViews = require('./lib/middleware/userInViews');
     const bodyParser = require("body-parser");
     const authRouter = require("./routes/auth");
     
@@ -139,9 +139,6 @@
 
         io.sockets.in(room).emit('message', { 'type': 'progress', 'percentcomplete': percentcomplete });
     }
-
-
-
 
     server.on('error', function (e) {
         console.log(e);
