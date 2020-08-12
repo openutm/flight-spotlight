@@ -104,7 +104,7 @@
 
         });
         socket.on('message', function(flight_data) {
-            console.log(flight_data)
+            console.log(flight_data);
             if(flight_data.type =='message') {         
                 
                     const cur_result = flight_data.results.object;
@@ -250,11 +250,11 @@
 
                 viewer.flyTo(aoi);
 
-                let geo_fence =  viewer.dataSources.add(Cesium.GeoJsonDataSource.load(JSON.parse(response.geo_fence), {
-                        stroke: Cesium.Color.HOTPINK,
-                        fill: Cesium.Color.PINK.withAlpha(0.3),
-                        strokeWidth: 3
-                    }));
+                // let geo_fence =  viewer.dataSources.add(Cesium.GeoJsonDataSource.load(JSON.parse(response.geo_fence), {
+                //         stroke: Cesium.Color.HOTPINK,
+                //         fill: Cesium.Color.PINK.withAlpha(0.3),
+                //         strokeWidth: 3
+                //     }));
 
 
 
