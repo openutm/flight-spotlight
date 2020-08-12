@@ -3,16 +3,15 @@
 - [Flight Spotlight Installation Instructions](#flight-spotlight-installation-instructions)
   - [Introduction](#introduction)
     - [Outcome and Experience](#outcome-and-experience)
-  - [Stage 1 Intial Setup](#stage-1-intial-setup)
+  - [Stage 1 Intial Setup (Basic server setup)](#stage-1-intial-setup-basic-server-setup)
     - [1.1 Setup Ubuntu Server](#11-setup-ubuntu-server)
-    - [1.2 Install NodeJS](#12-install-nodejs)
-    - [1.3 Download and Run Tile 38 Server](#13-download-and-run-tile-38-server)
-  - [Stage 2 Intial Setup](#stage-2-intial-setup)
-    - [2.1 Setup Tile 38 as a service](#21-setup-tile-38-as-a-service)
-    - [2.2 Download and sync repository from Github](#22-download-and-sync-repository-from-github)
-  - [Stage 3 Install Webserver and reverse proxy](#stage-3-install-webserver-and-reverse-proxy)
-    - [3.1 Install PM2](#31-install-pm2)
-    - [3.2 Install NGINX as reverse proxy](#32-install-nginx-as-reverse-proxy)
+  - [Stage 2 Intial Setup (Docker and Docker Compose)](#stage-2-intial-setup-docker-and-docker-compose)
+    - [2.1 Install Docker and Docker Compose](#21-install-docker-and-docker-compose)
+  - [Stage 3 Clone Repository](#stage-3-clone-repository)
+    - [3.1 Download the software and setup Environment variables](#31-download-the-software-and-setup-environment-variables)
+  - [Stage 4 Final Stage Configure NGINX Reverse Proxy](#stage-4-final-stage-configure-nginx-reverse-proxy)
+    - [4.1 Install NGINX as reverse proxy](#41-install-nginx-as-reverse-proxy)
+    - [4.2 Install Lets Encrypt Certificate for SSL](#42-install-lets-encrypt-certificate-for-ssl)
 
 ## Introduction
 
@@ -22,115 +21,54 @@ This document goes through a step-by-step process to setup and create a server t
 
 This guide assumes that you have access to a Ubuntu virtual server and have root access to it, it also assumes basic profiency with Linux commands and server setup. If you dont have the adequate knowledge, please open a issue and we can help you.
 
-## Stage 1 Intial Setup
+## Stage 1 Intial Setup (Basic server setup)
 
 ### 1.1 Setup Ubuntu Server  
 
-1. Assuming that you have Ubuntu 20.04 (LTS) installed, please follow the "[Initial Setup Guide](https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-20-04)", in this case your username should be `flightspotlight` or something similar. Note that this guide uses the user name as `flightspotlight`, if you choose a different username, you will have to change the occurances below.
+1. Assuming that you have Ubuntu 20.04 (LTS) installed, please follow the [Initial Setup Guide](https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-20-04), in this case your username should be `flightspotlight` or something similar.
 2. It is recommended that you use SSH keys to access the server, it may already be setup for you but if not the guide above has instructions to create a SSH key.
+3. After completing the steps in the guide, you should login in to the console using the newly created user and update the system.
 
-### 1.2 Install NodeJS
+## Stage 2 Intial Setup (Docker and Docker Compose)
 
-Flight Spotlight is a Node JS based application. In this section we will install Node JS and the `npm` package manager.
+### 2.1 Install Docker and Docker Compose
 
-1. Follow the Node JS [installation instructions](https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-20-04), here only use Option 1 "Installing Node.js with Apt from the Default Repositories", you can ignore Option 2 and Option 3.
+We recommend that you use Flight Spotlight Docker Compose for installation and running it. This method is recommended since all the orchestration is done by Docker and installation is straight forward. We will install Docker tools on Ubuntu now. To install Docker on Ubuntu 20.04 follow the steps in the [Install Docker guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04)
 
-### 1.3 Download and Run Tile 38 Server
+1. Follow Step 1 in the guide above, once you have installed `docker-ce` you should be able to run `sudo systemctl status docker` to see Docker running. 
+2. We will now install Docker Compose, you can choose to install directly from repository or use the apt command `sudo apt install docker-compose`
+3. Check Docker compose is installed properly `docker-compose version`
 
-We will download the opensource [Tile 38](https://tile38.com) server, this server acts as a backend the Node frontend.
+We now have Ubuntu, Docker and Docker Compose Installed
 
-1. Tile 38 is avaiable as a Docker service, if you are familiar with Docker, you can use that.
-2. We will follow the instrcutions on the releases page.
-   
-    ```
-    curl -L  https://github.com/tidwall/tile38/releases/download/1.21.1/tile38-1.21.1-linux-amd64.tar.gz -o tile38.tar.gz
-    tar xzvf tile38.tar.gz
-    cd tile38-1.21.1-linux-amd64
-    ./tile38-server
+## Stage 3 Clone Repository
 
-    ```
-3. You should see the server running in the console. Press `Ctrl+C` on the console to exit out. You have now downloaded and run the Tile38 server locally.
-   
-## Stage 2 Intial Setup
+We will clone the Github repsository and download load the latest Docker Compose file. 
 
-Now that the basic server is setup, we will install the software
+### 3.1 Download the software and setup Environment variables 
 
-### 2.1 Setup Tile 38 as a service
+1. In the console execute the following command `git clone https://github.com/openskies-sh/flight-spotlight` 
+2. Enter the directory `cd flight-spotlight`
+3. Copy the sample .env file: `cp .env.sample .env`
+4. Open the .env file and fill out the credentials `nano .env`
+5. You will need help to fill out the all the links, since this is associated with Authentication, in short, it will ask you to point to a Flight Spotlight or any other OAUTH2 provider for credentails.
+6. Finally run the installation by typing `docker-compose up`
+7. There are additional options for Docker Compose e.g. `docker-compose up -d`, it is recommended that you familairize yourself with the software. 
 
-In this section we will setup Tile38 server as a Linux service.
+## Stage 4 Final Stage Configure NGINX Reverse Proxy
 
-1. In the console create a new file `sudo nano /etc/systemd/system/tile38.service`
-2. Paste the following text in the file
-    
-    ```
-    [Unit]
-    Description=Tile38 service
-    After=network.target
-    [Service]
-    ExecStart=/home/flightspotlight/tile38-1.21.1-linux-amd64/tile38-server
-    WorkingDirectory=/home/flightspotlight/tile38-1.21.1-linux-amd64
-    Restart=always
-    RestartSec=10
-    StandardOutput=syslog
-    StandardError=syslog
-    SyslogIdentifier=tile38-server
-    User=flightspotlight
-    Group=flightspotlight
+We will now install Nginx and point it to the Docker Compose instance running in the server. Securing a NGINX installation is a wide and complex topic we will not cover this in this guide.
 
-    [Install]
-    WantedBy=multi-user.target
-
-    ```
-3. Start the new service `systemctl start tile38`, this should start the server
-4. You can see if the service running by running `sudo systemctl status tile38` and see the following output
-
-    ```
-        ● tile38.service - Tile38 service
-            Loaded: loaded (/etc/systemd/system/tile38.service; enabled; vendor preset: enabled)
-            Active: active (running) since Wed 2020-08-05 14:21:34 UTC; 1s ago
-        Main PID: 28432 (tile38-server)
-            Tasks: 6 (limit: 1137)
-            Memory: 2.7M
-            CGroup: /system.slice/tile38.service
-                    └─28432 /home/gdhscratch/tile38-1.21.1-linux-amd64/tile38-server
-
-
-    ```
-
-### 2.2 Download and sync repository from Github
-
-1. Go to the home directory by pressing `cd`
-2. Clone the git repository `git clone https://github.com/openskies-sh/flight-spotlight.git`
-3. Change the directory to flight-spotlight by `cd flight-spotlight`
-4. Install the dependencies run `npm install | npm i`
-5. Create process.env using `touch process.env` and fill in the variables, for more information take a look at [.env.sample](https://github.com/openskies-sh/flight-spotlight/blob/master/.env.sample)
-6. You can test the installation by typing `npm start`, the server should start
-
-We are now ready to install PM2 to daemonize the install PM2
-
-## Stage 3 Install Webserver and reverse proxy
-
-We will now install Nginx and point it to the PM2 reverse proxy
-
-### 3.1 Install PM2
-
-We will follow the [PM2 guide](https://www.digitalocean.com/community/tutorials/nodejs-pm2) for this section 
-
-1. Install PM2 globally `npm install -g pm2`
-2. Setup the app for pm2 `pm2 start server.js`
-3. Start PM2 with systemd `pm2 startup systemd`
-4. Paste the env command in the console
-5. Save the PM2 process list and environments `p2 save`
-
-### 3.2 Install NGINX as reverse proxy
+### 4.1 Install NGINX as reverse proxy
 
 In this section we will install Nginx and have the node app as a reverse proxy, we will follow the steps detailed in the [install NGINX](https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-ubuntu-20-04) guide.
 
 1. We will setup the default site at `sudo nano /etc/nginx/sites-available/default`
-2. Paste the following block this will point nginx to the pm2 installation
+2. Paste the following block this will point nginx to the docker-compose installation
+   
    ```
     location / {
-            proxy_pass http://localhost:3000;
+            proxy_pass http://localhost:5000;
             proxy_http_version 1.1;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection 'upgrade';
@@ -141,3 +79,8 @@ In this section we will install Nginx and have the node app as a reverse proxy, 
    ```
 3. Check for nginx settings file `sudo nginx -t`
 4. Restart nginx `sudo systemctl restart nginx`
+
+### 4.2 Install Lets Encrypt Certificate for SSL 
+TBC, more information [here](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-20-04)
+
+Go to the IP of the instance and you should see Flight Spotlight instance running. 
