@@ -8,7 +8,7 @@
     const expressSession = require("express-session");
     const passport = require("passport");
     var OAuth2Strategy = require('passport-oauth2');
-    var flash = require('connect-flash');
+    
     var userInViews = require('./lib/middleware/userInViews');
     const socketServer = require('socket.io');
     const socketIO = new socketServer();
@@ -62,21 +62,15 @@
         res.locals.isAuthenticated = req.isAuthenticated();
         next();
       });
-      
+    app.use(function (err, req, res, next) {
+        if (err.name === 'UnauthorizedError') { 
+        res.send(401, 'invalid token...');
+        }
+    });
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }))
-    app.use(flash());
 
-    // Handle auth failure error messages
-    app.use(function (req, res, next) {
-      if (req && req.query && req.query.error) {
-        req.flash('error', req.query.error);
-      }
-      if (req && req.query && req.query.error_description) {
-        req.flash('error_description', req.query.error_description);
-      }
-      next();
-    });
+    
     
     if (app.get("env") === "production") {
         // Serve secure cookies, requires HTTPS
@@ -108,8 +102,14 @@
     passport.deserializeUser((user, done) => {
     done(null, user);
     });
+        
     app.use("/", authRouter);
 
+    app.use(function(err, req, res, next){
+        
+        return res.status(err.status).json({ message: err.message });
+    });
+    
     // Constants
     var server = app.listen(process.env.PORT || 5000); // for Heroku
 

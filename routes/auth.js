@@ -22,8 +22,9 @@ const flip = require('@turf/flip');
 require("dotenv").config();
 var URL = require('url').URL;
 let geojsonhint = require("@mapbox/geojsonhint");
-
 const { check, validationResult } = require('express-validator');
+const { get } = require("https");
+const { head } = require("request");
 
 const checkJwt = jwt({
   // Dynamically provide a signing key based on the kid in the header and the singing keys provided by the JWKS endpoint.
@@ -31,14 +32,15 @@ const checkJwt = jwt({
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 5,
-    jwksUri: 'https://${process.env.PASSPORT_DOMAIN}/.well-known/jwks.json'
+    jwksUri: process.env.PASSPORT_URL + '.well-known/jwks.json'
   }),
 
   // Validate the audience and the issuer.
-  audience: process.env.PASSPORT_AUDIENCE,
-  issuer: 'https://${process.env.PASSPORT_DOMAIN}/',
+  audience: process.env.PASSPORT_WRITE_AUDIENCE,
+  issuer: process.env.PASSPORT_URL,
   algorithms: ['RS256']
 });
+
 
 router.get("/", (req, res) => {
   res.render("home", { title: "Home" });
@@ -61,6 +63,7 @@ router.get("/spotlight", secured(), (req, response, next) => {
 
 });
 
+
 router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic']), [
   check('lat_dd').isFloat({ min: -180.00, max: 180.00 }),
   check('lon_dd').isFloat({ min: -180.00, max: 180.00 }),
@@ -68,8 +71,23 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
   check('timestamp').isInt({ gt: 1, allow_leading_zeroes: false }),
   check('traffic_source').isInt({ gt: 1, lt: 10 }),
   check('source_type').isInt({ gt: 0, lt: 1 }),
-  check('icao_addresss').isAlphanumeric()
+  check('icao_addresss').isAlphanumeric()],
+  (req, response, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return response.status(422).json({ errors: errors.array() });
+    }
+    else {
+    console.log("Writing Observation")
+    // client.set('observation', icao_addresss, [lat_dd, lon_dd, altitude_mm], { 'source_type': source_type, 'traffic_source': traffic_source }, { expire: 300 });
+    response.send('OK');
 
+    }
+  });
+
+
+router.post("/set_geo_fence", checkJwt, jwtAuthz(['spotlight.write.geo_fence']), [
+  check('geo_fence').isJSON()
 ], (req, response, next) => {
 
   const errors = validationResult(req);
@@ -84,11 +102,10 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
     const traffic_source = req_body.traffic_source;
     const source_type = req_body.source_type;
     const icao_addresss = req_body.icao_addresss;
-    client.set('fleet', icao_addresss, [lat_dd, lon_dd, altitude_mm], { 'source_type': source_type, 'traffic_source': traffic_source }, { expire: 300 });
+    client.set('observation', icao_addresss, [lat_dd, lon_dd, altitude_mm], { 'source_type': source_type, 'traffic_source': traffic_source }, { expire: 300 });
     response.send('OK');
   }
 });
-
 
 
 // router.post("/get_registry_data",secured(), [
@@ -122,9 +139,7 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
 
 router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
   let options = {};
-
   let errors = geojsonhint.hint(submitted_aoi, options);
-
   if (errors.length > 0) {
     throw new Error('Invalid GeoJSON supplied.');
   } else {
@@ -143,23 +158,23 @@ router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
     const aoi_bbox = bbox(aoi['features'][0]);
     var io = req.app.get('socketio');
 
-    
     // const geo_fence_fc = { "type": "FeatureCollection", "features": [{ "type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [[[30.142621994018555, -1.985209815625593], [30.156269073486328, -1.985209815625593], [30.156269073486328, -1.9534712184928378], [30.142621994018555, -1.9534712184928378], [30.142621994018555, -1.985209815625593]]] } }] };
 
     // let intersected_geo_fence = intersect(geo_fence_fc.features[0], aoi['features'][0]);
 
-    // console.log(JSON.stringify(intersected_geo_fence))
+    // console.log(JSON.stringify(intersected_geo_fence));
 
     // for (let g = 0; g < intersected_geo_fence.features.length; g++) {
     //   const cur_fence = geo_fence_fc.features[g];
     //   let flipped_fence = flip(cur_fence);
     //   console.log(JSON.stringify(flipped_fence));
-    //   let geo_fence_query = client.intersectsQuery('fleet').object(flipped_fence).detect('inside');
+    //   let geo_fence_query = client.intersectsQuery('observation').object(flipped_fence).detect('inside');
     //   let flight_geo_fence = geo_fence_query.executeFence((errors, gf_results) => {
     //     if (errors) {
     //       console.error("Error encountered " + err);
     //     } else {
     //       console.log(gf_results.id + ": " + gf_results.detect + " Geofenced polygon area");
+    //       io.sockets.in(email).emit("message", { 'type': 'message', "alert_type": "geo_fence", "results": results });
 
     //     }
     //   });
@@ -169,8 +184,7 @@ router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
 
     // }
 
-
-    let aoi_query = client.intersectsQuery('fleet').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).detect('inside');
+    let aoi_query = client.intersectsQuery('observation').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).detect('inside');
     let flight_aoi_fence = aoi_query.executeFence((err, results) => {
       if (err) {
         console.error("something went wrong! " + err);

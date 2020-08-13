@@ -31,8 +31,8 @@ class Tile38Uploader():
                 time_stamp = current_reading['timestamp']
                 altitude_mm = current_reading['altitude_mm']
                 print(timestamp)
-                self.client.execute_command('SET', 'fleet', icao_address, 'FIELD', 'traffic_source ', traffic_source , 'FIELD', 'source_type' ,source_type, 'FIELD', 'time_stamp' ,time_stamp,'POINT', lon_dd, lat_dd,altitude_mm)
-                # result = self.client.execute_command('SET', 'fleet', icao_address, 'POINT', lon_dd, lat_dd_dd, altitude_mm)
+                self.client.execute_command('SET', 'observation', icao_address, 'FIELD', 'traffic_source ', traffic_source , 'FIELD', 'source_type' ,source_type, 'FIELD', 'time_stamp' ,time_stamp,'POINT', lon_dd, lat_dd,altitude_mm)
+                # result = self.client.execute_command('SET', 'observation', icao_address, 'POINT', lon_dd, lat_dd_dd, altitude_mm)
                 
             print("Sleeping 5 seconds..")
             time.sleep(5)
