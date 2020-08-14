@@ -27,17 +27,16 @@ const { get } = require("https");
 const { head } = require("request");
 
 const checkJwt = jwt({
-  // Dynamically provide a signing key based on the kid in the header and the singing keys provided by the JWKS endpoint.
+
   secret: jwksRsa.expressJwtSecret({
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 5,
-    jwksUri: process.env.PASSPORT_URL + '.well-known/jwks.json'
+    jwksUri: process.env.PASSPORT_URL + '/.well-known/jwks.json'
   }),
 
-  // Validate the audience and the issuer.
   audience: process.env.PASSPORT_WRITE_AUDIENCE,
-  issuer: process.env.PASSPORT_URL,
+  issuer: process.env.PASSPORT_URL + '/',
   algorithms: ['RS256']
 });
 
@@ -67,45 +66,56 @@ router.get("/spotlight", secured(), (req, response, next) => {
 router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic']), [
   check('lat_dd').isFloat({ min: -180.00, max: 180.00 }),
   check('lon_dd').isFloat({ min: -180.00, max: 180.00 }),
-  check('altitude_mm').isFloat({ min: 0 }),
-  check('timestamp').isInt({ gt: 1, allow_leading_zeroes: false }),
+  check('altitude_mm').isFloat({ min: 0.00 }),
+  check('time_stamp').isInt({ gt: 1, allow_leading_zeroes: false }),
   check('traffic_source').isInt({ gt: 1, lt: 10 }),
-  check('source_type').isInt({ gt: 0, lt: 1 }),
-  check('icao_addresss').isAlphanumeric()],
+  check('source_type').isInt({ gt: -1, lt: 10 }),
+  check('icao_address').isString()],
   (req, response, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return response.status(422).json({ errors: errors.array() });
     }
     else {
-    console.log("Writing Observation")
-    // client.set('observation', icao_addresss, [lat_dd, lon_dd, altitude_mm], { 'source_type': source_type, 'traffic_source': traffic_source }, { expire: 300 });
-    response.send('OK');
+
+      const req_body = req.body;
+      const lat_dd = req_body.lat_dd;
+      const lon_dd = req_body.lon_dd;
+      const altitude_mm = req_body.altitude_mm;
+      const traffic_source = req_body.traffic_source;
+      const source_type = req_body.source_type;
+      const icao_address = req_body.icao_address;
+      try {
+        client.set('observation', icao_address, [lon_dd, lat_dd, altitude_mm], { 'source_type': source_type, 'traffic_source': traffic_source }, { expire: 300 });
+      } catch (err) {
+        console.log("Error " + err);
+      }
+      response.send('OK');
 
     }
   });
 
 
-router.post("/set_geo_fence", checkJwt, jwtAuthz(['spotlight.write.geo_fence']), [
-  check('geo_fence').isJSON()
-], (req, response, next) => {
+// router.post("/set_geo_fence", checkJwt, jwtAuthz(['spotlight.write.geo_fence']), [
+//   check('geo_fence').isJSON()
+// ], (req, response, next) => {
 
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return response.status(422).json({ errors: errors.array() });
-  }
-  else {
-    const req_body = req.body;
-    const lat_dd = req_body.lat_dd;
-    const lon_dd = req_body.lon_dd;
-    const altitude_mm = req_body.altitude_mm;
-    const traffic_source = req_body.traffic_source;
-    const source_type = req_body.source_type;
-    const icao_addresss = req_body.icao_addresss;
-    client.set('observation', icao_addresss, [lat_dd, lon_dd, altitude_mm], { 'source_type': source_type, 'traffic_source': traffic_source }, { expire: 300 });
-    response.send('OK');
-  }
-});
+//   const errors = validationResult(req);
+//   if (!errors.isEmpty()) {
+//     return response.status(422).json({ errors: errors.array() });
+//   }
+//   else {
+//     const req_body = req.body;
+//     const lat_dd = req_body.lat_dd;
+//     const lon_dd = req_body.lon_dd;
+//     const altitude_mm = req_body.altitude_mm;
+//     const traffic_source = req_body.traffic_source;
+//     const source_type = req_body.source_type;
+//     const icao_addresss = req_body.icao_addresss;
+//     client.set('observation', icao_addresss, [lat_dd, lon_dd, altitude_mm], { 'source_type': source_type, 'traffic_source': traffic_source }, { expire: 300 });
+//     response.send('OK');
+//   }
+// });
 
 
 // router.post("/get_registry_data",secured(), [
@@ -189,6 +199,7 @@ router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
       if (err) {
         console.error("something went wrong! " + err);
       } else {
+
         io.sockets.in(email).emit("message", { 'type': 'message', "alert_type": "aoi", "results": results });
       }
     });

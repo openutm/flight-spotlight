@@ -29,8 +29,8 @@ class FlightSpotlightUploader():
     
     def __init__(self, credentials):
         # self.client = redis.Redis(host='127.0.0.1', port=9851)        
-        # self.timestamps = [1590000000000,1590000005000, 1590000010000,1590000015000, 1590000020000] 
-        self.timestamps = [1590000000000]
+        self.timestamps = [1590000000000,1590000005000, 1590000010000,1590000015000, 1590000020000] 
+        # self.timestamps = [1590000000000]
         self.credentials = credentials
     
     def upload_to_server(self, filename):
@@ -44,9 +44,9 @@ class FlightSpotlightUploader():
             current_timestamp_readings =  [x for x in traffic_json if x['timestamp'] == timestamp]
             
             for current_reading in current_timestamp_readings:
-                icao_address = current_reading['icao_addresss']
+                icao_address = current_reading['icao_address']
                 traffic_source = current_reading["traffic_source"]
-                source_type = current_reading["source_type"]
+                source_type = int(current_reading["source_type"])
                 lat_dd = current_reading['lat_dd']
                 lon_dd = current_reading['lon_dd']
                 time_stamp = current_reading['timestamp']
@@ -56,7 +56,7 @@ class FlightSpotlightUploader():
                 payload = {"icao_address" : icao_address,"traffic_source" :traffic_source, "source_type" : source_type, "lat_dd" : lat_dd, "lon_dd" : lon_dd, "time_stamp" : time_stamp,"altitude_mm" : altitude_mm}
                 securl = 'http://local.test:5000/set_air_traffic'
                 try:
-                    response = requests.post(securl, data= json.dumps(payload), headers=headers)
+                    response = requests.post(securl, data= payload, headers=headers)
                     print(response.content)                
                 except Exception as e:
                     print(e)
@@ -70,6 +70,6 @@ if __name__ == '__main__':
 
     my_credentials = PassportCredentialsGetter()
     credentials = my_credentials.get_write_credentials()
-    print(credentials)
-    # my_uploader = FlightSpotlightUploader(credentials = credentials)
-    # my_uploader.upload_to_server(filename='micro_flight_data_single.json')
+    # print(credentials)
+    my_uploader = FlightSpotlightUploader(credentials = credentials)
+    my_uploader.upload_to_server(filename='micro_flight_data_single.json')

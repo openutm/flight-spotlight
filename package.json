@@ -6,7 +6,7 @@
     "license": "Apache-2.0",
     "author": {
         "name": "Hrishikesh Ballal",
-        "url": "http://www.hrishikeshballal.net"
+        "url": "https://www.openskies.sh/"
     },
     "scripts": {
         "start": "node server.js"

@@ -23,7 +23,7 @@ class Tile38Uploader():
             current_timestamp_readings =  [x for x in traffic_json if x['timestamp'] == timestamp]
             
             for current_reading in current_timestamp_readings:
-                icao_address = current_reading['icao_addresss']
+                icao_address = current_reading['icao_address']
                 traffic_source = current_reading["traffic_source"]
                 source_type = current_reading["source_type"]
                 lat_dd = current_reading['lat_dd']
