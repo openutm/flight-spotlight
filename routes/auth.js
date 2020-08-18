@@ -46,11 +46,9 @@ router.get("/", (req, res) => {
 });
 
 router.get("/spotlight", secured(), (req, response, next) => {
-
   const { _raw, _json, ...userProfile } = req.user;
   const bing_key = process.env.BING_KEY || 'get-yours-at-https://www.bingmapsportal.com/';
   const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
-
   response.render('spotlight', {
     title: "Spotlight",
     userProfile: userProfile,
@@ -96,26 +94,30 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
   });
 
 
-// router.post("/set_geo_fence", checkJwt, jwtAuthz(['spotlight.write.geo_fence']), [
-//   check('geo_fence').isJSON()
-// ], (req, response, next) => {
+router.post("/set_geo_fence", checkJwt, jwtAuthz(['spotlight.write.geo_fence']), check('geo_fence').custom(submitted_geo_fence => {
+  let options = {};
+  let errors = geojsonhint.hint(submitted_geo_fence, options);
 
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     return response.status(422).json({ errors: errors.array() });
-//   }
-//   else {
-//     const req_body = req.body;
-//     const lat_dd = req_body.lat_dd;
-//     const lon_dd = req_body.lon_dd;
-//     const altitude_mm = req_body.altitude_mm;
-//     const traffic_source = req_body.traffic_source;
-//     const source_type = req_body.source_type;
-//     const icao_addresss = req_body.icao_addresss;
-//     client.set('observation', icao_addresss, [lat_dd, lon_dd, altitude_mm], { 'source_type': source_type, 'traffic_source': traffic_source }, { expire: 300 });
-//     response.send('OK');
-//   }
-// });
+  if (errors.length > 0) {
+    throw new Error('Invalid GeoJSON supplied.');
+  } else {
+    return true;
+  }
+
+}), (req, response, next) => {
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return response.status(422).json({ errors: errors.array() });
+  }
+  else {
+    const req_body = req.body;
+    const geo_fence = req_body.geo_fence;
+
+    client.set('geo_fence', 'geo_fence', JSON.parse(geo_fence));
+    response.send('OK');
+  }
+});
 
 
 // router.post("/get_registry_data",secured(), [
@@ -142,7 +144,6 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
 //       console.log(body);
 //     });
 
-
 //   }
 // });
 
@@ -168,38 +169,21 @@ router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
     const aoi_bbox = bbox(aoi['features'][0]);
     var io = req.app.get('socketio');
 
-    // const geo_fence_fc = { "type": "FeatureCollection", "features": [{ "type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [[[30.142621994018555, -1.985209815625593], [30.156269073486328, -1.985209815625593], [30.156269073486328, -1.9534712184928378], [30.142621994018555, -1.9534712184928378], [30.142621994018555, -1.985209815625593]]] } }] };
 
-    // let intersected_geo_fence = intersect(geo_fence_fc.features[0], aoi['features'][0]);
 
-    // console.log(JSON.stringify(intersected_geo_fence));
+    let geo_fence_query = client.intersectsQuery('geo_fence').object(aoi['features'][0]);
+    geo_fence_query.execute().then(results => {
+      io.sockets.in(email).emit("message", { 'type': 'message', "alert_type": "aoi_geo_fence", "results": results });
+    }).catch(err => {
+      console.error("something went wrong! " + err);
+    });
 
-    // for (let g = 0; g < intersected_geo_fence.features.length; g++) {
-    //   const cur_fence = geo_fence_fc.features[g];
-    //   let flipped_fence = flip(cur_fence);
-    //   console.log(JSON.stringify(flipped_fence));
-    //   let geo_fence_query = client.intersectsQuery('observation').object(flipped_fence).detect('inside');
-    //   let flight_geo_fence = geo_fence_query.executeFence((errors, gf_results) => {
-    //     if (errors) {
-    //       console.error("Error encountered " + err);
-    //     } else {
-    //       console.log(gf_results.id + ": " + gf_results.detect + " Geofenced polygon area");
-    //       io.sockets.in(email).emit("message", { 'type': 'message', "alert_type": "geo_fence", "results": results });
-
-    //     }
-    //   });
-    //   flight_geo_fence.onClose(() => {
-    //     console.log("Flight Geofence was closed");
-    //   });
-
-    // }
 
     let aoi_query = client.intersectsQuery('observation').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).detect('inside');
     let flight_aoi_fence = aoi_query.executeFence((err, results) => {
       if (err) {
         console.error("something went wrong! " + err);
       } else {
-
         io.sockets.in(email).emit("message", { 'type': 'message', "alert_type": "aoi", "results": results });
       }
     });

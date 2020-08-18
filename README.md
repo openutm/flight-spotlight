@@ -18,7 +18,7 @@ Initial screen
 ## Self host / Installation
 
 Docker and Docker Compose files are available for running this server. To install a production server please follow our [Installation Guide](https://github.com/openskies-sh/flight-spotlight/blob/master/documents/installation-instructions.md). 
-This project uses Node JS and Express JS, a Tile 38 server, and can connect to a DSS instance. If you are using a DSS instance, you will need a JWT token to connect to the airspace. For that, you will need a approved UTM / U-Space OAUTH server (e.g. [Flight Passport](https://www.github.com/openskies-sh/flight_passport)). 
+This project uses Node JS and Express JS, a Tile 38 server, and can connect to a DSS instance. If you are using a DSS instance, you will need a JWT token to connect to the airspace. For that, you will need a approved UTM / U-Space OAUTH server (e.g. [Flight Passport](https://www.github.com/openskies-sh/flight_passport)).
 
 1. In the console execute the following command `git clone https://github.com/openskies-sh/flight-spotlight` 
 2. Enter the directory `cd flight-spotlight`
@@ -46,7 +46,7 @@ In these steps we will not connect to the DSS and turn off all authentication:
 
    5. Run the local server using `npm start`
    6. Navigate to `http://localhost:5000/spotlight` in your browser to launch the application. You should see a globe and a control to input a Area of Interest (AOI).
-   7. Copy paste the sample GeoJSON AOI from the importers [folder](https://raw.githubusercontent.com/openskies-sh/flight-spotlight/master/importers/aoi.geojson)
+   7. Copy paste the sample GeoJSON AOI from the importers [folder](https://raw.githubusercontent.com/openskies-sh/flight-spotlight/master/importers/geojson/aoi.geojson)
    8. Click the __Stream flights__ button. This subscribe you to the channel.
    9. This part needs Python3. In another terminal install the redis dependency in Python `pip install redis`
    10. Navigate to the importers directory and type in `python import_flight_json.py` file to upload flight information and see it on a map. This script parses the JSON flight details and uploads the data every five seconds. The flights should be appear as point on the globe.

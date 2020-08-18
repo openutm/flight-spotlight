@@ -103,20 +103,36 @@
             console.log("timed out");
 
         });
-        socket.on('message', function(flight_data) {
-            console.log(flight_data);
-            if(flight_data.type =='message') {         
+        socket.on('message', function(spotlight_data) {
+            // console.log(flight_data);
+            if(spotlight_data.type =='message') {     
                 
-                    const cur_result = flight_data.results.object;
+                    if (spotlight_data.alert_type =='aoi'){
+                
+                    const cur_result = spotlight_data.results.object;
                     // console.log(Math.floor(Date.now() / 1000) +":  " + cur_result.coordinates[1], cur_result.coordinates[0], cur_result.coordinates[2]);                    
                         viewer.entities.add({
                             position : Cesium.Cartesian3.fromDegrees(cur_result.coordinates[1], cur_result.coordinates[0], cur_result.coordinates[2]),
                             point : {
                                 pixelSize : 5,
                                 color : Cesium.Color.RED,
-                                outlineWidth:0
+                                outlineWidth: 0
                             }
                     });
+                }
+                if (spotlight_data.alert_type== 'aoi_geo_fence') {                    
+                    const result_geo_json = spotlight_data.results.objects;
+                    for (let index = 0; index < result_geo_json.length; index++) {
+                        const geo_json_element = result_geo_json[index]['object'];                            
+                        console.log(geo_json_element);
+                        viewer.dataSources.add(Cesium.GeoJsonDataSource.load(geo_json_element, {
+                            stroke: Cesium.Color.HOTPINK,
+                            fill: Cesium.Color.PINK.withAlpha(0.3),
+                            strokeWidth: 1,      
+                        }));       
+                        
+                    }
+                }
             }
             else if (flight_data.type =='progress'){
                 console.log(flight_data.percentcomplete);
