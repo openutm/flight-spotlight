@@ -1,8 +1,7 @@
 <img src="https://i.imgur.com/jwUyv1q.png" width="350">
 
-## Introduction
 
-A project to see all flights in a area _in realtime_ by subscribing to updates to a geographic area. From a UTM / U-Space point of view, this includes querying flights in a DSS and a live feed such as ADS-B or even Broadcast Remote ID. It uses CesiumJS to display the flight data on a 3D map.
+Flight Spotlight is a open-source project to see all flights in a area _in realtime_ by subscribing to updates to a geographic area. From a UTM / U-Space point of view, this includes querying flights in a DSS and a live feed such as ADS-B or even Broadcast Remote ID. It uses CesiumJS to display the flight data on a 3D map.
 
 ## Features
 
@@ -56,3 +55,7 @@ In these steps we will not connect to the DSS and turn off all authentication:
 ## Under the hood
 
 Take a look at the raw [JSON file](https://www.github.com/openskies-sh/flight-spotlight/importers/micro_flight_data.json) for sample flight data. This file follows the format as specified in the [Airtraffic data protocol](https://github.com/openskies-sh/airtraffic-data-protocol-development/blob/master/Airtraffic-Data-Protocol.md) and has a series of observations. Every five seconds this data is uploaded to the server and if the uploaded data intersects the aoi polygon bounds, then the flight is shown on the globe. In the production version there is a POST request to post this data in realtime.
+
+## Logo source
+
+[Hatchful](https://hatchful.shopify.com/)
