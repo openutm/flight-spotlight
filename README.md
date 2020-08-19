@@ -1,6 +1,5 @@
 <img src="https://i.imgur.com/jwUyv1q.png" width="350">
 
-
 Flight Spotlight is a open-source project to see all flights in a area _in realtime_ by subscribing to updates to a geographic area. From a UTM / U-Space point of view, this includes querying flights in a DSS and a live feed such as ADS-B or even Broadcast Remote ID. It uses CesiumJS to display the flight data on a 3D map.
 
 ## Features
@@ -16,6 +15,7 @@ This software is compatible with all ASTM and EuroCAE upcoming standards for UTM
 
 Initial screen
 ![terrain1](https://i.imgur.com/hQ3LmFk.jpg)
+
 ## Self host / Installation
 
 Docker and Docker Compose files are available for running this server. To install a production server please follow our [Installation Guide](https://github.com/openskies-sh/flight-spotlight/blob/master/documents/installation-instructions.md). 

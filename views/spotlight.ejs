@@ -35,7 +35,7 @@
 
                 <h1 class="page-header">Flight Spotlight</h1>
                 <section class="information">
-                    Welcome <%= userProfile.email %> (<a href="/logout">logout</a>)
+                    Welcome <%= userProfile.email %>
                     <hr>
           
                     <form id="dss-query-form" method="post" action="/spotlight">
@@ -142,7 +142,7 @@
         
         
         var mapbox = new Cesium.MapboxImageryProvider({
-            mapId: 'cygnus2936.curedn3y',
+            mapId: '<&= mapbox_id %>',
             accessToken: '<%= mapbox_key %>'
         });
         var bing = new Cesium.BingMapsImageryProvider({
