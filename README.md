@@ -1,6 +1,5 @@
 <img src="https://i.imgur.com/jwUyv1q.png" width="300">
 
-# Flight Spotlight
 
 A project to see all flights in a area _in realtime_ by subscribing to updates to a geographic area. From a UTM / U-Space point of view, this includes querying flights in a DSS and a live feed such as ADS-B or even Broadcast Remote ID. It uses CesiumJS to display the flight data on a 3D map.
 
