@@ -1,9 +1,5 @@
 // auth.js
 
-/**
- * Required External Modules
- */
-
 const express = require("express");
 var secured = require('../lib/middleware/secured');
 const router = express.Router();
@@ -25,9 +21,14 @@ let geojsonhint = require("@mapbox/geojsonhint");
 const { check, validationResult } = require('express-validator');
 const { get } = require("https");
 const { head } = require("request");
+const redis = require("redis");
+const redis_client = redis.createClient();
+
+redis_client.on("error", function (error) {
+  console.error(error);
+});
 
 const checkJwt = jwt({
-
   secret: jwksRsa.expressJwtSecret({
     cache: true,
     rateLimit: true,
@@ -121,6 +122,32 @@ router.post("/set_geo_fence", checkJwt, jwtAuthz(['spotlight.write.geo_fence']),
   }
 });
 
+router.post("/set_flight_declaration", checkJwt, jwtAuthz(['spotlight.write.flight_declaration']), check('flight_declaration').custom(submitted_flight_declaration => {
+  let options = {};
+  let errors = geojsonhint.hint(submitted_flight_declaration['flight_declaration']['parts'], options);
+
+  if (errors.length > 0) {
+    throw new Error('Invalid Flight Declaration supplied.');
+  } else {
+    return true;
+  }
+
+}), (req, response, next) => {
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return response.status(422).json({ errors: errors.array() });
+  }
+  else {
+    const req_body = req.body;
+    const flight_declaration = req_body.flight_declaration;
+    const flight_id = req_body.flight_id;
+
+    redis_client.set(flight_id, flight_declaration['parts']);
+    response.send('OK');
+  }
+});
+
 
 // router.post("/get_registry_data",secured(), [
 //   check('operator_id').isAlphanumeric(),
@@ -165,31 +192,35 @@ router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
     return response.status(422).json({ errors: errors.array() });
   }
   else {
-
     const aoi = JSON.parse(req.body.geo_json);
     const email = req.body.email;
     const aoi_bbox = bbox(aoi['features'][0]);
-    var io = req.app.get('socketio');   
-
+    var io = req.app.get('socketio');
     let geo_fence_query = client.intersectsQuery('geo_fence').object(aoi['features'][0]);
     geo_fence_query.execute().then(results => {
       io.sockets.in(email).emit("message", { 'type': 'message', "alert_type": "aoi_geo_fence", "results": results });
-
+      return results;
+    }).then(geo_fence => {
       // Setup a Geofence for the results 
-      // console.log(JSON.stringify(results.objects[0].object))
-      // let geo_fence_query = client.intersectsQuery('observation').detect('enter', 'exit').object(results.objects[0].object);
-      // let geo_fence_stream = geo_fence_query.executeFence((err, geo_fence_results) => {
-      //   if (err) {
-      //     console.error("something went wrong! " + err);
-      //   } else {
-      //     io.sockets.in(email).emit("message", { 'type': 'message', "alert_type": "geo_fence_crossed", "results": geo_fence_results });
-      //   }
-      // });
 
-      // geo_fence_stream.onClose(() => {
-      //   console.log("AOI geofence was closed");
-      // });
+      for (let index = 0; index < geo_fence.objects.length; index++) {
+        
+        const geo_fence_element = geo_fence.objects[index].object;
+        let geo_fence_bbox = bbox(geo_fence_element);
+        let geo_live_fence_query = client.intersectsQuery('observation').detect('enter', 'exit').bounds(geo_fence_bbox[0], geo_fence_bbox[1], geo_fence_bbox[2], geo_fence_bbox[3]);
+        let geo_fence_stream = geo_live_fence_query.executeFence((err, geo_fence_results) => {
+          if (err) {
+            console.error("something went wrong! " + err);
+          } else {
+            let status = geo_fence_results.id + ": " + geo_fence_results.detect + " geo fence area";
+            io.sockets.in(email).emit("message", { 'type': 'message', "alert_type": "geo_fence_crossed", "results": status });
+          }
+        });
+        geo_fence_stream.onClose(() => {
+          console.log("AOI geofence was closed");
+        });
 
+      }
 
     }).catch(err => {
       console.error("something went wrong! " + err);

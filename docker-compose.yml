@@ -4,10 +4,15 @@ services:
         image: tile38/tile38
         ports:
             - "9851:9851"
-
         command: [ "tile38-server"]
         container_name : "tile38"
 
+    redis:
+      image: redis
+      container_name: "redis"
+      ports:
+          - "6379:6379"
+        
     web:
       command : npm start
       env_file:

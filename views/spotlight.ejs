@@ -50,6 +50,7 @@
                        </div>
                        <div class="live-updates" id="live-updates">
                             <ul id="latest-status">
+                                <li></li>
                             </ul>
                        </div>
                       <hr>
@@ -123,7 +124,7 @@
                     last.parentNode.removeChild(last);
 
                     var node = document.createElement("li"); // Create a <li> node
-                    var textnode = document.createTextNode(spotlight_data.message); // Create a text node
+                    var textnode = document.createTextNode(spotlight_data.results); // Create a text node
                     node.appendChild(textnode);                              // Append the text to <li>
                     list.appendChild(node);     // Append <li> to <ul> with id="myList" 
                     

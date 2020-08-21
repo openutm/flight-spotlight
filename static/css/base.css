@@ -116,21 +116,6 @@ ol {
     padding: 0;
 }
 
-li {
-    counter-increment: item;
-    margin-bottom: 5px;
-}
-
-li:before {
-    margin-right: 10px;
-    content: counter(item);
-    background: #7f8c8d;
-    border-radius: 100%;
-    color: white;
-    width: 1.4em;
-    text-align: center;
-    display: inline-block;
-}
 
 a {
     color: #00AED8;
