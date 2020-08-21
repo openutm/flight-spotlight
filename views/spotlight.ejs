@@ -5,13 +5,13 @@
     <title>Openskies Flight Spotlight</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" href="assets/img/favicon.png">
     <link href='https://fonts.googleapis.com/css?family=Karla' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
 
     <link type="text/css" rel="stylesheet" href="assets/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="assets/css/style.css">
     <link rel="stylesheet" type="text/css" href="assets/css/base.css">
-    
 
     <link rel="stylesheet" href="/assets/js/humane/flatty.css">
 
@@ -30,27 +30,23 @@
 <body>
     <div class="container-fluid">
         <div class="row">
-
-            <div class="col-sm-2 col-md-2 main">
-
-                <h1 class="page-header">Flight Spotlight</h1>
-                <section class="information">
-                    Welcome <%= userProfile.email %>
-                    <hr>
-          
-                    <form id="dss-query-form" method="post" action="/spotlight">                        
+            <div class="col-sm-4 col-md-4 main">
+                <h3 class="page-header">Flight Spotlight</h3>
+                <br>
+                <div class="information">
+                    
+                    <form id="dss-query-form" method="post" action="/spotlight">                                               
+                          <!-- <label for="geo_polygon_string">Area of Interest</label><br> -->
+                          <textarea rows="4" cols="20" id="geo_polygon_string" value="<%= data.geo_polygon_string %>" name="geo_polygon_string" placeholder="Paste a valid GeoJSON of the area of interest here"></textarea>
                        
-                          <label for="geo_polygon_string">Area of Interest</label>
-                          <textarea rows="4" cols="20" id="geo_polygon_string" value="<%= data.geo_polygon_string %>" name="geo_polygon_string" placeholder="Paste a valid GeoJSON of the area of interest here."></textarea>
-                       
-                          <br><br>
+                          <br>
                         <div class="form-actions">
                             <button class="button" id="retrive_flights" type="submit">Stream flights</button>
                         </div>
                       </form>
-                      <br>
-                       <div class="d-none loading-spinner" id="spinner-cont">
-                        <img src="/assets/img/spinner.gif" height="40px">
+                      
+                       <div class="d-none loading-spinner" id="spinner-cont"><br>
+                        <img src="/assets/img/spinner.gif" height="30px">
                        </div>
                        <div class="live-updates" id="live-updates">
                             <ul id="latest-status">
@@ -59,26 +55,10 @@
                       <hr>
 
 
-                    <div id="toolbar">
-                        <h4>Basemap</h4>
-                        <table>
-                            <tbody data-bind="foreach: layers">
-                                <tr data-bind="css: { up: $parent.upLayer === $data, down: $parent.downLayer === $data }">
-
-                                    <td>
-                                        <span data-bind="text: name, visible: !$parent.isSelectableLayer($data)"></span>
-                                        <select data-bind="visible: $parent.isSelectableLayer($data), options: $parent.baseLayers, optionsText: 'name', value: $parent.selectedLayer"></select>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                    </div>
-
-                </section>
+                </div>
             </div>
 
-            <div class="col-sm-10 col-md-10 sidebar">
+            <div class="col-sm-8 col-md-8 sidebar">
                 <div id="cesiumContainer"></div>
             </div>
         </div>
@@ -126,8 +106,7 @@
                 else if (spotlight_data.alert_type== 'aoi_geo_fence') {                    
                     const result_geo_json = spotlight_data.results.objects;
                     for (let index = 0; index < result_geo_json.length; index++) {
-                        const geo_json_element = result_geo_json[index]['object'];                            
-                        console.log(geo_json_element);
+                        const geo_json_element = result_geo_json[index]['object'];                                  
                         viewer.dataSources.add(Cesium.GeoJsonDataSource.load(geo_json_element, {
                             stroke: Cesium.Color.HOTPINK,
                             fill: Cesium.Color.PINK.withAlpha(0.3),
@@ -136,7 +115,7 @@
                         
                     }
                 }
-                else if (spotlight_data.alert_type == 'flight_status') {
+                else if (spotlight_data.alert_type == 'geo_fence_crossed') {
                     // remove last element
                     let list = document.getElementById("latest-status");
                     var listItems = list.getElementsByTagName("li");
@@ -153,16 +132,17 @@
         });
         
         
-        var mapbox = new Cesium.MapboxImageryProvider({
-            mapId: '<&= mapbox_id %>',
-            accessToken: '<%= mapbox_key %>'
-        });
         var bing = new Cesium.BingMapsImageryProvider({
             url: 'https://dev.virtualearth.net',
             key: '<%= bing_key %>',
             mapStyle: Cesium.BingMapsStyle.AERIAL
         });
-        
+
+        var mapbox = new Cesium.MapboxImageryProvider({
+            mapId: '<&= mapbox_id %>',
+            accessToken: '<%= mapbox_key %>'
+        });
+
         var viewer = new Cesium.Viewer('cesiumContainer', {
             "geocoder": false,
             "homeButton": false,
@@ -174,9 +154,10 @@
             "fullscreenButton": false,
             "timeline": false,
             "navigationHelpButton": false,
+            "imageryProvider":bing
         });
+                
         
-        var imageryLayers = viewer.imageryLayers;
         var scene = viewer.scene;
         var clock = viewer.clock;
         var camera = viewer.camera;
@@ -184,78 +165,6 @@
         var cameralat;
         var cameralng;
 
-        var viewModel = {
-            layers: [],
-            baseLayers: [],
-            upLayer: null,
-            downLayer: null,
-            selectedLayer: null,
-            isSelectableLayer: function(layer) {
-                return baseLayers.indexOf(layer) >= 0;
-            }
-        };
-
-        function setupLayers() {
-            // Create all the base layers that this example will support.
-            // These base layers aren't really special.  It's possible to have multiple of them
-            // enabled at once, just like the other layers, but it doesn't make much sense because
-            // all of these layers cover the entire globe and are opaque.
-            addBaseLayerOption('----', undefined); // the current base layer
-            addBaseLayerOption('Bing Maps Aerial', bing); // the current base layer
-            addBaseLayerOption('Mapbox Streets', mapbox);
-
-        }
-        Cesium.knockout.track(viewModel);
-
-        function addBaseLayerOption(name, imageryProvider) {
-            var layer;
-            if (typeof imageryProvider === 'undefined') {
-                layer = imageryLayers.get(0);
-                viewModel.selectedLayer = layer;
-            } else {
-                layer = new Cesium.ImageryLayer(imageryProvider);
-            }
-
-            layer.name = name;
-            baseLayers.push(layer);
-        }
-        var baseLayers = viewModel.baseLayers;
-
-        function updateLayerList() {
-            var numLayers = imageryLayers.length;
-            viewModel.layers.splice(0, viewModel.layers.length);
-            for (var i = numLayers - 1; i >= 0; --i) {
-                viewModel.layers.push(imageryLayers.get(i));
-            }
-        }
-
-        setupLayers();
-        updateLayerList();
-        var toolbar = document.getElementById('toolbar');
-        Cesium.knockout.applyBindings(viewModel, toolbar);
-
-        Cesium.knockout.getObservable(viewModel, 'selectedLayer').subscribe(function(baseLayer) {
-            // Handle changes to the drop-down base layer selector.
-            var activeLayerIndex = 0;
-            var numLayers = viewModel.layers.length;
-            for (var i = 0; i < numLayers; ++i) {
-                if (viewModel.isSelectableLayer(viewModel.layers[i])) {
-                    activeLayerIndex = i;
-                    break;
-                }
-            }
-            var activeLayer = viewModel.layers[activeLayerIndex];
-            var show = activeLayer.show;
-            var alpha = activeLayer.alpha;
-            imageryLayers.remove(activeLayer, false);
-            imageryLayers.add(baseLayer, numLayers - activeLayerIndex - 1);
-            baseLayer.show = show;
-            baseLayer.alpha = alpha;
-            updateLayerList();
-        });
-
-      
-        
         const dss_form = $('#dss-query-form');
         dss_form.on('submit', submitHandler);
         function submitHandler (e) {
@@ -275,16 +184,7 @@
                         fill: Cesium.Color.GRAY.withAlpha(0.3),
                         strokeWidth: 3
                     }));
-
                 viewer.flyTo(aoi);
-
-                // let geo_fence =  viewer.dataSources.add(Cesium.GeoJsonDataSource.load(JSON.parse(response.geo_fence), {
-                //         stroke: Cesium.Color.HOTPINK,
-                //         fill: Cesium.Color.PINK.withAlpha(0.3),
-                //         strokeWidth: 3
-                //     }));
-
-
 
                 $("#spinner-cont").removeClass('d-none');
                  humane.log(response['msg'],{

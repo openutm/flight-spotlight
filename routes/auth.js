@@ -169,13 +169,28 @@ router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
     const aoi = JSON.parse(req.body.geo_json);
     const email = req.body.email;
     const aoi_bbox = bbox(aoi['features'][0]);
-    var io = req.app.get('socketio');
-
-
+    var io = req.app.get('socketio');   
 
     let geo_fence_query = client.intersectsQuery('geo_fence').object(aoi['features'][0]);
     geo_fence_query.execute().then(results => {
       io.sockets.in(email).emit("message", { 'type': 'message', "alert_type": "aoi_geo_fence", "results": results });
+
+      // Setup a Geofence for the results 
+      // console.log(JSON.stringify(results.objects[0].object))
+      // let geo_fence_query = client.intersectsQuery('observation').detect('enter', 'exit').object(results.objects[0].object);
+      // let geo_fence_stream = geo_fence_query.executeFence((err, geo_fence_results) => {
+      //   if (err) {
+      //     console.error("something went wrong! " + err);
+      //   } else {
+      //     io.sockets.in(email).emit("message", { 'type': 'message', "alert_type": "geo_fence_crossed", "results": geo_fence_results });
+      //   }
+      // });
+
+      // geo_fence_stream.onClose(() => {
+      //   console.log("AOI geofence was closed");
+      // });
+
+
     }).catch(err => {
       console.error("something went wrong! " + err);
     });
