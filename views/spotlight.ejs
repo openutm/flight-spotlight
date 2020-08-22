@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <title>Openskies Flight Spotlight</title>
     <meta charset="utf-8">
@@ -16,8 +15,6 @@
     <link rel="stylesheet" href="/assets/js/humane/flatty.css">
 
     <script type="text/javascript" src="/assets/js/jquery/jquery.min.js"></script>
-    
-    
     <script type="text/javascript" src="/assets/js/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="/assets/js/humane/humane.min.js">
     </script>
@@ -49,11 +46,13 @@
                         <img src="/assets/img/spinner.gif" height="30px">
                        </div>
                        <div class="live-updates" id="live-updates">
-                            <ul id="latest-status">
-                                <li></li>
+                            <ul class="text-right list-inline" id="latest-status">
                             </ul>
                        </div>
                       <hr>
+                      <div class="d-none" id="flight-declarations">
+                        <button id="show-flight-declarations" type="button" class="btn btn-link">Show Flight Declarations</button>
+                      </div>
 
 
                 </div>
@@ -65,9 +64,19 @@
         </div>
     </div>
 
-    <script>
+    <script type="text/javascript">
         
         var socketHost = location.origin.replace(/^http/, 'ws');
+        let list = document.getElementById("latest-status");
+        var addToList = function (item_value) {
+            while ( list.children.length >= 3 )
+            {
+            list.removeChild(list.firstChild );
+            }
+            var item = document.createElement("li");
+            item.innerHTML = item_value;
+            list.appendChild(item);
+        }
         
         const email  = '<%= userProfile.email %>';
         var socket = io.connect(socketHost);
@@ -101,6 +110,16 @@
                                 pixelSize : 5,
                                 color : Cesium.Color.RED,
                                 outlineWidth: 0
+                            },
+                            path : {
+                                resolution : 1,
+                                leadTime: 0,
+                                trailTime: 360,
+                                material : new Cesium.PolylineGlowMaterialProperty({
+                                    glowPower : 0.1,
+                                    color : Cesium.Color.YELLOW
+                                }),
+                                width : 3
                             }
                     });
                 }
@@ -110,29 +129,20 @@
                         const geo_json_element = result_geo_json[index]['object'];                                  
                         viewer.dataSources.add(Cesium.GeoJsonDataSource.load(geo_json_element, {
                             stroke: Cesium.Color.HOTPINK,
-                            fill: Cesium.Color.PINK.withAlpha(0.3),
+                            fill: Cesium.Color.PINK.withAlpha(0.2),
                             strokeWidth: 1,      
                         }));       
                         
                     }
                 }
                 else if (spotlight_data.alert_type == 'geo_fence_crossed') {
-                    // remove last element
-                    let list = document.getElementById("latest-status");
-                    var listItems = list.getElementsByTagName("li");
-                    var last = listItems[listItems.length - 1];
-                    last.parentNode.removeChild(last);
+                    let d = new Date();
+                    addToList('<span class="date">'+ d.toLocaleTimeString() +'</span> '+ spotlight_data.results);
 
-                    var node = document.createElement("li"); // Create a <li> node
-                    var textnode = document.createTextNode(spotlight_data.results); // Create a text node
-                    node.appendChild(textnode);                              // Append the text to <li>
-                    list.appendChild(node);     // Append <li> to <ul> with id="myList" 
-                    
                 }
             }
         });
-        
-        
+                
         var bing = new Cesium.BingMapsImageryProvider({
             url: 'https://dev.virtualearth.net',
             key: '<%= bing_key %>',
@@ -157,8 +167,7 @@
             "navigationHelpButton": false,
             "imageryProvider":bing
         });
-                
-        
+            
         var scene = viewer.scene;
         var clock = viewer.clock;
         var camera = viewer.camera;
@@ -182,14 +191,16 @@
         }).done(response => {
                let aoi =  viewer.dataSources.add(Cesium.GeoJsonDataSource.load(JSON.parse(geo_json), {
                         stroke: Cesium.Color.GRAY,
-                        fill: Cesium.Color.GRAY.withAlpha(0.3),
+                        fill: Cesium.Color.GRAY.withAlpha(0.2),
                         strokeWidth: 3
                     }));
                 viewer.flyTo(aoi);
-
-                $("#spinner-cont").removeClass('d-none');
+                let spinner_cont =  document.getElementById("spinner-cont");
+                spinner_cont.classList.remove("d-none");
+                let flight_declaration_cont = document.getElementById('flight-declarations');
+                flight_declaration_cont.classList.remove("d-none");
                  humane.log(response['msg'],{
-                addnCls: 'humane-flatty-success'
+                    addnCls: 'humane-flatty-success'
             });
 
 

@@ -219,9 +219,7 @@ router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
         geo_fence_stream.onClose(() => {
           console.log("AOI geofence was closed");
         });
-
       }
-
     }).catch(err => {
       console.error("something went wrong! " + err);
     });

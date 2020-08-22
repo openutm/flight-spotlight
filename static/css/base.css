@@ -139,6 +139,14 @@ li {
     padding: 2px;
 }
 
+#latest-status li {
+    font-size: 12px;
+}
+.date {
+    color:#c9c9c9;
+    font-size:10px;
+}
+
 section.information h1 {
     font-family: "Karla", Arial, Helvetica, sans-serif;
     text-transform: uppercase;
