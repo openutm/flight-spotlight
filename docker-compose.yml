@@ -6,12 +6,14 @@ services:
             - "9851:9851"
         command: [ "tile38-server"]
         container_name : "tile38"
-
     redis:
-      image: redis
-      container_name: "redis"
-      ports:
-          - "6379:6379"
+        image: redis:latest
+        ports:
+            - "6379:6379"
+        volumes:
+            - ./config/redis.conf:/redis.conf
+        command: [ "redis-server", "/redis.conf" ]
+        container_name: "redis"
         
     web:
       command : npm start
