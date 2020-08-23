@@ -14,7 +14,7 @@ This software is compatible with all ASTM and EuroCAE upcoming standards for UTM
 ## Screenshots
 
 Initial screen
-![terrain1](https://i.imgur.com/hQ3LmFk.jpg)
+![terrain1](https://i.imgur.com/6kfx13d.png)
 
 ## Self host / Installation
 
