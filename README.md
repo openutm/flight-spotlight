@@ -28,29 +28,14 @@ This project uses Node JS and Express JS, a Tile 38 server, and can connect to a
 5. You will need help to fill out the all the links, since this is associated with Authentication, in short, it will ask you to point to a Flight Spotlight or any other OAUTH2 provider for credentails. (See below for non-Docker Installation)
 6. Finally run the installation by typing `docker-compose up`
 
-## Test run (without Authenticaton)
+## Test run 
 
-In these steps we will not connect to the DSS and turn off all authentication:
+Once you have the Docker container running, you can follow the instructions below 
 
-   1. Clone the repository and use `npm install | npm i`
-   2. In Github switch the branch to `testrun`, this branch turns off all identity and authentication capabilities. You can use `git checkout testrun`
-   3. Create a process.env file using `touch process.env`
-      1. Take a look at the [.env.sample](https://github.com/openskies-sh/flight-spotlight/blob/master/.env.sample) file to fill in your details. You will need the Bing / Mapbox keys for basemaps, you can igonre the Identity and Authorization settings. 
-   4. Download a precompiled binary of the [Tile 38](https://www.tile38.com) server for your system. You can follow the instructions [in the releases page](https://github.com/tidwall/tile38/releases). Sample for Linux below:
-
-      ```shell
-      curl -L  https://github.com/tidwall/tile38/releases/download/1.19.5/tile38-1.19.5-linux-amd64.tar.gz -o tile38-1.19.5-linux-amd64.tar.gz
-      tar xzvf tile38-1.19.5-linux-amd64.tar.gz
-      cd tile38-1.19.5-linux-amd64
-      ./tile38-server
-      ```
-
-   5. Run the local server using `npm start`
-   6. Navigate to `http://localhost:5000/spotlight` in your browser to launch the application. You should see a globe and a control to input a Area of Interest (AOI).
-   7. Copy paste the sample GeoJSON AOI from the importers [folder](https://raw.githubusercontent.com/openskies-sh/flight-spotlight/master/importers/geojson/aoi.geojson)
-   8. Click the __Stream flights__ button. This subscribe you to the channel.
-   9. This part needs Python3. In another terminal install the redis dependency in Python `pip install redis`
-   10. Navigate to the importers directory and type in `python import_flight_json.py` file to upload flight information and see it on a map. This script parses the JSON flight details and uploads the data every five seconds. The flights should be appear as point on the globe.
+1. Navigate to `http://localhost:5000/spotlight` in your browser to launch the application. You should see a globe and a control to input a Area of Interest (AOI).
+2. Copy paste the sample GeoJSON AOI from the importers [folder](https://raw.githubusercontent.com/openskies-sh/flight-spotlight/master/importers/geojson/aoi.geojson)
+3. Click the __Stream flights__ button. This subscribe you to the channel.
+4. Navigate to the importers directory and type in `python import_flight_json_secured.py` file to upload flight information and see it on a map. This script parses the JSON flight details and uploads the data every five seconds. The flights should be appear as point on the globe.
 
 ## Under the hood
 
