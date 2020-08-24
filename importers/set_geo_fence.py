@@ -29,7 +29,7 @@ class FlightSpotlightUploader():
     def __init__(self, credentials):
         
         self.timestamps = [1590000000000,1590000005000, 1590000010000,1590000015000, 1590000020000] 
-        
+    
         self.credentials = credentials
     
     def upload_to_server(self, filename):
@@ -41,6 +41,10 @@ class FlightSpotlightUploader():
         for fence_feature in geo_fence_data['features']:
 
             headers = {"Authorization": "Bearer "+ self.credentials['access_token']}
+
+            upper_limit = fence_feature['properties']['upper_limit']
+            lower_limit = fence_feature['properties']['lower_limit']
+
             try:
                 p = Polygon(fence_feature['geometry']['coordinates'])
                 assert p.is_valid
@@ -51,9 +55,9 @@ class FlightSpotlightUploader():
 
             else:
 
-                payload = {"geo_fence" :geojson.dumps(p, sort_keys=True)}
+                payload = {"geo_fence" :geojson.dumps(p, sort_keys=True), "properties":json.dumps({"upper_limit":upper_limit, "lower_limit":lower_limit})}
                 
-                securl = 'http://local.test:5000/set_geo_fence'
+                securl = 'http://localhost:5000/set_geo_fence'
                 try:
                     response = requests.post(securl, data= payload, headers=headers)
                     print(response.content)                

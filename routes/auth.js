@@ -116,9 +116,15 @@ router.post("/set_geo_fence", checkJwt, jwtAuthz(['spotlight.write.geo_fence']),
   else {
     const req_body = req.body;
     const geo_fence = req_body.geo_fence;
+    const geo_fence_properties = JSON.parse(req_body.properties);
+    // console.log(geo_fence_properties, typeof(geo_fence_properties));
+      
+    let upper_limit = geo_fence_properties['upper_limit'];
+    let lower_limit = geo_fence_properties['lower_limit'];      
+    
+    client.set('geo_fence', 'geo_fence', JSON.parse(geo_fence),{ 'upper_limit': upper_limit, 'lower_limit': lower_limit });    
 
-    client.set('geo_fence', 'geo_fence', JSON.parse(geo_fence));
-    response.send('OK');
+    response.send({"message":"OK"});
   }
 });
 

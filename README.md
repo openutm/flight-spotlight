@@ -16,19 +16,23 @@ This software is compatible with all ASTM and EuroCAE upcoming standards for UTM
 Initial screen
 ![terrain1](https://i.imgur.com/6kfx13d.png)
 
+All data is in 3D + time
+![3D](https://i.imgur.com/gysUdTd.jpgs)
+
 ## Self host / Installation
 
-Docker and Docker Compose files are available for running this server. To install a production server please follow our [Installation Guide](https://github.com/openskies-sh/flight-spotlight/blob/master/documents/installation-instructions.md). 
-This project uses Node JS and Express JS, a Tile 38 server, and can connect to a DSS instance. If you are using a DSS instance, you will need a JWT token to connect to the airspace. For that, you will need a approved UTM / U-Space OAUTH server (e.g. [Flight Passport](https://www.github.com/openskies-sh/flight_passport)).
+Docker and Docker Compose files are available for running this on your own infrastructure. To install a production server please follow our [Installation Guide](https://github.com/openskies-sh/flight-spotlight/blob/master/documents/installation-instructions.md).
 
-1. In the console execute the following command `git clone https://github.com/openskies-sh/flight-spotlight` 
+This project uses Node JS and Express JS, a Tile 38 and Redis server, and can connect to a DSS instance. If you are using a DSS instance, you will need a JWT token to connect to the airspace. For that, you will need a approved UTM / U-Space OAUTH server (e.g. [Flight Passport](https://www.github.com/openskies-sh/flight_passport)).
+
+1. In the console execute the following command `git clone https://github.com/openskies-sh/flight-spotlight`
 2. Enter the directory `cd flight-spotlight`
 3. Copy the sample .env file: `cp .env.sample .env`
 4. Open the .env file and fill out the credentials `nano .env`
 5. You will need help to fill out the all the links, since this is associated with Authentication, in short, it will ask you to point to a Flight Spotlight or any other OAUTH2 provider for credentails. (See below for non-Docker Installation)
 6. Finally run the installation by typing `docker-compose up`
 
-## Test run 
+## Test run
 
 Once you have the Docker container running, you can follow the instructions below 
 

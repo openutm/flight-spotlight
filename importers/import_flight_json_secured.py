@@ -52,7 +52,7 @@ class FlightSpotlightUploader():
 
                 headers = {"Authorization": "Bearer "+ self.credentials['access_token']}
                 payload = {"icao_address" : icao_address,"traffic_source" :traffic_source, "source_type" : source_type, "lat_dd" : lat_dd, "lon_dd" : lon_dd, "time_stamp" : time_stamp,"altitude_mm" : altitude_mm}
-                securl = 'http://local.test:5000/set_air_traffic'
+                securl = 'http://localhost:5000/set_air_traffic'
                 try:
                     response = requests.post(securl, data= payload, headers=headers)
                     print(response.content)                

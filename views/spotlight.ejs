@@ -104,34 +104,49 @@
                 
                     const cur_result = spotlight_data.results.object;
                     // console.log(Math.floor(Date.now() / 1000) +":  " + cur_result.coordinates[1], cur_result.coordinates[0], cur_result.coordinates[2]);                    
-                        viewer.entities.add({
-                            position : Cesium.Cartesian3.fromDegrees(cur_result.coordinates[1], cur_result.coordinates[0], cur_result.coordinates[2]),
-                            point : {
-                                pixelSize : 5,
-                                color : Cesium.Color.RED,
-                                outlineWidth: 0
-                            },
-                            path : {
-                                resolution : 1,
-                                leadTime: 0,
-                                trailTime: 360,
-                                material : new Cesium.PolylineGlowMaterialProperty({
-                                    glowPower : 0.1,
-                                    color : Cesium.Color.YELLOW
-                                }),
-                                width : 3
-                            }
+                    viewer.entities.add({
+                        position : Cesium.Cartesian3.fromDegrees(cur_result.coordinates[1], cur_result.coordinates[0], cur_result.coordinates[2]),
+                        point : {
+                            pixelSize : 5,
+                            color : Cesium.Color.RED,
+                            outlineWidth: 0
+                        },
+                        path : {
+                            resolution : 1,
+                            leadTime: 0,
+                            trailTime: 5,
+                            material : new Cesium.PolylineGlowMaterialProperty({
+                                glowPower : 0.1,
+                                color : Cesium.Color.YELLOW
+                            }),
+                            width : 3
+                        }
                     });
                 }
                 else if (spotlight_data.alert_type== 'aoi_geo_fence') {                    
                     const result_geo_json = spotlight_data.results.objects;
+                    
                     for (let index = 0; index < result_geo_json.length; index++) {
-                        const geo_json_element = result_geo_json[index]['object'];                                  
-                        viewer.dataSources.add(Cesium.GeoJsonDataSource.load(geo_json_element, {
-                            stroke: Cesium.Color.HOTPINK,
-                            fill: Cesium.Color.PINK.withAlpha(0.2),
-                            strokeWidth: 1,      
-                        }));       
+                        const geo_json_element = result_geo_json[index]['object'];
+                        const geo_fence_heights = result_geo_json[index]['fields'];
+                        var dataSource = Cesium.GeoJsonDataSource.load(geo_json_element).then(
+                        function(dataSource) {
+                            var p = dataSource.entities.values;
+                            for (var i = 0; i < p.length; i++) {
+                                p[i].polygon.height = geo_fence_heights[1]; // or height property
+                                p[i].polygon.extrudedHeight = geo_fence_heights[0]; // or height property
+                                p[i].polygon.outlineColor = Cesium.Color.PINK.withAlpha(0.2),
+                                p[i].polygon.material = Cesium.Color.HOTPINK.withAlpha(0.2)
+                            }
+                            viewer.dataSources.add(dataSource);
+                            viewer.zoomTo(dataSource);
+                        }
+                    );                                    
+                        // viewer.dataSources.add(Cesium.GeoJsonDataSource.load(geo_json_element, {
+                        //     stroke: Cesium.Color.HOTPINK,
+                        //     fill: Cesium.Color.PINK.withAlpha(0.2),
+                        //     strokeWidth: 1,      
+                        // }));       
                         
                     }
                 }
