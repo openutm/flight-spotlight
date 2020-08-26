@@ -43,7 +43,11 @@ Once you have the Docker container running, you can follow the instructions belo
 
 ## Under the hood
 
-Take a look at the raw [JSON file](https://www.github.com/openskies-sh/flight-spotlight/importers/micro_flight_data.json) for sample flight data. This file follows the format as specified in the [Airtraffic data protocol](https://github.com/openskies-sh/airtraffic-data-protocol-development/blob/master/Airtraffic-Data-Protocol.md) and has a series of observations. Every five seconds this data is uploaded to the server and if the uploaded data intersects the aoi polygon bounds, then the flight is shown on the globe. In the production version there is a POST request to post this data in realtime.
+Take a look at the raw files for : 
+- [Flight tracking data](https://github.com/openskies-sh/flight-spotlight/blob/master/importers/air_traffic/micro_flight_data_single.json). This file follows the format as specified in the [Airtraffic data protocol](https://github.com/openskies-sh/airtraffic-data-protocol-development/blob/master/Airtraffic-Data-Protocol.md) 
+- [Area of Interest](https://github.com/openskies-sh/flight-spotlight/blob/master/importers/aoi_geo_fence/aoi.geojson) as a GeoJSON
+- [Geofence](https://github.com/openskies-sh/flight-spotlight/blob/master/importers/aoi_geo_fence/geo_fence.geojson) as a GeoJSON, we have converters to convert from ED-269
+- [Flight Declaration](https://github.com/openskies-sh/flight-spotlight/blob/master/importers/flight_declarations/flight-1.json). This file follows the format specified in [Flight Declaration Protocol](https://github.com/openskies-sh/flight-declaration-protocol-development)
 
 ## Logo source
 
