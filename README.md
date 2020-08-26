@@ -6,10 +6,10 @@ Flight Spotlight is a open-source project to see all flights in a area _in realt
 
 This software is compatible with all ASTM and EuroCAE upcoming standards for UTM / U-Space. Specifically it is compatible with Remote ID (Remote ID Display provider) and Geofencing standards
 
-- Geofencing display
-- Display Network Remote ID via connectioons to DSS
-- Display ADS-B traffic
-- Query Flight Registry information
+- Geofencing display compatible with [EuroCAE ED-269](https://eshop.eurocae.net/eurocae-documents-and-reports/ed-269/)
+- Display Network Remote ID via connectioons to [DSS](https://github.com/interuss/dss)
+- Display ADS-B traffic using streamlined [JSON format](https://github.com/openskies-sh/airtraffic-data-protocol-development)
+- Upload JSON based [flight declarations](https://github.com/openskies-sh/flight-declaration-protocol-development) and mission plans
 
 ## Screenshots
 
