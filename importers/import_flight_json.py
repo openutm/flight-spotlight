@@ -40,4 +40,4 @@ class Tile38Uploader():
 
 if __name__ == '__main__':
     my_uploader = Tile38Uploader()
-    my_uploader.upload_to_server(filename='micro_flight_data_single.json')
+    my_uploader.upload_to_server(filename='air_traffic/micro_flight_data_single.json')

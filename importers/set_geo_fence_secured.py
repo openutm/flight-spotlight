@@ -16,11 +16,9 @@ class PassportCredentialsGetter():
 
     def get_write_credentials(self):        
         payload = {"grant_type":"client_credentials","client_id": env.get('PASSPORT_WRITE_CLIENT_ID'),"client_secret": env.get('PASSPORT_WRITE_CLIENT_SECRET'),"audience": env.get('PASSPORT_WRITE_AUDIENCE'),"scope": env.get('PASSPORT_GEO_FENCE_SCOPE')}        
-        url = env.get('PASSPORT_URL') +env.get('PASSPORT_TOKEN_URL')
-        
+        url = env.get('PASSPORT_URL') + env.get('PASSPORT_TOKEN_URL')        
         token_data = requests.post(url, data = payload)
-        t_data = token_data.json()
-        
+        t_data = token_data.json()        
         return t_data
 
 
@@ -28,8 +26,6 @@ class FlightSpotlightUploader():
     
     def __init__(self, credentials):
         
-        self.timestamps = [1590000000000,1590000005000, 1590000010000,1590000015000, 1590000020000] 
-    
         self.credentials = credentials
     
     def upload_to_server(self, filename):
@@ -48,15 +44,10 @@ class FlightSpotlightUploader():
             try:
                 p = Polygon(fence_feature['geometry']['coordinates'])
                 assert p.is_valid
-
             except AssertionError as ae:
-
                 print("Invalid polygon in Geofence")
-
             else:
-
-                payload = {"geo_fence" :geojson.dumps(p, sort_keys=True), "properties":json.dumps({"upper_limit":upper_limit, "lower_limit":lower_limit})}
-                
+                payload = {"geo_fence" :geojson.dumps(p, sort_keys=True), "properties":json.dumps({"upper_limit":upper_limit, "lower_limit":lower_limit})}                
                 securl = 'http://localhost:5000/set_geo_fence'
                 try:
                     response = requests.post(securl, data= payload, headers=headers)
@@ -64,9 +55,7 @@ class FlightSpotlightUploader():
                 except Exception as e:
                     print(e)
                 else:
-                    print("Uploaded Geo Fence")
-
-                    
+                    print("Uploaded Geo Fence")                    
 
 if __name__ == '__main__':
 
@@ -74,4 +63,4 @@ if __name__ == '__main__':
     credentials = my_credentials.get_write_credentials()
     
     my_uploader = FlightSpotlightUploader(credentials = credentials)
-    my_uploader.upload_to_server(filename='geojson/geo_fence.geojson')
+    my_uploader.upload_to_server(filename='aoi_geo_fence/geo_fence.geojson')

@@ -130,6 +130,8 @@ router.post("/set_geo_fence", checkJwt, jwtAuthz(['spotlight.write.geo_fence']),
 
 router.post("/set_flight_declaration", checkJwt, jwtAuthz(['spotlight.write.flight_declaration']), check('flight_declaration').custom(submitted_flight_declaration => {
   let options = {};
+  submitted_flight_declaration = JSON.parse(submitted_flight_declaration);
+  
   let errors = geojsonhint.hint(submitted_flight_declaration['flight_declaration']['parts'], options);
 
   if (errors.length > 0) {
@@ -146,10 +148,10 @@ router.post("/set_flight_declaration", checkJwt, jwtAuthz(['spotlight.write.flig
   }
   else {
     const req_body = req.body;
-    const flight_declaration = req_body.flight_declaration;
+    const flight_declaration = JSON.parse(req_body.flight_declaration);
     const flight_id = req_body.flight_id;
-
-    redis_client.set(flight_id, flight_declaration['parts']);
+    
+    redis_client.set(flight_id, flight_declaration);
     response.send('OK');
   }
 });

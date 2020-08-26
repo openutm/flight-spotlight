@@ -70,4 +70,4 @@ if __name__ == '__main__':
     credentials = my_credentials.get_write_credentials()
     # print(credentials)
     my_uploader = FlightSpotlightUploader(credentials = credentials)
-    my_uploader.upload_to_server(filename='geojson/micro_flight_data_single.json')
+    my_uploader.upload_to_server(filename='air_traffic/micro_flight_data_single.json')
