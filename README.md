@@ -14,9 +14,11 @@ This software is compatible with all ASTM and EuroCAE upcoming standards for UTM
 ## Screenshots
 
 Initial screen
+
 ![terrain1](https://i.imgur.com/6kfx13d.png)
 
 All data is in 3D + time
+
 ![3D](https://i.imgur.com/gysUdTd.jpgs)
 
 ## Self host / Installation
@@ -38,16 +40,12 @@ Once you have the Docker container running, you can follow the instructions belo
 
 1. Navigate to `http://localhost:5000/spotlight` in your browser to launch the application. You should see a globe and a control to input a Area of Interest (AOI).
 2. Copy paste the sample GeoJSON AOI from the importers [folder](https://raw.githubusercontent.com/openskies-sh/flight-spotlight/master/importers/aoi_geo_fence/aoi.geojson)
-3. Click the __Stream flights__ button. This subscribe you to the channel.
-4. Navigate to the importers directory and type in `python import_flight_json_secured.py` file to upload flight information and see it on a map. This script parses the JSON flight details and uploads the data every five seconds. The flights should be appear as point on the globe.
+3. Click the __Stream flights__ button. This subscribe you to the flights in AOI.
+4. This application acts as a "Display Application" and all data is provided by the "Display Provider": [Flight Blender](https://github.com/openskies-sh/flight-blender)
 
-## Under the hood
+## Submitting Data into Flight Spotlight
 
-Take a look at the raw files for : 
-- [Flight tracking data](https://github.com/openskies-sh/flight-spotlight/blob/master/importers/air_traffic/micro_flight_data_single.json). This file follows the format as specified in the [Airtraffic data protocol](https://github.com/openskies-sh/airtraffic-data-protocol-development/blob/master/Airtraffic-Data-Protocol.md) 
-- [Area of Interest](https://github.com/openskies-sh/flight-spotlight/blob/master/importers/aoi_geo_fence/aoi.geojson) as a GeoJSON
-- [Geofence](https://github.com/openskies-sh/flight-spotlight/blob/master/importers/aoi_geo_fence/geo_fence.geojson) as a GeoJSON, we have converters to convert from ED-269
-- [Flight Declaration](https://github.com/openskies-sh/flight-spotlight/blob/master/importers/flight_declarations/flight-1.json). This file follows the format specified in [Flight Declaration Protocol](https://github.com/openskies-sh/flight-declaration-protocol-development)
+Flight tracking data can be submitted to Flight Spotlight by 
 
 ## Logo source
 
