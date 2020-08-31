@@ -41,11 +41,11 @@ Once you have the Docker container running, you can follow the instructions belo
 1. Navigate to `http://localhost:5000/spotlight` in your browser to launch the application. You should see a globe and a control to input a Area of Interest (AOI).
 2. Copy paste the sample GeoJSON AOI from the importers [folder](https://raw.githubusercontent.com/openskies-sh/flight-spotlight/master/importers/aoi_geo_fence/aoi.geojson)
 3. Click the __Stream flights__ button. This subscribe you to the flights in AOI.
-4. This application acts as a "Display Application" and all data is provided by the "Display Provider": [Flight Blender](https://github.com/openskies-sh/flight-blender)
+
 
 ## Submitting Data into Flight Spotlight
 
-Flight tracking data can be submitted to Flight Spotlight by 
+Flight tracking data can be submitted to Flight Spotlight by an Display provider like [Flight Blender](https://github.com/openskies-sh/flight-blender) 
 
 ## Logo source
 
