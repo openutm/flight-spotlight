@@ -50,9 +50,9 @@
                             </ul>
                        </div>
                       <hr>
-                      <div class="d-none" id="flight-declarations">
-                        <button id="show-flight-declarations" type="button" class="btn btn-link">Show Flight Declarations</button>
-                      </div>
+                      <!-- <div class="d-none" id="flight-declarations">
+                        <button id="show-flight-declarations" type="button" class="btn btn-link">Display hourly Flight Declarations</button>
+                      </div> -->
 
 
                 </div>
@@ -142,11 +142,6 @@
                             viewer.zoomTo(dataSource);
                         }
                     );                                    
-                        // viewer.dataSources.add(Cesium.GeoJsonDataSource.load(geo_json_element, {
-                        //     stroke: Cesium.Color.HOTPINK,
-                        //     fill: Cesium.Color.PINK.withAlpha(0.2),
-                        //     strokeWidth: 1,      
-                        // }));       
                         
                     }
                 }
@@ -192,43 +187,69 @@
 
         const dss_form = $('#dss-query-form');
         dss_form.on('submit', submitHandler);
+
         function submitHandler (e) {
-        e.preventDefault();
-        var data = {};
-        let geo_json = document.getElementById('geo_polygon_string').value;
-        data['geo_json']  = geo_json;
-        data['email'] = email;
-        
-        $.ajax({
-            url: '/set_aoi',
-            type:'POST',
-            data: data
-        }).done(response => {
-               let aoi =  viewer.dataSources.add(Cesium.GeoJsonDataSource.load(JSON.parse(geo_json), {
-                        stroke: Cesium.Color.GRAY,
-                        fill: Cesium.Color.GRAY.withAlpha(0.2),
-                        strokeWidth: 3
-                    }));
-                viewer.flyTo(aoi);
-                let spinner_cont =  document.getElementById("spinner-cont");
-                spinner_cont.classList.remove("d-none");
-                let flight_declaration_cont = document.getElementById('flight-declarations');
-                flight_declaration_cont.classList.remove("d-none");
-                 humane.log(response['msg'],{
-                    addnCls: 'humane-flatty-success'
-            });
+            e.preventDefault();
+            var data = {};
+            let geo_json = document.getElementById('geo_polygon_string').value;
+            data['geo_json']  = geo_json;
+            data['email'] = email;
+            
+            $.ajax({
+                url: '/set_aoi',
+                type:'POST',
+                data: data
+            }).done(response => {
+                let aoi =  viewer.dataSources.add(Cesium.GeoJsonDataSource.load(JSON.parse(geo_json), {
+                            stroke: Cesium.Color.GRAY,
+                            fill: Cesium.Color.GRAY.withAlpha(0.2),
+                            strokeWidth: 3
+                        }));
+                    viewer.flyTo(aoi);
+                    let spinner_cont =  document.getElementById("spinner-cont");
+                    spinner_cont.classList.remove("d-none");
+                    // let flight_declaration_cont = document.getElementById('flight-declarations');
+                    // flight_declaration_cont.classList.remove("d-none");
+                    humane.log(response['msg'],{
+                        addnCls: 'humane-flatty-success'
+                });
 
 
-        }).fail(error => {
-            if (error.status ==422)
-            {
-                humane.log("Invalid GeoJSON provided",{
-                addnCls: 'humane-flatty-error'
+            }).fail(error => {
+                if (error.status ==422)
+                {
+                    humane.log("Invalid GeoJSON provided",{
+                    addnCls: 'humane-flatty-error'
+                });
+                }
+                console.log(error);
             });
-            }
-            console.log(error);
-        })
         }
+
+        
+        const fd_button = $('#show-flight-declarations');
+        fd_button.on('click', get_flight_declarations);
+
+        function get_flight_declarations(e) {
+
+            $.ajax({
+                url: '/get_flight_declarations',
+                type:'GET'
+
+            }).done(response => {
+                console.log(response);
+
+            }).fail(error => {
+                if (error.status ==422)
+                {
+                    humane.log("Error in getting declarations",{
+                    addnCls: 'humane-flatty-error'
+                });
+                }
+                console.log(error);
+            });
+        }
+
     </script>
 </body>
 

@@ -23,38 +23,38 @@
         resave: false,
         saveUninitialized: false
       };
+
+    let strategy = new OAuth2Strategy({
+        authorizationURL: process.env.PASSPORT_URL + process.env.PASSPORT_AUTHORIZATION_URL,
+        tokenURL: process.env.PASSPORT_URL + process.env.PASSPORT_TOKEN_URL,
+        clientID: process.env.PASSPORT_WEB_CLIENT_ID,
+        clientSecret: process.env.PASSPORT_WEB_CLIENT_SECRET,
+        callbackURL: process.env.CALLBACK_URL,
+        passReqToCallback: true,
+    },
+        function (accessToken, refreshToken, params,userProfile, cb) {
+        return cb(null, userProfile);
+        }
+    );
     
-        let strategy = new OAuth2Strategy({
-            authorizationURL: process.env.PASSPORT_URL + process.env.PASSPORT_AUTHORIZATION_URL,
-            tokenURL: process.env.PASSPORT_URL + process.env.PASSPORT_TOKEN_URL,
-            clientID: process.env.PASSPORT_WEB_CLIENT_ID,
-            clientSecret: process.env.PASSPORT_WEB_CLIENT_SECRET,
-            callbackURL: process.env.CALLBACK_URL,
-            passReqToCallback: true,
-        },
-            function (accessToken, refreshToken, params,userProfile, cb) {
-            return cb(null, userProfile);
-            }
-        );
-        
-        strategy.userProfile = function (accesstoken, done) {
-            // choose your own adventure, or use the Strategy's oauth client
-            const headers = {
-            'User-Agent': 'request',
-            'Authorization': 'Bearer ' + accesstoken,
-            };
-            this._oauth2._request("GET", process.env.PASSPORT_URL + process.env.PASSPORT_USERINFO_URL, headers, null, null, (err, data) => {
-            if (err) { return done(err); }
-            try {
-                data = JSON.parse(data);
-            }
-            catch (e) {
-                return done(e);
-            }
-            done(null, data);
-            });
+    strategy.userProfile = function (accesstoken, done) {
+        // choose your own adventure, or use the Strategy's oauth client
+        const headers = {
+        'User-Agent': 'request',
+        'Authorization': 'Bearer ' + accesstoken,
         };
-        
+        this._oauth2._request("GET", process.env.PASSPORT_URL + process.env.PASSPORT_USERINFO_URL, headers, null, null, (err, data) => {
+        if (err) { return done(err); }
+        try {
+            data = JSON.parse(data);
+        }
+        catch (e) {
+            return done(e);
+        }
+        done(null, data);
+        });
+    };
+    
         
     var app = express();
     app.use(compression());
@@ -105,8 +105,7 @@
         
     app.use("/", authRouter);
 
-    app.use(function(err, req, res, next){
-        
+    app.use(function(err, req, res, next){        
         return res.status(err.status).json({ message: err.message });
     });
     

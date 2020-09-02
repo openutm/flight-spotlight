@@ -23,6 +23,7 @@ const { get } = require("https");
 const { head } = require("request");
 const redis = require("redis");
 const redis_client = redis.createClient();
+const async = require("async");
 
 redis_client.on("error", function (error) {
   console.error(error);
@@ -118,40 +119,37 @@ router.post("/set_geo_fence", checkJwt, jwtAuthz(['spotlight.write.geo_fence']),
     const geo_fence = req_body.geo_fence;
     const geo_fence_properties = JSON.parse(req_body.properties);
     // console.log(geo_fence_properties, typeof(geo_fence_properties));
-      
-    let upper_limit = geo_fence_properties['upper_limit'];
-    let lower_limit = geo_fence_properties['lower_limit'];      
-    
-    client.set('geo_fence', 'geo_fence', JSON.parse(geo_fence),{ 'upper_limit': upper_limit, 'lower_limit': lower_limit });    
 
-    response.send({"message":"OK"});
+    let upper_limit = geo_fence_properties['upper_limit'];
+    let lower_limit = geo_fence_properties['lower_limit'];
+
+    client.set('geo_fence', 'geo_fence', JSON.parse(geo_fence), { 'upper_limit': upper_limit, 'lower_limit': lower_limit });
+
+    response.send({ "message": "OK" });
   }
 });
 
 router.post("/set_flight_declaration", checkJwt, jwtAuthz(['spotlight.write.flight_declaration']), check('flight_declaration').custom(submitted_flight_declaration => {
   let options = {};
   submitted_flight_declaration = JSON.parse(submitted_flight_declaration);
-  
-  let errors = geojsonhint.hint(submitted_flight_declaration['flight_declaration']['parts'], options);
 
+  let errors = geojsonhint.hint(submitted_flight_declaration['flight_declaration']['parts'], options);
   if (errors.length > 0) {
     throw new Error('Invalid Flight Declaration supplied.');
   } else {
     return true;
   }
-
 }), (req, response, next) => {
-
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return response.status(422).json({ errors: errors.array() });
   }
   else {
     const req_body = req.body;
-    const flight_declaration = JSON.parse(req_body.flight_declaration);
-    const flight_id = req_body.flight_id;
-    
-    redis_client.set(flight_id, flight_declaration);
+    const f_d = JSON.parse(req_body.flight_declaration);
+    const flight_id = f_d.flight_id;
+    redis_client.hset('fd', flight_id, JSON.stringify(f_d));
+    redis_client.expire(flight_id, 3600);
     response.send('OK');
   }
 });
@@ -184,6 +182,20 @@ router.post("/set_flight_declaration", checkJwt, jwtAuthz(['spotlight.write.flig
 //   }
 // });
 
+router.get("/get_flight_declarations", secured(), (req, response, next) => {
+  function get_f_d(callback) {
+    redis_client.hgetall('fd', function (err, object) {
+      callback(object);
+    });
+  };
+  get_f_d(function (declarations) {
+    response.send({
+      'all_declarations': declarations
+    });
+  });
+
+});
+
 
 router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
   let options = {};
@@ -212,7 +224,6 @@ router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
       // Setup a Geofence for the results 
 
       for (let index = 0; index < geo_fence.objects.length; index++) {
-        
         const geo_fence_element = geo_fence.objects[index].object;
         let geo_fence_bbox = bbox(geo_fence_element);
         let geo_live_fence_query = client.intersectsQuery('observation').detect('enter', 'exit').bounds(geo_fence_bbox[0], geo_fence_bbox[1], geo_fence_bbox[2], geo_fence_bbox[3]);
