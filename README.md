@@ -36,12 +36,11 @@ This project uses Node JS and Express JS, a Tile 38 and Redis server, and can co
 
 ## Test run
 
-Once you have the Docker container running, you can follow the instructions below
+Once you have the Docker container running, you can follow the instructions below to "subscribe" to flights in a AOI: 
 
 1. Navigate to `http://localhost:5000/spotlight` in your browser to launch the application. You should see a globe and a control to input a Area of Interest (AOI).
-2. Copy paste the sample GeoJSON AOI from the importers [folder](https://raw.githubusercontent.com/openskies-sh/flight-spotlight/master/importers/aoi_geo_fence/aoi.geojson)
+2. Copy paste the sample GeoJSON AOI from the importers [folder](https://raw.githubusercontent.com/openskies-sh/flight-blender/master/importers/aoi_geo_fence/aoi.geojson) in the Flight Blender repository
 3. Click the __Stream flights__ button. This subscribe you to the flights in AOI.
-
 
 ## Submitting Data into Flight Spotlight
 
