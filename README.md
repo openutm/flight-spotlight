@@ -15,11 +15,11 @@ This software is compatible with all ASTM and EuroCAE upcoming standards for UTM
 
 Initial screen
 
-![terrain1](https://i.imgur.com/6kfx13d.png)
+<img src="https://i.imgur.com/6kfx13d.png" width="600">
 
 All data is in 3D + time
 
-![3D](https://i.imgur.com/gysUdTd.jpgs)
+<img src="https://i.imgur.com/gysUdTd.jpgs" width="600">
 
 ## Self host / Installation
 
