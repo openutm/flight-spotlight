@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <title>Openskies Flight Spotlight</title>
     <meta charset="utf-8">
@@ -31,29 +32,33 @@
                 <h3 class="page-header">Flight Spotlight</h3>
                 <br>
                 <div class="information">
-                    
-                    <form id="dss-query-form" method="post" action="/spotlight">                                               
-                          <!-- <label for="geo_polygon_string">Area of Interest</label><br> -->
-                          <textarea rows="4" cols="20" id="geo_polygon_string" value="<%= data.geo_polygon_string %>" name="geo_polygon_string" placeholder="Paste a valid GeoJSON of the area of interest here"></textarea>
-                       
-                          <br>
+
+                    <form id="dss-query-form" method="post" action="/spotlight">
+                        <!-- <label for="geo_polygon_string">Area of Interest</label><br> -->
+                        <textarea rows="4" cols="20" id="geo_polygon_string" value="<%= data.geo_polygon_string %>"
+                            name="geo_polygon_string"
+                            placeholder="Paste a valid GeoJSON of the area of interest here"></textarea>
+
+                        <br>
                         <div class="form-actions">
                             <button class="button" id="retrive_flights" type="submit">Stream flights</button>
                         </div>
-                      </form>
-                      
-                       <div class="d-none loading-spinner" id="spinner-cont"><br>
-                        <img src="/assets/img/spinner.gif" height="30px">
-                       </div>
-                       <div class="live-updates" id="live-updates">
-                            <ul class="text-right list-inline" id="latest-status">
-                            </ul>
-                       </div>
-                      <hr>
-                      <!-- <div class="d-none" id="flight-declarations">
-                        <button id="show-flight-declarations" type="button" class="btn btn-link">Display hourly Flight Declarations</button>
-                      </div> -->
+                    </form>
 
+                    <div class="d-none loading-spinner" id="spinner-cont"><br>
+                        <img src="/assets/img/spinner.gif" height="30px">
+                    </div>
+                    <div class="live-updates" id="live-updates">
+                        <ul class="text-right list-inline" id="latest-status">
+                        </ul>
+                    </div>
+                    <hr>
+                    <div class="d-none" id="flight-declarations">
+                        <button id="show-flight-declarations" type="button" class="btn btn-link">Get Flight
+                            Declarations</button>
+                    </div>
+                    <br>
+                    <div id="search-results"></div>
 
                 </div>
             </div>
@@ -65,94 +70,93 @@
     </div>
 
     <script type="text/javascript">
-        
         var socketHost = location.origin.replace(/^http/, 'ws');
         let list = document.getElementById("latest-status");
         var addToList = function (item_value) {
-            while ( list.children.length >= 3 )
-            {
-            list.removeChild(list.firstChild );
+            while (list.children.length >= 3) {
+                list.removeChild(list.firstChild);
             }
             var item = document.createElement("li");
             item.innerHTML = item_value;
             list.appendChild(item);
         }
-        
-        const email  = '<%= userProfile.email %>';
+
+        const email = '<%= userProfile.email %>';
         var socket = io.connect(socketHost);
-        socket.on('connect_failed', function() {
+        socket.on('connect_failed', function () {
             errorMsg('Data connection failed, please contact your administrator.');
         });
-        socket.on('disconnect', function() {
+        socket.on('disconnect', function () {
             console.log('disconnected');
         });
-        socket.on('welcome', function(msg) {
+        socket.on('welcome', function (msg) {
             console.log('Welcome message:', msg);
         });
-        socket.on('connect', function() {
+        socket.on('connect', function () {
             socket.emit('room', email);
         });
-        socket.on('connect_timeout', function() {
+        socket.on('connect_timeout', function () {
             console.log("timed out");
 
         });
-        socket.on('message', function(spotlight_data) {
+        socket.on('message', function (spotlight_data) {
             // console.log(flight_data);
-            if(spotlight_data.type =='message') {     
-                
-                if (spotlight_data.alert_type =='aoi'){
-                
+            if (spotlight_data.type == 'message') {
+
+                if (spotlight_data.alert_type == 'aoi') {
+
                     const cur_result = spotlight_data.results.object;
                     // console.log(Math.floor(Date.now() / 1000) +":  " + cur_result.coordinates[1], cur_result.coordinates[0], cur_result.coordinates[2]);                    
                     viewer.entities.add({
-                        position : Cesium.Cartesian3.fromDegrees(cur_result.coordinates[1], cur_result.coordinates[0], cur_result.coordinates[2]),
-                        point : {
-                            pixelSize : 5,
-                            color : Cesium.Color.RED,
+                        position: Cesium.Cartesian3.fromDegrees(cur_result.coordinates[1], cur_result
+                            .coordinates[0], cur_result.coordinates[2]),
+                        point: {
+                            pixelSize: 5,
+                            color: Cesium.Color.RED,
                             outlineWidth: 0
                         },
-                        path : {
-                            resolution : 1,
+                        path: {
+                            resolution: 1,
                             leadTime: 0,
                             trailTime: 5,
-                            material : new Cesium.PolylineGlowMaterialProperty({
-                                glowPower : 0.1,
-                                color : Cesium.Color.YELLOW
+                            material: new Cesium.PolylineGlowMaterialProperty({
+                                glowPower: 0.1,
+                                color: Cesium.Color.YELLOW
                             }),
-                            width : 3
+                            width: 3
                         }
                     });
-                }
-                else if (spotlight_data.alert_type== 'aoi_geo_fence') {                    
+                } else if (spotlight_data.alert_type == 'aoi_geo_fence') {
                     const result_geo_json = spotlight_data.results.objects;
-                    
+
                     for (let index = 0; index < result_geo_json.length; index++) {
                         const geo_json_element = result_geo_json[index]['object'];
                         const geo_fence_heights = result_geo_json[index]['fields'];
                         var dataSource = Cesium.GeoJsonDataSource.load(geo_json_element).then(
-                        function(dataSource) {
-                            var p = dataSource.entities.values;
-                            for (var i = 0; i < p.length; i++) {
-                                p[i].polygon.height = geo_fence_heights[1]; // or height property
-                                p[i].polygon.extrudedHeight = geo_fence_heights[0]; // or height property
-                                p[i].polygon.outlineColor = Cesium.Color.PINK.withAlpha(0.2),
-                                p[i].polygon.material = Cesium.Color.HOTPINK.withAlpha(0.2)
+                            function (dataSource) {
+                                var p = dataSource.entities.values;
+                                for (var i = 0; i < p.length; i++) {
+                                    p[i].polygon.height = geo_fence_heights[1]; // or height property
+                                    p[i].polygon.extrudedHeight = geo_fence_heights[
+                                    0]; // or height property
+                                    p[i].polygon.outlineColor = Cesium.Color.PINK.withAlpha(0.2),
+                                        p[i].polygon.material = Cesium.Color.HOTPINK.withAlpha(0.2)
+                                }
+                                viewer.dataSources.add(dataSource);
+                                viewer.zoomTo(dataSource);
                             }
-                            viewer.dataSources.add(dataSource);
-                            viewer.zoomTo(dataSource);
-                        }
-                    );                                    
-                        
+                        );
+
                     }
-                }
-                else if (spotlight_data.alert_type == 'geo_fence_crossed') {
+                } else if (spotlight_data.alert_type == 'geo_fence_crossed') {
                     let d = new Date();
-                    addToList('<span class="date">'+ d.toLocaleTimeString() +'</span> '+ spotlight_data.results);
+                    addToList('<span class="date">' + d.toLocaleTimeString() + '</span> ' + spotlight_data
+                        .results);
 
                 }
             }
         });
-                
+
         var bing = new Cesium.BingMapsImageryProvider({
             url: 'https://dev.virtualearth.net',
             key: '<%= bing_key %>',
@@ -175,9 +179,9 @@
             "fullscreenButton": false,
             "timeline": false,
             "navigationHelpButton": false,
-            "imageryProvider":bing
+            "imageryProvider": bing
         });
-            
+
         var scene = viewer.scene;
         var clock = viewer.clock;
         var camera = viewer.camera;
@@ -188,68 +192,147 @@
         const dss_form = $('#dss-query-form');
         dss_form.on('submit', submitHandler);
 
-        function submitHandler (e) {
+        function submitHandler(e) {
             e.preventDefault();
             var data = {};
             let geo_json = document.getElementById('geo_polygon_string').value;
-            data['geo_json']  = geo_json;
+            data['geo_json'] = geo_json;
             data['email'] = email;
-            
+
             $.ajax({
                 url: '/set_aoi',
-                type:'POST',
+                type: 'POST',
                 data: data
             }).done(response => {
-                let aoi =  viewer.dataSources.add(Cesium.GeoJsonDataSource.load(JSON.parse(geo_json), {
-                            stroke: Cesium.Color.GRAY,
-                            fill: Cesium.Color.GRAY.withAlpha(0.2),
-                            strokeWidth: 3
-                        }));
-                    viewer.flyTo(aoi);
-                    let spinner_cont =  document.getElementById("spinner-cont");
-                    spinner_cont.classList.remove("d-none");
-                    // let flight_declaration_cont = document.getElementById('flight-declarations');
-                    // flight_declaration_cont.classList.remove("d-none");
-                    humane.log(response['msg'],{
-                        addnCls: 'humane-flatty-success'
+                let aoi = viewer.dataSources.add(Cesium.GeoJsonDataSource.load(JSON.parse(geo_json), {
+                    stroke: Cesium.Color.GRAY,
+                    fill: Cesium.Color.GRAY.withAlpha(0.2),
+                    strokeWidth: 3
+                }));
+                viewer.flyTo(aoi);
+                let spinner_cont = document.getElementById("spinner-cont");
+                spinner_cont.classList.remove("d-none");
+                let flight_declaration_cont = document.getElementById('flight-declarations');
+                flight_declaration_cont.classList.remove("d-none");
+                humane.log(response['msg'], {
+                    addnCls: 'humane-flatty-success'
                 });
 
 
             }).fail(error => {
-                if (error.status ==422)
-                {
-                    humane.log("Invalid GeoJSON provided",{
-                    addnCls: 'humane-flatty-error'
-                });
+                if (error.status == 422) {
+                    humane.log("Invalid GeoJSON provided", {
+                        addnCls: 'humane-flatty-error'
+                    });
                 }
                 console.log(error);
             });
         }
 
-        
+
         const fd_button = $('#show-flight-declarations');
         fd_button.on('click', get_flight_declarations);
+
+        function render_declaration_info(flight_declaration) {
+                       
+            let html = '';  
+            html += flight_declaration['flight_declaration']['originating_party'] + '  ';
+            html += 'Type: ' + flight_declaration['flight_declaration']['operation_mode']+ '  ';
+            html += 'Purpose: ' + flight_declaration['flight_declaration']['purpose'];            
+            
+            let fd_div = document.createTextNode(html); 
+
+            return fd_div;
+        }
+
+        function show_flight_declarations(flight_declarations) {
+            const results_list = document.getElementById('search-results');    
+            results_list.innerHTML = "";
+            flight_declarations.forEach(flight_declaration => {
+                results_list.appendChild(render_declaration_info(flight_declaration));
+            });
+
+
+        }
+
+        function computeCircle(radius) {
+            var positions = [];
+            for (var i = 0; i < 360; i++) {
+                var radians = Cesium.Math.toRadians(i);
+                positions.push(
+                new Cesium.Cartesian2(
+                    radius * Math.cos(radians),
+                    radius * Math.sin(radians)
+                )
+                );
+            }
+            return positions;
+        }
 
         function get_flight_declarations(e) {
 
             $.ajax({
                 url: '/get_flight_declarations',
-                type:'GET'
+                type: 'GET'
 
             }).done(response => {
-                console.log(response);
+                // console.log(response);
+                // render flight declarations
+                let raw_declarations = response.all_declarations;
+
+                let all_declaration_length = Object.keys(raw_declarations).length;
+                let all_declarations = [];
+                if (all_declaration_length == 0) {
+                    // no declarations
+                } else {
+                    for (let fd in raw_declarations) {
+                        const current_declaration = JSON.parse(raw_declarations[fd]);
+
+                        const fd_geo_json = current_declaration['flight_declaration']['parts'];
+                        // render fd_geo_json
+                        let degree_array_heights = [];
+                        for (let feature_counter = 0; feature_counter < fd_geo_json.features.length; feature_counter++) {
+                            
+                            const feature = fd_geo_json.features[feature_counter];
+                            let coords = feature.geometry.coordinates;       
+                            let max_altitude = feature['properties']['max_altitude']['metres'];
+                            let min_altitude = feature['properties']['min_altitude']['metres'];                            
+                            let mean_altitude = ((max_altitude + min_altitude)/2);
+                            for (let coord_counter = 0; coord_counter < coords.length; coord_counter++) {
+                                const cur_coord = coords[coord_counter];
+                                degree_array_heights.push(cur_coord[0]);
+                                degree_array_heights.push(cur_coord[1]);
+                                degree_array_heights.push(mean_altitude);                                
+                            }
+                        }
+
+                        var flight_box = viewer.entities.add({                            
+                            polylineVolume: {
+                                positions: Cesium.Cartesian3.fromDegreesArrayHeights(degree_array_heights),
+                                shape: computeCircle(50.0),
+                                cornerType: Cesium.CornerType.BEVELED,
+                                material: Cesium.Color.GHOSTWHITE.withAlpha(0.15),
+                                outline: false,
+                                outlineColor: Cesium.Color.RED,
+                            },
+                        });
+
+                        all_declarations.push(current_declaration);
+
+                    }
+                }
+                show_flight_declarations(all_declarations || []);
+
 
             }).fail(error => {
-                if (error.status ==422)
-                {
-                    humane.log("Error in getting declarations",{
-                    addnCls: 'humane-flatty-error'
-                });
+                if (error.status == 422) {
+                    humane.log("Error in getting declarations", {
+                        addnCls: 'humane-flatty-error'
+                    });
                 }
                 console.log(error);
             });
         }
-
     </script>
 </body>
 
