@@ -46,9 +46,15 @@ Once you have the Docker container running, you can follow the instructions belo
 2. Copy paste the sample GeoJSON AOI from the importers [folder](https://raw.githubusercontent.com/openskies-sh/flight-blender/master/importers/aoi_geo_fence/aoi.geojson) in the Flight Blender repository
 3. Click the __Stream flights__ button. This subscribe you to the flights in AOI.
 
+## Submitting AOI, Flight Declarations and Geofence data into Flight Spotlight
+
+- [Area of Interest](https://github.com/openskies-sh/flight-blender/blob/master/importers/aoi_geo_fence/aoi.geojson) as a GeoJSON
+- [Geofence](https://github.com/openskies-sh/flight-blender/blob/master/importers/aoi_geo_fence/geo_fence.geojson) as a GeoJSON, we have converters to convert from ED-269
+- [Flight Declaration](https://github.com/openskies-sh/flight-blender/blob/master/importers/flight_declarations/flight-1.json). This file follows the format specified in [Flight Declaration Protocol](https://github.com/openskies-sh/flight-declaration-protocol-development)
+
 ## Submitting Data into Flight Spotlight
 
-Flight tracking data can be submitted to Flight Spotlight by an Display provider like [Flight Blender](https://github.com/openskies-sh/flight-blender) 
+Flight tracking data can be submitted to Flight Spotlight by an Display provider like [Flight Blender](https://github.com/openskies-sh/flight-blender)
 
 ## Logo source
 
