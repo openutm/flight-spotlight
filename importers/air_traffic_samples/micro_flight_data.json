@@ -1,0 +1,87 @@
+{
+  "observations":[
+{
+            "lon_dd": 30.13987541,
+            "lat_dd": -1.968182562,
+            "timestamp": 1590000000000,
+            "traffic_source":3,
+            "source_type" :0,
+            "icao_addresss": "drone-a",
+            "altitude_mm": 230.93
+          },
+          {
+            "lon_dd": 30.14227867,
+            "lat_dd": -1.978690586,
+            "timestamp": 1590000000000,
+            "traffic_source":3,
+            "source_type" :0,
+            "altitude_mm": 285.23,
+            "icao_addresss": "drone-b"
+          }, 
+           {
+            "lon_dd": 30.14592648,
+            "lat_dd": -1.969340593,
+            "timestamp": 1590000005000,
+            "traffic_source":3,
+            "source_type" :0,
+            "altitude_mm": 250.67,
+            "icao_addresss": "drone-a"
+          },
+          {
+            "lon_dd": 30.14386654,
+            "lat_dd": -1.969941052,
+            "timestamp": 1590000005000,
+            "traffic_source":3,
+            "source_type" :0,
+            "altitude_mm": 270.22,
+            "icao_addresss": "drone-b"
+          }, 
+           {
+            "lon_dd": 30.15129089,
+            "lat_dd": -1.970241282,
+            "timestamp": 1590000010000,
+            "traffic_source":3,
+            "source_type" :0,
+            "altitude_mm": 270.22,
+            "icao_addresss": "drone-a"
+          },
+          {
+            "lon_dd": 30.14317989,
+            "lat_dd": -1.964322455,
+            "timestamp": 1590000010000,
+            "traffic_source":3,
+            "source_type" :0,
+            "altitude_mm": 250.67,
+            "icao_addresss": "drone-b"
+          }, 
+          {
+            "lon_dd": 30.15511036,
+            "lat_dd": -1.970927522,
+            "timestamp": 1590000015000,
+            "traffic_source":3,
+            "source_type" :0,
+            "altitude_mm": 285.23,
+            "icao_addresss": "drone-a"
+          },
+          {
+            "lon_dd": 30.14240742,
+            "lat_dd": -1.958961181,
+            "timestamp": 1590000015000,
+            "traffic_source":3,
+            "source_type" :0,
+            "altitude_mm": 230.93,
+            "icao_addresss": "drone-b"
+          }, 
+          {
+            "lon_dd": 30.1591444,
+            "lat_dd": -1.971613761,
+            "timestamp": 1590000020000,
+            "traffic_source":3,
+            "source_type" :0,
+            "altitude_mm": 290.42,
+            "icao_addresss": "drone-a"
+          }
+    
+  ]
+}
+
