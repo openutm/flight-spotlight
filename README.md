@@ -1,6 +1,6 @@
 <img src="https://i.imgur.com/6GWaYcD.png" width="350">
 
-Flight Spotlight is a open-source project to see flights _in realtime_ by subscribing to updates to a geographic area. It can display live air traffic and in the context of UTM / U-Space you can identify drone traffic using network remote-ID flow as specified the ASTM remote-id standard. The live feed is be submitted a complementary flight data fusing software called [Flight Blender](https://flightblender.com) that can stream manned and unmanned flight data using multiple technologies: ADS-B, Radar, Flarm etc. It uses CesiumJS to display the flight data on a 3D map.
+Flight Spotlight is a open-source project to see flights _in realtime_ by subscribing to updates to a geographic area. It can display live manned and unmanned air traffic. In the context of UTM / U-Space you can identify drone traffic using Network Remote-ID flow as specified the ASTM Remote-ID standard. The live feed is submitted using a complementary flight data fusing server called [Flight Blender](https://flightblender.com). Flight Blender can fuse and stream manned and unmanned flight data using multiple technologies: ADS-B, Radar, Flarm etc. Network Remote-ID capabilities are also provided by Flight Blender. It uses CesiumJS to display the flight data on a 3D map.
 
 ## Features
 
