@@ -1,14 +1,14 @@
 <img src="https://i.imgur.com/6GWaYcD.png" width="350">
 
-Flight Spotlight is a open-source project to see all flights in a area _in realtime_ by subscribing to updates to a geographic area. From a UTM / U-Space point of view, this includes querying flights in a DSS and a live feed such as ADS-B or even Broadcast Remote ID. It uses CesiumJS to display the flight data on a 3D map.
+Flight Spotlight is a open-source project to see all flights in a area _in realtime_ by subscribing to updates to a geographic area. It can display live air traffic and implements a network remote-ID flow as specified the ASTM remote-id standard. The live feed is be submitted a complementary flight data fusing software called [Flight Blender](https://flightblender.com). It uses CesiumJS to display the flight data on a 3D map.
 
 ## Features
 
 This software is compatible with all ASTM and EuroCAE upcoming standards for UTM / U-Space. Specifically it is compatible with Remote ID (Remote ID Display provider) and Geofencing standards
 
 - Geofencing display compatible with [EuroCAE ED-269](https://eshop.eurocae.net/eurocae-documents-and-reports/ed-269/)
-- Display Network Remote ID via connections to [DSS](https://github.com/interuss/dss)
-- Display ADS-B traffic using streamlined [JSON format](https://github.com/openskies-sh/airtraffic-data-protocol-development)
+- Display Network Remote ID via connections to [DSS](https://github.com/interuss/dss) using [Flight Blender](https://flightblender.com)
+- Display ADS-B traffic using streamlined [JSON format](https://github.com/openskies-sh/airtraffic-data-protocol-development) using Flight Blender backend
 - Upload JSON based [flight declarations](https://github.com/openskies-sh/flight-declaration-protocol-development) and mission plans
 
 ## Screenshots
