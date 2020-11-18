@@ -1,6 +1,8 @@
 <img src="https://i.imgur.com/6GWaYcD.png" width="350">
 
-Flight Spotlight is a open-source project to see flights _in realtime_ by subscribing to updates to a geographic area. It can display live manned and unmanned air traffic. In the context of UTM / U-Space you can identify drone traffic using Network Remote-ID flow as specified the ASTM Remote-ID standard. The live feed is submitted using a complementary flight data fusing server called [Flight Blender](https://flightblender.com). Flight Blender can fuse and stream manned and unmanned flight data using multiple technologies: ADS-B, Radar, Flarm etc. Network Remote-ID capabilities are also provided by Flight Blender. It uses CesiumJS to display the flight data on a 3D map.
+Flight Spotlight is a open-source project to see flights _in realtime_ by subscribing to updates to a geographic area. It can display live manned and unmanned air traffic. In the context of UTM / U-Space you can identify drone traffic using Network Remote-ID flow. At the moment since ASTM Remote-ID is released, it is implemented, as other standards are released, they can be enabled as well.
+
+The live feed and the identification is submitted using a complementary flight data fusing server called [Flight Blender](https://flightblender.com). Flight Blender can fuse and stream manned and unmanned flight data using multiple technologies: ADS-B, Radar, FLARM etc. Network Remote-ID capabilities are also provided by Flight Blender as a specialized module. It uses CesiumJS to display the flight data on a 3D map.
 
 ## Features
 
@@ -8,7 +10,7 @@ This software is compatible with all ASTM and EuroCAE upcoming standards for UTM
 
 - Geofencing display compatible with [EuroCAE ED-269](https://eshop.eurocae.net/eurocae-documents-and-reports/ed-269/)
 - Display Network Remote ID via connections to [DSS](https://github.com/interuss/dss) using [Flight Blender](https://flightblender.com)
-- Display ADS-B traffic using streamlined [JSON format](https://github.com/openskies-sh/airtraffic-data-protocol-development) using Flight Blender backend
+- Display ADS-B traffic using streamlined [JSON format](https://github.com/openskies-sh/airtraffic-data-protocol-development) using a Flight Blender backend
 - Upload JSON based [flight declarations](https://github.com/openskies-sh/flight-declaration-protocol-development) and mission plans
 
 ## Screenshots
