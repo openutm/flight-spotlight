@@ -21,7 +21,7 @@
         secret: process.env.APP_SECRET,
         cookie: {},
         resave: false,
-        saveUninitialized: false
+        saveUninitialized: false    
       };
 
     let strategy = new OAuth2Strategy({
