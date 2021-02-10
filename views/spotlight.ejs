@@ -133,10 +133,21 @@
                 if (spotlight_data.alert_type == 'aoi') {
 
                     const cur_result = spotlight_data.results.object;
+                    
                     // console.log(Math.floor(Date.now() / 1000) +":  " + cur_result.coordinates[1], cur_result.coordinates[0], cur_result.coordinates[2]);                    
                     viewer.entities.add({
                         position: Cesium.Cartesian3.fromDegrees(cur_result.coordinates[1], cur_result
                             .coordinates[0], cur_result.coordinates[2]),
+                            
+                        // label: {text: s},
+                        label: {
+                            text: spotlight_data.results.id,
+                            font: "10px Helvetica",
+                            fillColor: Cesium.Color.WHITE,
+                            outlineColor: Cesium.Color.BLACK,
+                            outlineWidth: 1,
+                            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                            },
                         point: {
                             pixelSize: 5,
                             color: Cesium.Color.RED,
@@ -151,7 +162,8 @@
                                 color: Cesium.Color.YELLOW
                             }),
                             width: 3
-                        }
+                        },
+                        
                     });
                 } else if (spotlight_data.alert_type == 'aoi_geo_fence') {
                     const result_geo_json = spotlight_data.results.objects;
