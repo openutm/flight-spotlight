@@ -11,77 +11,6 @@ h1 {
     font-family: 'Karla', sans-serif;
 }
 
-#left {
-    width: 360px;
-    padding: 20px;
-    font-size: 12px;
-    float: left;
-}
-
-#right {
-    /*padding: 20px;*/
-    overflow: auto;
-    /*background: #ccc;*/
-}
-
-#map {
-    width: 100%;
-    /*height: 500px;*/
-}
-
-
-/*
-#glMap {
-    width: 100%;
-    height: 500px;
-}*/
-
-.glcontrol {
-    /*position: absolute;*/
-    left: 0;
-    z-index: 1000;
-    padding: 10px;
-}
-
-.glcontrol.tilt {
-    right: 0px;
-}
-
-.glcontrol.rotation {
-    right: 85px;
-}
-
-.glcontrol.zoom {
-    right: 130px;
-}
-
-.glcontrol.zoom button {
-    font-weight: normal;
-}
-
-.glcontrol button {
-    width: 30px;
-    height: 30px;
-    margin: 10px 0 0 10px;
-    border: 1px solid #999999;
-    background: #ffffff;
-    /*opacity: 0.6;*/
-    /*border-radius: 2px;*/
-    font-size: 14px;
-    /*box-shadow: 0 0 5px #666666;*/
-    /*font-weight: bold;*/
-    text-align: center;
-}
-
-a {
-    color: #3a9bdc;
-}
-
-.glcontrol button:hover {
-    opacity: 1;
-    cursor: pointer;
-}
-
 textarea#geo_polygon_string {    
     font-family: 'Karla', sans-serif;
     height: 100px;    
@@ -147,7 +76,7 @@ li {
     font-size:10px;
 }
 
-section.information h1 {
+.information h1 {
     font-family: "Karla", Arial, Helvetica, sans-serif;
     text-transform: uppercase;
     font-size: 22px;
@@ -159,7 +88,7 @@ section.information h1 {
     font-size: 18px;
 }
 
-section.information h2 {
+.information h2 {
     font-family: "Karla", Times, serif;
     /*font-size: 12px;*/
     /*font-style: italic;*/
@@ -167,7 +96,7 @@ section.information h2 {
     margin-top: -2px;
 }
 
-section.information h4 {
+.information h4 {
     font-family: "Karla", Times, serif;
     /*font-size: 12px;*/
     /*font-style: italic;*/
@@ -175,15 +104,15 @@ section.information h4 {
     margin-top: -2px;
 }
 
-section.information div.description,
-section.information p.description {
+.information div.description,
+.information p.description {
     font-family: 'Inconsolata', Arial, Helvetica, sans-serif;
     font-size: 12px;
     margin: 8px 0 0 0;
 }
 
-section.information,
-section.information,
+.information,
+.information,
 textarea {
     font-family: 'Inconsolata', Arial, Helvetica, sans-serif;
     font-size: 14px;
@@ -191,11 +120,11 @@ textarea {
     padding-bottom: 10px;
 }
 
-section.information h3.modes {
+.information h3.modes {
     margin-top: 20px;
 }
 
-section.information label.toggle-modes {
+.information label.toggle-modes {
     background-color: rgba(0, 0, 0, .2);
     font-size: 10px;
     text-transform: uppercase;
@@ -207,30 +136,30 @@ section.information label.toggle-modes {
     padding: 2px 8px;
 }
 
-section.information ul.controls {
+.information ul.controls {
     list-style-type: square;
     margin: 15px 0 0 25px;
 }
 
-section.information ul.controls li {
+.information ul.controls li {
     font-family: 'Karla', Arial, Helvetica, sans-serif;
     font-size: 14px;
 }
 
-section.information ul.controls li.disabled a {
+.information ul.controls li.disabled a {
     color: rgba(0, 0, 0, .35);
 }
 
-section.information ul.controls li a {
+.information ul.controls li a {
     cursor: pointer;
     transition: color .25s;
 }
 
-section.information ul.controls li:not(.disabled) a:hover {
+.information ul.controls li:not(.disabled) a:hover {
     color: black;
 }
 
-section.information ul.controls li span.only {
+.information ul.controls li span.only {
     color: rgba(0, 0, 0, .25);
     font-size: 10px;
     margin-left: 5px;
@@ -238,11 +167,11 @@ section.information ul.controls li span.only {
     transition: color .25s;
 }
 
-section.information ul.controls li span.only:hover {
+.information ul.controls li span.only:hover {
     color: rgba(0, 0, 0, .35);
 }
 
-section.information span.current-mode {
+.information span.current-mode {
     color: rgba(0, 0, 0, .25);
     font-size: 10px;
     margin-left: 10px;
@@ -304,78 +233,72 @@ ul.input-list li {
     }
 }
 
-.style-2 input[type="text"] {
-    padding: 10px;
-    border: solid 5px #c9c9c9;
-    transition: border 0.3s;
-}
-
-.style-2 input[type="text"]:focus,
-.style-2 input[type="text"].focus {
-    border: solid 5px #969696;
-}
-
-.button {
-    background-color: #4CAF50;
-    /* Green */
-    font-family: 'Karla', sans-serif;
-    border: none;
-    color: white;
-    padding: 8px 16px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 14px;
-    margin: 2px 1px;
-    cursor: pointer;
-}
-
-span.grey {
-    font-family: 'Karla', sans-serif;
-    background: #cccccc;
-    border-radius: 0.8em;
-    -moz-border-radius: 0.8em;
-    -webkit-border-radius: 0.8em;
-    color: #fff;
-    display: inline-block;
-    font-weight: bold;
-    line-height: 1.6em;
-    margin-right: 15px;
-    text-align: center;
-    width: 1.6em;
-}
-
 #cesiumContainer {
     width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
     /* position: absolute; */
 }
 
-.cameracontrols {
-    /*position: absolute;*/
+.sidebar {
+    /* display: none;*/
+    height: 90%;
+    position:absolute;
+    right: 0;
+    padding: 0;
+    display: block;
+}
+
+/* @media (min-width: 768px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        z-index: 1000;
+        /*padding: 20px;*/
+        overflow-x: hidden;
+        overflow-y: hidden;
+        /*background-color: #f5f5f5;*/
+        border-right: 1px solid #eee;
+    }
+} */
+
+.main {
+    padding: 20px;
+    /*padding-bottom: 500px;*/
+}
+
+
+@media (min-width: 768px) {
+    .main {
+        padding-right: 40px;
+        padding-left: 40px;
+    }
+}
+
+.main .page-header {
+    margin-top: 0;
+}
+
+.breakpoint-current {
     left: 0;
-    z-index: 1000;
-    padding: 10px;
+    margin-top: -10px;
+    position: fixed;
+    /* top: 33.3333%; */
+    width: 3px;
+    height: 3px;
+    background: red;
+    ;
 }
 
-.cameracontrols button {
-    width: 100px;
-    height: 40px;
-    margin: 10px 0 0 10px;
-    border: 1px solid #999999;
-    background: #ffffff;
-    /*opacity: 0.6;*/
-    /*border-radius: 2px;*/
-    font-size: 14px;
-    /*box-shadow: 0 0 5px #666666;*/
-    /*font-weight: bold;*/
-    text-align: center;
+.viewing {
+    background: #eee;
 }
 
-table {
-    display: table;
-    border-collapse: separate;
-    border-spacing: 2px;
-    border-color: grey;
-    /*float: right;*/
-    font-size: 12px;
+section {
+    padding: 5px 10px 10px 10px;
+    border-radius: 10px;
+}
+
+.page-header {
+    margin-bottom: 0px;
 }
