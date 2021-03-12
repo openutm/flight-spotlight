@@ -47,6 +47,23 @@ router.get("/", (req, res) => {
   res.render("home", { title: "Home" });
 });
 
+router.get("/noticeboard", secured(), (req, response, next) => {
+  const { _raw, _json, ...userProfile } = req.user;
+  const bing_key = process.env.BING_KEY || 'get-yours-at-https://www.bingmapsportal.com/';
+  const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
+  const mapbox_id = process.env.MAPBOX_ID || 'this_is_my_mapbox_map_id';
+  response.render('noticeboard', {
+    title: "Noticeboard",
+    userProfile: userProfile,
+    bing_key: bing_key,
+    mapbox_key: mapbox_key,
+    mapbox_id: mapbox_id,
+    errors: {},
+    data: {}
+  });
+
+});
+
 router.get("/spotlight", secured(), (req, response, next) => {
   const { _raw, _json, ...userProfile } = req.user;
   const bing_key = process.env.BING_KEY || 'get-yours-at-https://www.bingmapsportal.com/';
