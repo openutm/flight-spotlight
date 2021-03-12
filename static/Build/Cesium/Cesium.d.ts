@@ -847,28 +847,6 @@ export class AxisAlignedBoundingBox {
 }
 
 /**
- * Object for setting and retrieving the default Bing Maps API key.
- *
- * A Bing API key is only required if you are using {@link BingMapsImageryProvider}
- * or {@link BingMapsGeocoderService}. You can create your own key at
- * {@link https://www.bingmapsportal.com/}.
- */
-export namespace BingMapsApi {
-    /**
-     * The default Bing Maps API key to use if one is not provided to the
-     * constructor of an object that uses the Bing Maps API.
-     */
-    var defaultKey: string;
-    /**
-     * Gets the key to use to access the Bing Maps API. If the provided
-     * key is defined, it is returned. Otherwise, returns {@link BingMapsApi.defaultKey}.
-     * @param providedKey - The provided key to use if defined.
-     * @returns The Bing Maps API key to use.
-     */
-    function getKey(providedKey: string | null | undefined): string | undefined;
-}
-
-/**
  * Provides geocoding through Bing Maps.
  * @param options - Object with the following properties:
  * @param options.key - A key to use with the Bing Maps geocoding service
@@ -979,7 +957,7 @@ export class BoundingRectangle {
      * Determines if two rectangles intersect.
      * @param left - A rectangle to check for intersection.
      * @param right - The other rectangle to check for intersection.
-     * @returns <code>Intersect.INTESECTING</code> if the rectangles intersect, <code>Intersect.OUTSIDE</code> otherwise.
+     * @returns <code>Intersect.INTERSECTING</code> if the rectangles intersect, <code>Intersect.OUTSIDE</code> otherwise.
      */
     static intersect(left: BoundingRectangle, right: BoundingRectangle): Intersect;
     /**
@@ -999,7 +977,7 @@ export class BoundingRectangle {
     /**
      * Determines if this rectangle intersects with another.
      * @param right - A rectangle to check for intersection.
-     * @returns <code>Intersect.INTESECTING</code> if the rectangles intersect, <code>Intersect.OUTSIDE</code> otherwise.
+     * @returns <code>Intersect.INTERSECTING</code> if the rectangles intersect, <code>Intersect.OUTSIDE</code> otherwise.
      */
     intersect(right: BoundingRectangle): Intersect;
     /**
@@ -1645,6 +1623,13 @@ export class Cartesian2 {
      * @returns The dot product.
      */
     static dot(left: Cartesian2, right: Cartesian2): number;
+    /**
+     * Computes the magnitude of the cross product that would result from implicitly setting the Z coordinate of the input vectors to 0
+     * @param left - The first Cartesian.
+     * @param right - The second Cartesian.
+     * @returns The cross product.
+     */
+    static cross(left: Cartesian2, right: Cartesian2): number;
     /**
      * Computes the componentwise product of two Cartesians.
      * @param left - The first Cartesian.
@@ -2531,7 +2516,7 @@ export class Cartesian4 {
     toString(): string;
     /**
      * Packs an arbitrary floating point value to 4 values representable using uint8.
-     * @param value - A floating point number
+     * @param value - A floating point number.
      * @param [result] - The Cartesian4 that will contain the packed float.
      * @returns A Cartesian4 representing the float packed to values in x, y, z, and w.
      */
@@ -4366,15 +4351,15 @@ export class CompressedTextureBuffer {
 /**
  * A description of a polygon composed of arbitrary coplanar positions.
  * @example
- * var polygon = new Cesium.CoplanarPolygonGeometry({
- *   positions : Cesium.Cartesian3.fromDegreesArrayHeights([
+ * var polygonGeometry = new Cesium.CoplanarPolygonGeometry({
+ *  polygonHierarchy: new Cesium.PolygonHierarchy(
+ *     Cesium.Cartesian3.fromDegreesArrayHeights([
  *      -90.0, 30.0, 0.0,
- *      -90.0, 30.0, 1000.0,
- *      -80.0, 30.0, 1000.0,
+ *      -90.0, 30.0, 300000.0,
+ *      -80.0, 30.0, 300000.0,
  *      -80.0, 30.0, 0.0
- *   ])
+ *   ]))
  * });
- * var geometry = Cesium.CoplanarPolygonGeometry.createGeometry(polygon);
  * @param options - Object with the following properties:
  * @param options.polygonHierarchy - A polygon hierarchy that can include holes.
  * @param [options.stRotation = 0.0] - The rotation of the texture coordinates, in radians. A positive rotation is counter-clockwise.
@@ -5036,15 +5021,15 @@ export namespace EasingFunction {
     /**
      * Quadratic in.
      */
-    const QUADRACTIC_IN: EasingFunction.Callback;
+    const QUADRATIC_IN: EasingFunction.Callback;
     /**
      * Quadratic out.
      */
-    const QUADRACTIC_OUT: EasingFunction.Callback;
+    const QUADRATIC_OUT: EasingFunction.Callback;
     /**
      * Quadratic in then out.
      */
-    const QUADRACTIC_IN_OUT: EasingFunction.Callback;
+    const QUADRATIC_IN_OUT: EasingFunction.Callback;
     /**
      * Cubic in.
      */
@@ -5427,7 +5412,7 @@ export class Ellipsoid {
      * Computes the normal of the plane tangent to the surface of the ellipsoid at the provided position.
      * @param cartesian - The Cartesian position for which to to determine the surface normal.
      * @param [result] - The object onto which to store the result.
-     * @returns The modified result parameter or a new Cartesian3 instance if none was provided.
+     * @returns The modified result parameter or a new Cartesian3 instance if none was provided, or undefined if a normal cannot be found.
      */
     geodeticSurfaceNormal(cartesian: Cartesian3, result?: Cartesian3): Cartesian3;
     /**
@@ -5836,8 +5821,9 @@ export class EllipsoidTangentPlane {
      * point of the provided Cartesians.
      * @param cartesians - The list of positions surrounding the center point.
      * @param [ellipsoid = Ellipsoid.WGS84] - The ellipsoid to use.
+     * @returns The new instance of EllipsoidTangentPlane.
      */
-    static fromPoints(cartesians: Cartesian3[], ellipsoid?: Ellipsoid): void;
+    static fromPoints(cartesians: Cartesian3[], ellipsoid?: Ellipsoid): EllipsoidTangentPlane;
     /**
      * Computes the projection of the provided 3D position onto the 2D plane, radially outward from the {@link EllipsoidTangentPlane.ellipsoid} coordinate system origin.
      * @param cartesian - The point to project.
@@ -8705,19 +8691,6 @@ export class MapProjection {
     unproject(cartesian: Cartesian3, result?: Cartographic): Cartographic;
 }
 
-export namespace MapboxApi {
-    /**
-     * The default Mapbox API access token to use if one is not provided to the
-     * constructor of an object that uses the Mapbox API.  If this property is undefined,
-     * Cesium's default access token is used, which is only suitable for use early in development.
-     * Please supply your own access token as soon as possible and prior to deployment.
-     * Visit {@link https://www.mapbox.com/help/create-api-access-token/} for details.
-     * When Cesium's default access token is used, a message is printed to the console the first
-     * time the Mapbox API is used.
-     */
-    var defaultAccessToken: string;
-}
-
 /**
  * Math functions.
  */
@@ -9094,23 +9067,35 @@ export namespace Math {
      */
     function incrementWrap(n?: number, maximumValue?: number, minimumValue?: number): number;
     /**
-     * Determines if a positive integer is a power of two.
+     * Determines if a non-negative integer is a power of two.
+     * The maximum allowed input is (2^32)-1 due to 32-bit bitwise operator limitation in Javascript.
      * @example
      * var t = Cesium.Math.isPowerOfTwo(16); // true
      * var f = Cesium.Math.isPowerOfTwo(20); // false
-     * @param n - The positive integer to test.
+     * @param n - The integer to test in the range [0, (2^32)-1].
      * @returns <code>true</code> if the number if a power of two; otherwise, <code>false</code>.
      */
     function isPowerOfTwo(n: number): boolean;
     /**
-     * Computes the next power-of-two integer greater than or equal to the provided positive integer.
+     * Computes the next power-of-two integer greater than or equal to the provided non-negative integer.
+     * The maximum allowed input is 2^31 due to 32-bit bitwise operator limitation in Javascript.
      * @example
      * var n = Cesium.Math.nextPowerOfTwo(29); // 32
      * var m = Cesium.Math.nextPowerOfTwo(32); // 32
-     * @param n - The positive integer to test.
+     * @param n - The integer to test in the range [0, 2^31].
      * @returns The next power-of-two integer.
      */
     function nextPowerOfTwo(n: number): number;
+    /**
+     * Computes the previous power-of-two integer less than or equal to the provided non-negative integer.
+     * The maximum allowed input is (2^32)-1 due to 32-bit bitwise operator limitation in Javascript.
+     * @example
+     * var n = Cesium.Math.previousPowerOfTwo(29); // 16
+     * var m = Cesium.Math.previousPowerOfTwo(32); // 32
+     * @param n - The integer to test in the range [0, (2^32)-1].
+     * @returns The previous power-of-two integer.
+     */
+    function previousPowerOfTwo(n: number): number;
     /**
      * Constraint a value to lie between two values.
      * @param value - The value to constrain.
@@ -9900,6 +9885,13 @@ export class Matrix3 implements ArrayLike<number> {
      * @returns The modified result parameter.
      */
     static inverse(matrix: Matrix3, result: Matrix3): Matrix3;
+    /**
+     * Computes the inverse transpose of a matrix.
+     * @param matrix - The matrix to transpose and invert.
+     * @param result - The object onto which to store the result.
+     * @returns The modified result parameter.
+     */
+    static inverseTranspose(matrix: Matrix3, result: Matrix3): Matrix3;
     /**
      * Compares the provided matrices componentwise and returns
      * <code>true</code> if they are equal, <code>false</code> otherwise.
@@ -10697,6 +10689,13 @@ export class Matrix4 implements ArrayLike<number> {
      * @returns The modified result parameter.
      */
     static inverseTransformation(matrix: Matrix4, result: Matrix4): Matrix4;
+    /**
+     * Computes the inverse transpose of a matrix.
+     * @param matrix - The matrix to transpose and invert.
+     * @param result - The object onto which to store the result.
+     * @returns The modified result parameter.
+     */
+    static inverseTranspose(matrix: Matrix4, result: Matrix4): Matrix4;
     /**
      * An immutable Matrix4 instance initialized to the identity matrix.
      */
@@ -12508,7 +12507,7 @@ export class PolylineGeometry {
  *   shapePositions : computeCircle(100000.0)
  * });
  * @param options - Object with the following properties:
- * @param options.polylinePositions - An array of {@link Cartesain3} positions that define the center of the polyline volume.
+ * @param options.polylinePositions - An array of {@link Cartesian3} positions that define the center of the polyline volume.
  * @param options.shapePositions - An array of {@link Cartesian2} positions that define the shape to be extruded along the polyline
  * @param [options.ellipsoid = Ellipsoid.WGS84] - The ellipsoid to be used as a reference.
  * @param [options.granularity = Math.RADIANS_PER_DEGREE] - The distance, in radians, between each latitude and longitude. Determines the number of positions in the buffer.
@@ -15309,21 +15308,20 @@ export class Spline {
  * returning results asynchronously via a promise.
  *
  * The Worker is not constructed until a task is scheduled.
- * @param workerName - The name of the worker.  This is expected to be a script
- *                            in the Workers folder.
- * @param [maximumActiveTasks = 5] - The maximum number of active tasks.  Once exceeded,
+ * @param workerPath - The Url to the worker. This can either be an absolute path or relative to the Cesium Workers folder.
+ * @param [maximumActiveTasks = Number.POSITIVE_INFINITY] - The maximum number of active tasks.  Once exceeded,
  *                                        scheduleTask will not queue any more tasks, allowing
  *                                        work to be rescheduled in future frames.
  */
 export class TaskProcessor {
-    constructor(workerName: string, maximumActiveTasks?: number);
+    constructor(workerPath: string, maximumActiveTasks?: number);
     /**
      * Schedule a task to be processed by the web worker asynchronously.  If there are currently more
      * tasks active than the maximum set by the constructor, will immediately return undefined.
      * Otherwise, returns a promise that will resolve to the result posted back by the worker when
      * finished.
      * @example
-     * var taskProcessor = new Cesium.TaskProcessor('myWorkerName');
+     * var taskProcessor = new Cesium.TaskProcessor('myWorkerPath');
      * var promise = taskProcessor.scheduleTask({
      *     someParameter : true,
      *     another : 'hello'
@@ -17767,7 +17765,7 @@ export function writeTextToCanvas(text: string, options?: {
     strokeWidth?: number;
     backgroundColor?: Color;
     padding?: number;
-}): HTMLCanvasElement;
+}): HTMLCanvasElement | undefined;
 
 export namespace BillboardGraphics {
     /**
@@ -19668,7 +19666,7 @@ export class EllipseGraphics {
      */
     extrudedHeightReference: Property | undefined;
     /**
-     * Gets or sets the numeric property specifying the rotation of the ellipse clockwise from north.
+     * Gets or sets the numeric property specifying the rotation of the ellipse counter-clockwise from north.
      */
     rotation: Property | undefined;
     /**
@@ -20165,6 +20163,7 @@ export class Entity {
  * @param [options.clusterBillboards = true] - Whether or not to cluster the billboards of an entity.
  * @param [options.clusterLabels = true] - Whether or not to cluster the labels of an entity.
  * @param [options.clusterPoints = true] - Whether or not to cluster the points of an entity.
+ * @param [options.show = true] - Determines if the entities in the cluster will be shown.
  */
 export class EntityCluster {
     constructor(options?: {
@@ -20174,7 +20173,12 @@ export class EntityCluster {
         clusterBillboards?: boolean;
         clusterLabels?: boolean;
         clusterPoints?: boolean;
+        show?: boolean;
     });
+    /**
+     * Determines if entities in this collection will be shown.
+     */
+    show: boolean;
     /**
      * Gets or sets whether clustering is enabled.
      */
@@ -25016,6 +25020,7 @@ export namespace Billboard {
  * @param [options.blendOption = BlendOption.OPAQUE_AND_TRANSLUCENT] - The billboard blending option. The default
  * is used for rendering both opaque and translucent billboards. However, if either all of the billboards are completely opaque or all are completely translucent,
  * setting the technique to BlendOption.OPAQUE or BlendOption.TRANSLUCENT can improve performance by up to 2x.
+ * @param [options.show = true] - Determines if the billboards in the collection will be shown.
  */
 export class BillboardCollection {
     constructor(options?: {
@@ -25023,7 +25028,12 @@ export class BillboardCollection {
         debugShowBoundingVolume?: boolean;
         scene?: Scene;
         blendOption?: BlendOption;
+        show?: boolean;
     });
+    /**
+     * Determines if billboards in this collection will be shown.
+     */
+    show: boolean;
     /**
      * The 4x4 transformation matrix that transforms each billboard in this collection from model to world coordinates.
      * When this is the identity matrix, the billboards are drawn in world coordinates, i.e., Earth's WGS84 coordinates.
@@ -25190,7 +25200,6 @@ export namespace BingMapsImageryProvider {
      * @property url - The url of the Bing Maps server hosting the imagery.
      * @property key - The Bing Maps key for your application, which can be
      *        created at {@link https://www.bingmapsportal.com/}.
-     *        If this parameter is not provided, {@link BingMapsApi.defaultKey} is used, which is undefined by default.
      * @property [tileProtocol] - The protocol to use when loading tiles, e.g. 'http' or 'https'.
      *        By default, tiles are loaded using the same protocol as the page.
      * @property [mapStyle = BingMapsStyle.AERIAL] - The type of Bing Maps imagery to load.
@@ -28163,9 +28172,9 @@ export class Cesium3DTileset {
      */
     readonly tilesLoaded: boolean;
     /**
-     * The url to a tileset JSON file.
+     * The resource used to fetch the tileset JSON file
      */
-    readonly url: string;
+    readonly resource: Resource;
     /**
      * The base path that non-absolute paths in tileset JSON file are relative to.
      */
@@ -28767,7 +28776,7 @@ export class ClippingPlaneCollection {
      * <code>isDestroyed</code> will result in a {@link DeveloperError} exception.  Therefore,
      * assign the return value (<code>undefined</code>) to the object as done in the example.
      * @example
-     * clippingPlanes = clippingPlanes && clippingPlanes .destroy();
+     * clippingPlanes = clippingPlanes && clippingPlanes.destroy();
      */
     destroy(): void;
 }
@@ -30374,20 +30383,31 @@ export class GoogleEarthEnterpriseMapsProvider {
 export namespace GridImageryProvider {
     /**
      * Initialization options for the GridImageryProvider constructor
-     * @param [tilingScheme = new GeographicTilingScheme()] - The tiling scheme for which to draw tiles.
-     * @param [ellipsoid] - The ellipsoid.  If the tilingScheme is specified,
+     * @property [tilingScheme = new GeographicTilingScheme()] - The tiling scheme for which to draw tiles.
+     * @property [ellipsoid] - The ellipsoid.  If the tilingScheme is specified,
      *                    this parameter is ignored and the tiling scheme's ellipsoid is used instead. If neither
      *                    parameter is specified, the WGS84 ellipsoid is used.
-     * @param [cells = 8] - The number of grids cells.
-     * @param [color = Color(1.0, 1.0, 1.0, 0.4)] - The color to draw grid lines.
-     * @param [glowColor = Color(0.0, 1.0, 0.0, 0.05)] - The color to draw glow for grid lines.
-     * @param [glowWidth = 6] - The width of lines used for rendering the line glow effect.
-     * @param [backgroundColor = Color(0.0, 0.5, 0.0, 0.2)] - Background fill color.
-     * @param [tileWidth = 256] - The width of the tile for level-of-detail selection purposes.
-     * @param [tileHeight = 256] - The height of the tile for level-of-detail selection purposes.
-     * @param [canvasSize = 256] - The size of the canvas used for rendering.
+     * @property [cells = 8] - The number of grids cells.
+     * @property [color = Color(1.0, 1.0, 1.0, 0.4)] - The color to draw grid lines.
+     * @property [glowColor = Color(0.0, 1.0, 0.0, 0.05)] - The color to draw glow for grid lines.
+     * @property [glowWidth = 6] - The width of lines used for rendering the line glow effect.
+     * @property [backgroundColor = Color(0.0, 0.5, 0.0, 0.2)] - Background fill color.
+     * @property [tileWidth = 256] - The width of the tile for level-of-detail selection purposes.
+     * @property [tileHeight = 256] - The height of the tile for level-of-detail selection purposes.
+     * @property [canvasSize = 256] - The size of the canvas used for rendering.
      */
-    type ConstructorOptions = any;
+    type ConstructorOptions = {
+        tilingScheme?: TilingScheme;
+        ellipsoid?: Ellipsoid;
+        cells?: number;
+        color?: Color;
+        glowColor?: Color;
+        glowWidth?: number;
+        backgroundColor?: Color;
+        tileWidth?: number;
+        tileHeight?: number;
+        canvasSize?: number;
+    };
 }
 
 /**
@@ -32170,6 +32190,7 @@ export class Label {
  * @param [options.blendOption = BlendOption.OPAQUE_AND_TRANSLUCENT] - The label blending option. The default
  * is used for rendering both opaque and translucent labels. However, if either all of the labels are completely opaque or all are completely translucent,
  * setting the technique to BlendOption.OPAQUE or BlendOption.TRANSLUCENT can improve performance by up to 2x.
+ * @param [options.show = true] - Determines if the labels in the collection will be shown.
  */
 export class LabelCollection {
     constructor(options?: {
@@ -32177,7 +32198,12 @@ export class LabelCollection {
         debugShowBoundingVolume?: boolean;
         scene?: Scene;
         blendOption?: BlendOption;
+        show?: boolean;
     });
+    /**
+     * Determines if labels in this collection will be shown.
+     */
+    show: boolean;
     /**
      * The 4x4 transformation matrix that transforms each label in this collection from model to world coordinates.
      * When this is the identity matrix, the labels are drawn in world coordinates, i.e., Earth's WGS84 coordinates.
@@ -32956,6 +32982,11 @@ export class MapboxStyleImageryProvider {
  *  <ul>
  *      <li><code>image</code>: color ramp image to use for color the terrain by aspect.</li>
  *  </ul>
+ *  <li>ElevationBand</li>
+ *  <ul>
+ *      <li><code>heights</code>: image of heights sorted from lowest to highest.</li>
+ *      <li><code>colors</code>: image of colors at the corresponding heights.</li>
+ * </ul>
  * </ul>
  * </ul>
  * </div>
@@ -33150,6 +33181,10 @@ export class Material {
      * Gets the name of the aspect ramp material.
      */
     static readonly AspectRampMaterialType: string;
+    /**
+     * Gets the name of the elevation band material.
+     */
+    static readonly ElevationBandType: string;
 }
 
 /**
@@ -34993,13 +35028,19 @@ export class PointPrimitive {
  * @param [options.blendOption = BlendOption.OPAQUE_AND_TRANSLUCENT] - The point blending option. The default
  * is used for rendering both opaque and translucent points. However, if either all of the points are completely opaque or all are completely translucent,
  * setting the technique to BlendOption.OPAQUE or BlendOption.TRANSLUCENT can improve performance by up to 2x.
+ * @param [options.show = true] - Determines if the primitives in the collection will be shown.
  */
 export class PointPrimitiveCollection {
     constructor(options?: {
         modelMatrix?: Matrix4;
         debugShowBoundingVolume?: boolean;
         blendOption?: BlendOption;
+        show?: boolean;
     });
+    /**
+     * Determines if primitives in this collection will be shown.
+     */
+    show: boolean;
     /**
      * The 4x4 transformation matrix that transforms each point in this collection from model to world coordinates.
      * When this is the identity matrix, the pointPrimitives are drawn in world coordinates, i.e., Earth's WGS84 coordinates.
@@ -35223,12 +35264,18 @@ export class Polyline {
  * @param [options] - Object with the following properties:
  * @param [options.modelMatrix = Matrix4.IDENTITY] - The 4x4 transformation matrix that transforms each polyline from model to world coordinates.
  * @param [options.debugShowBoundingVolume = false] - For debugging only. Determines if this primitive's commands' bounding spheres are shown.
+ * @param [options.show = true] - Determines if the polylines in the collection will be shown.
  */
 export class PolylineCollection {
     constructor(options?: {
         modelMatrix?: Matrix4;
         debugShowBoundingVolume?: boolean;
+        show?: boolean;
     });
+    /**
+     * Determines if polylines in this collection will be shown.
+     */
+    show: boolean;
     /**
      * The 4x4 transformation matrix that transforms each polyline in this collection from model to world coordinates.
      * When this is the identity matrix, the polylines are drawn in world coordinates, i.e., Earth's WGS84 coordinates.
@@ -36467,8 +36514,7 @@ export class PrimitiveCollection {
      * @example
      * var billboards = scene.primitives.add(new Cesium.BillboardCollection());
      * @param primitive - The primitive to add.
-     * @param [index] - the index to add the layer at.  If omitted, the primitive will
-     *                         added at the bottom  of all existing primitives.
+     * @param [index] - The index to add the layer at.  If omitted, the primitive will be added at the bottom of all existing primitives.
      * @returns The primitive added to the collection.
      */
     add(primitive: any, index?: number): any;
@@ -39512,6 +39558,64 @@ export class WebMapTileServiceImageryProvider {
 }
 
 /**
+ * @property height - The height.
+ * @property color - The color at this height.
+ */
+export type createElevationBandMaterialEntry = {
+    height: number;
+    color: Color;
+};
+
+/**
+ * @property entries - A list of elevation entries. They will automatically be sorted from lowest to highest. If there is only one entry and <code>extendsDownards</code> and <code>extendUpwards</code> are both <code>false</code>, they will both be set to <code>true</code>.
+ * @property [extendDownwards = false] - If <code>true</code>, the band's minimum elevation color will extend infinitely downwards.
+ * @property [extendUpwards = false] - If <code>true</code>, the band's maximum elevation color will extend infinitely upwards.
+ */
+export type createElevationBandMaterialBand = {
+    entries: createElevationBandMaterialEntry[];
+    extendDownwards?: boolean;
+    extendUpwards?: boolean;
+};
+
+/**
+ * Creates a {@link Material} that combines multiple layers of color/gradient bands and maps them to terrain heights.
+ *
+ * The shader does a binary search over all the heights to find out which colors are above and below a given height, and
+ * interpolates between them for the final color. This material supports hundreds of entries relatively cheaply.
+ * @example
+ * scene.globe.material = Cesium.createElevationBandMaterial({
+ *     scene : scene,
+ *     layers : [{
+ *         entries : [{
+ *             height : 4200.0,
+ *             color : new Cesium.Color(0.0, 0.0, 0.0, 1.0)
+ *         }, {
+ *             height : 8848.0,
+ *             color : new Cesium.Color(1.0, 1.0, 1.0, 1.0)
+ *         }],
+ *         extendDownwards : true,
+ *         extendUpwards : true,
+ *     }, {
+ *         entries : [{
+ *             height : 7000.0,
+ *             color : new Cesium.Color(1.0, 0.0, 0.0, 0.5)
+ *         }, {
+ *             height : 7100.0,
+ *             color : new Cesium.Color(1.0, 0.0, 0.0, 0.5)
+ *         }]
+ *     }]
+ * });
+ * @param options - Object with the following properties:
+ * @param options.scene - The scene where the visualization is taking place.
+ * @param options.layers - A list of bands ordered from lowest to highest precedence.
+ * @returns A new {@link Material} instance.
+ */
+export function createElevationBandMaterial(options: {
+    scene: Scene;
+    layers: createElevationBandMaterialBand[];
+}): Material;
+
+/**
  * Creates a {@link Cesium3DTileset} instance for the
  * {@link https://cesium.com/content/cesium-osm-buildings/|Cesium OSM Buildings}
  * tileset.
@@ -41808,7 +41912,7 @@ export namespace Viewer {
         contextOptions?: any;
         sceneMode?: SceneMode;
         mapProjection?: MapProjection;
-        globe?: Globe;
+        globe?: Globe | false;
         orderIndependentTranslucency?: boolean;
         creditContainer?: Element | string;
         creditViewport?: Element | string;
@@ -42044,6 +42148,10 @@ export class Viewer {
     trackedEntity: Entity | undefined;
     /**
      * Gets or sets the object instance for which to display a selection indicator.
+     *
+     * If a user interactively picks a Cesium3DTilesFeature instance, then this property
+     * will contain a transient Entity instance with a property named "feature" that is
+     * the instance that was picked.
      */
     selectedEntity: Entity | undefined;
     /**
@@ -42227,7 +42335,6 @@ declare module "cesium/Source/Core/ArcGISTiledElevationTerrainProvider" { import
 declare module "cesium/Source/Core/ArcType" { import { ArcType } from 'cesium'; export default ArcType; }
 declare module "cesium/Source/Core/AssociativeArray" { import { AssociativeArray } from 'cesium'; export default AssociativeArray; }
 declare module "cesium/Source/Core/AxisAlignedBoundingBox" { import { AxisAlignedBoundingBox } from 'cesium'; export default AxisAlignedBoundingBox; }
-declare module "cesium/Source/Core/BingMapsApi" { import { BingMapsApi } from 'cesium'; export default BingMapsApi; }
 declare module "cesium/Source/Core/BingMapsGeocoderService" { import { BingMapsGeocoderService } from 'cesium'; export default BingMapsGeocoderService; }
 declare module "cesium/Source/Core/BoundingRectangle" { import { BoundingRectangle } from 'cesium'; export default BoundingRectangle; }
 declare module "cesium/Source/Core/BoundingSphere" { import { BoundingSphere } from 'cesium'; export default BoundingSphere; }
@@ -42319,7 +42426,6 @@ declare module "cesium/Source/Core/LeapSecond" { import { LeapSecond } from 'ces
 declare module "cesium/Source/Core/LinearApproximation" { import { LinearApproximation } from 'cesium'; export default LinearApproximation; }
 declare module "cesium/Source/Core/LinearSpline" { import { LinearSpline } from 'cesium'; export default LinearSpline; }
 declare module "cesium/Source/Core/MapProjection" { import { MapProjection } from 'cesium'; export default MapProjection; }
-declare module "cesium/Source/Core/MapboxApi" { import { MapboxApi } from 'cesium'; export default MapboxApi; }
 declare module "cesium/Source/Core/Math" { import { Math } from 'cesium'; export default Math; }
 declare module "cesium/Source/Core/Matrix2" { import { Matrix2 } from 'cesium'; export default Matrix2; }
 declare module "cesium/Source/Core/Matrix3" { import { Matrix3 } from 'cesium'; export default Matrix3; }
@@ -42644,6 +42750,7 @@ declare module "cesium/Source/Scene/VerticalOrigin" { import { VerticalOrigin } 
 declare module "cesium/Source/Scene/ViewportQuad" { import { ViewportQuad } from 'cesium'; export default ViewportQuad; }
 declare module "cesium/Source/Scene/WebMapServiceImageryProvider" { import { WebMapServiceImageryProvider } from 'cesium'; export default WebMapServiceImageryProvider; }
 declare module "cesium/Source/Scene/WebMapTileServiceImageryProvider" { import { WebMapTileServiceImageryProvider } from 'cesium'; export default WebMapTileServiceImageryProvider; }
+declare module "cesium/Source/Scene/createElevationBandMaterial" { import { createElevationBandMaterial } from 'cesium'; export default createElevationBandMaterial; }
 declare module "cesium/Source/Scene/createOsmBuildings" { import { createOsmBuildings } from 'cesium'; export default createOsmBuildings; }
 declare module "cesium/Source/Scene/createTangentSpaceDebugPrimitive" { import { createTangentSpaceDebugPrimitive } from 'cesium'; export default createTangentSpaceDebugPrimitive; }
 declare module "cesium/Source/Scene/createWorldImagery" { import { createWorldImagery } from 'cesium'; export default createWorldImagery; }
