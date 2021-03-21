@@ -1,4 +1,4 @@
-<img src="https://i.imgur.com/6GWaYcD.png" width="350">
+<img src="images/spotlight-logo.png" width="350">
 
 Flight Spotlight is web-application to see flights _in realtime_ by subscribing to updates to a geographic area, it can be launched using a browser typically on a desktop. It can display live manned and unmanned air traffic on a 3D globe provided by Cesium JS. In the context of UTM / U-Space you can identify drone traffic using Network Remote-ID flow. At the moment since ASTM Remote-ID is released, it is implemented, as other standards are released, can be enabled as well.
 
@@ -51,6 +51,8 @@ Once you have the Docker container running, you can follow the instructions belo
 ## Submitting air-traffic data
 
 Flight tracking data can be submitted to Flight Spotlight by an Display provider like [Flight Blender](https://github.com/openskies-sh/flight-blender)
+
+![OpenskiesStack](images/openskies-stack.png)
 
 ## Logo source
 
