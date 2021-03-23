@@ -5,7 +5,7 @@
     <title>Openskies Flight Noticeboard</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="icon" href="assets/img/favicon.png">
+    <link rel="icon" href="/assets/img/favicon.png">
     <link href='https://fonts.googleapis.com/css?family=Karla' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
 
@@ -19,6 +19,8 @@
     <script type="text/javascript" src="/assets/js/jquery/jquery.min.js"></script>
     <script type="text/javascript" src="/assets/js/socket.io/socket.io.min.js"></script>
     <script type="text/javascript" src="/assets/js/humane/humane.min.js"></script>
+
+    <script type="text/javascript" src="/assets/js/bootstrap/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="/assets/js/datepicker/bootstrap-datepicker.min.js"></script>
 
 
@@ -98,6 +100,7 @@
             </div>
         </div>
     </div>
+
     <script type="text/javascript">
         var path_done;
         var all_flight_declarations;
@@ -159,7 +162,8 @@
         function generate_approve_reject_control(flight_declaration_details) {
             let input_control =
                 '<div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
-                flight_declaration_details['declaration_id'] + '" ';
+                flight_declaration_details['declaration_id'] + '"  onchange="set_approval(' + "'" +
+                flight_declaration_details['declaration_id'] + "'" + ')" ';
             if (flight_declaration_details.is_approved == true) {
                 input_control += 'checked';
             }
@@ -189,7 +193,10 @@
 
         function show_flight_declarations(flight_declarations) {
             viewer.dataSources.remove(path_done, true); // Removing old data.
-            flight_declarations.forEach(flight_declaration => {
+            let fd_length = flight_declarations.length;
+            for (let i = 0; i < fd_length; i++) {
+                const flight_declaration = flight_declarations[i];
+
 
                 const results_list = document.getElementById('search-results');
                 results_list.appendChild(render_declaration_info({
@@ -200,10 +207,7 @@
                     'end_time': flight_declaration['end_datetime'],
                     'is_approved': flight_declaration['is_approved']
                 }));
-            }).then(function (geoData) {
-                viewer.dataSources.add(geoData); //Adding new one.
-                path_done = geoData; //Storing new reference.
-            });
+            }
         }
 
         function computeCircle(radius) {
@@ -223,31 +227,64 @@
         function highlight_flight_declaration(declaration_id) {
             for (let index = 0; index < all_flight_declarations.length; index++) {
                 const cur_declaration = all_flight_declarations[index];
-                if (cur_declaration['declaration_id']==declaration_id ){
+                if (cur_declaration['id'] == declaration_id) {
 
-                   
+
                     // const current_declaration = JSON.parse(raw_declarations[fd]);
-                    const current_declaration_json = JSON.parse(current_declaration['gutma_flight_declaration']);
+                    const current_declaration_json = JSON.parse(cur_declaration['gutma_flight_declaration']);
                     const fd_geo_json = current_declaration_json['flight_declaration']['parts'];
-                    // render fd_geo_json
+                    // render fd_geo_json   
 
                     var dataSource = Cesium.GeoJsonDataSource.load(fd_geo_json).then(
                         function (dataSource) {
-                            var p = dataSource.entities.values;
-                            for (var i = 0; i < p.length; i++) {
-                                p[i].polygon.extrudedHeight = 15; // or height property
-                            }
+                            // var p = dataSource.entities.values;
+                            // for (var i = 0; i < p.length; i++) {
+                            //     p[i].polygon.extrudedHeight = 15; // or height property
+                            // }
                             viewer.dataSources.add(dataSource);
+                            path_done = dataSource;
                             viewer.zoomTo(dataSource);
                         }
                     );
-                
+
                 }
-                
+
             }
         }
 
-        
+        function set_approval(flight_declaration_id) {
+            let is_approved = 0;
+            if (document.getElementById(flight_declaration_id).checked) {
+                is_approved = 1;
+            }
+            let data = {
+                    'approve_reject': is_approved
+                }
+            $.ajax({
+                url: '/set_flight_approval/' + flight_declaration_id,
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json'
+
+            }).done(response => {
+                humane.log("Submitted Approval / Review", {
+                        addnCls: 'humane-flatty-success'
+                    });
+
+            }).fail(error => {
+                
+                if (error.status == 404) {
+                    humane.log("Error in updating declaration", {
+                        addnCls: 'humane-flatty-error'
+                    });
+                } else if (error.status == 422) {
+                    humane.log("Error in updating declaration", {
+                        addnCls: 'humane-flatty-error'
+                    });
+                }
+                console.log(error);
+            });
+        }
 
         function get_flight_declarations(e) {
 

@@ -263,9 +263,104 @@ router.get("/get_flight_declarations", secured(), (req, response, next) => {
 
 });
 
+router.post("/set_flight_approval/:uuid", secured(), (req, response, next) => {
+
+  let flight_declaration_uuid = req.params.uuid;
+  const is_uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(flight_declaration_uuid);
+
+  const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
+
+
+  redis_key = 'passport_token';
+  let approve_reject = req.body['approve_reject'];
+
+  async.map([redis_key], function (r_key, done) {
+
+    redis_client.get(r_key, function (err, results) {
+      if (err || results == null) {
+        let post_data = {
+          "client_id": process.env.PASSPORT_CLIENT_ID,
+          "client_secret": process.env.PASSPORT_CLIENT_SECRET,
+          "grant_type": "client_credentials",
+          "scope": process.env.PASSPORT_BLENDER_SCOPE,
+          "audience": process.env.PASSPORT_BLENDER_AUDIENCE
+        };
+        axios.request({
+          url: "/oauth/token/",
+          method: "post",
+          header: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          baseURL: process.env.PASSPORT_URL,
+          data: qs.stringify(post_data)
+        }).then(passport_response => {
+
+          if (passport_response.status == 200) {
+            let a_token = passport_response.data;
+            let access_token = JSON.stringify(a_token);
+            redis_client.set(r_key, access_token);
+            redis_client.expire(r_key, 3500);
+
+            req.flash("success", "Thanks for the message! I‘ll be in touch :)");
+            res.redirect("/");
+            return done(null, a_token);
+          } else {
+
+            return done(null, {
+              "error": "Error in Passport Query, response not 200"
+            });
+          }
+        }).catch(axios_err => {
+
+          return done(null, {
+            "error": "Error in Passport Query, error in paramters supplied, check Client ID and / or secret"
+          });
+        });
+
+      } else {
+        let a_token = JSON.parse(results);
+        return done(null, a_token);
+      }
+
+    });
+  }, function (error, redis_output) {
+
+    try {
+      var passport_token = redis_output[0]['access_token'];
+    } catch {
+      var passport_token = {
+        "error": "Error in parsing token, check redis client call"
+      }
+    }
+    let a_r = {
+      'is_approved': approve_reject
+    };
+    let url = base_url + '/flight_declaration_review/' + flight_declaration_uuid;
+    axios.put(url,JSON.stringify(a_r),  {
+        
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': "Bearer " + passport_token
+        }
+      })
+      .then(function (blender_response) {
+        if (blender_response.status == 200) {
+          response.send(blender_response.data);
+        } else {
+          // console.log(error);
+          response.send(blender_response.data);
+        }
+      }).catch(function (error) {
+        console.log(error.data);
+      });
+
+
+  });
+
+});
 router.get("/retrieve_flight_declarations", secured(), (req, response, next) => {
   const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
-  
+
   redis_key = 'passport_token';
   let start_date = req.query['start_date'];
   let end_date = req.query['end_date'];
@@ -328,7 +423,7 @@ router.get("/retrieve_flight_declarations", secured(), (req, response, next) => 
       }
     }
 
-    let url = base_url + '/flight_declaration?start_date='+ start_date+ '&end_date=' +end_date;
+    let url = base_url + '/flight_declaration?start_date=' + start_date + '&end_date=' + end_date;
     axios.get(url, {
         headers: {
           'Content-Type': 'application/json',
@@ -336,7 +431,7 @@ router.get("/retrieve_flight_declarations", secured(), (req, response, next) => 
         }
       })
       .then(function (blender_response) {
-        
+
         if (blender_response.status == 200) {
 
           response.send(blender_response.data);
