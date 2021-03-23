@@ -99,6 +99,8 @@
         </div>
     </div>
     <script type="text/javascript">
+        var path_done;
+        var all_flight_declarations;
         var datepicker = $('#date-container .input-daterange').datepicker({
             todayBtn: "linked",
             format: 'yyyy-mm-dd'
@@ -109,7 +111,8 @@
         $('#datepicker').on('changeDate', (event) => {
             // save checkin date
             let d = event.date;
-            var datestring = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + (d.getDate() + 1)).slice(-2);
+            var datestring = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + (d
+                .getDate())).slice(-2);
             if (event.target.id == 'start') {
                 start_date = datestring;
             } else if (event.target.id == 'end') {
@@ -169,8 +172,12 @@
         function render_declaration_info(flight_declaration_details) {
             let input_control = generate_approve_reject_control(flight_declaration_details)
             let html = '';
-            html += '<h6>' + flight_declaration_details['flight_declaration_json']['originating_party'] + '  ';
-            html += 'Type: ' + flight_declaration_details['flight_declaration_json']['operation_mode'] + '</h6>  ';
+            html += "<h5><a href='#' onclick='highlight_flight_declaration(" + '"' + flight_declaration_details[
+                'declaration_id'] + '"' + ")'>" + flight_declaration_details['flight_declaration_json'][
+                'originating_party'
+            ] + '</a></h5> ';
+
+            html += '<h6>Type: ' + flight_declaration_details['flight_declaration_json']['operation_mode'] + ' </h6>';
 
             html += input_control;
 
@@ -181,8 +188,9 @@
         }
 
         function show_flight_declarations(flight_declarations) {
+            viewer.dataSources.remove(path_done, true); // Removing old data.
             flight_declarations.forEach(flight_declaration => {
-                
+
                 const results_list = document.getElementById('search-results');
                 results_list.appendChild(render_declaration_info({
                     'declaration_id': flight_declaration['id'],
@@ -192,6 +200,9 @@
                     'end_time': flight_declaration['end_datetime'],
                     'is_approved': flight_declaration['is_approved']
                 }));
+            }).then(function (geoData) {
+                viewer.dataSources.add(geoData); //Adding new one.
+                path_done = geoData; //Storing new reference.
             });
         }
 
@@ -209,52 +220,34 @@
             return positions;
         }
 
-        function render_flight_declarations(raw_declarations) {
+        function highlight_flight_declaration(declaration_id) {
+            for (let index = 0; index < all_flight_declarations.length; index++) {
+                const cur_declaration = all_flight_declarations[index];
+                if (cur_declaration['declaration_id']==declaration_id ){
 
-            let all_declaration_length = Object.keys(raw_declarations).length;
-            let all_declarations = [];
-            if (all_declaration_length == 0) {
-                // no declarations
-            } else {
-                for (let fd in raw_declarations) {
-                    const current_declaration = JSON.parse(raw_declarations[fd]);
-
-                    const fd_geo_json = current_declaration['flight_declaration']['parts'];
+                   
+                    // const current_declaration = JSON.parse(raw_declarations[fd]);
+                    const current_declaration_json = JSON.parse(current_declaration['gutma_flight_declaration']);
+                    const fd_geo_json = current_declaration_json['flight_declaration']['parts'];
                     // render fd_geo_json
-                    let degree_array_heights = [];
-                    for (let feature_counter = 0; feature_counter < fd_geo_json.features
-                        .length; feature_counter++) {
 
-                        const feature = fd_geo_json.features[feature_counter];
-                        let coords = feature.geometry.coordinates;
-                        let max_altitude = feature['properties']['max_altitude']['metres'];
-                        let min_altitude = feature['properties']['min_altitude']['metres'];
-                        let mean_altitude = ((max_altitude + min_altitude) / 2);
-                        for (let coord_counter = 0; coord_counter < coords.length; coord_counter++) {
-                            const cur_coord = coords[coord_counter];
-                            degree_array_heights.push(cur_coord[0]);
-                            degree_array_heights.push(cur_coord[1]);
-                            degree_array_heights.push(mean_altitude);
+                    var dataSource = Cesium.GeoJsonDataSource.load(fd_geo_json).then(
+                        function (dataSource) {
+                            var p = dataSource.entities.values;
+                            for (var i = 0; i < p.length; i++) {
+                                p[i].polygon.extrudedHeight = 15; // or height property
+                            }
+                            viewer.dataSources.add(dataSource);
+                            viewer.zoomTo(dataSource);
                         }
-                    }
-
-                    var flight_box = viewer.entities.add({
-                        polylineVolume: {
-                            positions: Cesium.Cartesian3.fromDegreesArrayHeights(
-                                degree_array_heights),
-                            shape: computeCircle(50.0),
-                            cornerType: Cesium.CornerType.BEVELED,
-                            material: Cesium.Color.GHOSTWHITE.withAlpha(0.15),
-                            outline: false,
-                            outlineColor: Cesium.Color.RED,
-                        },
-                    });
-
-                    all_declarations.push(current_declaration);
-
+                    );
+                
                 }
+                
             }
         }
+
+        
 
         function get_flight_declarations(e) {
 
@@ -274,6 +267,7 @@
                 if (response.length > 0) {
                     let all_declarations = response;
                     show_flight_declarations(all_declarations || []);
+                    all_flight_declarations = all_declarations;
                     // render_flight_declarations(all_declarations || []);
                 }
 

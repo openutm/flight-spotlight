@@ -80,13 +80,6 @@
                         </ul>
                     </div>
                     <hr>
-                    <div class="d-none" id="flight-declarations">
-                        <button id="show-flight-declarations" type="button" class="btn btn-link">Get Flight
-                            Declarations</button>
-                    </div>
-                    <br>
-                    <div id="search-results"></div>
-
                 </div>
                 
             </div>
@@ -268,110 +261,7 @@
             });
         }
 
-
-        const fd_button = $('#show-flight-declarations');
-        fd_button.on('click', get_flight_declarations);
-
-        function render_declaration_info(flight_declaration) {
-                       
-            let html = '';  
-            html += flight_declaration['flight_declaration']['originating_party'] + '  ';
-            html += 'Type: ' + flight_declaration['flight_declaration']['operation_mode']+ '  ';
-            html += 'Purpose: ' + flight_declaration['flight_declaration']['purpose'];            
-            
-            let fd_div = document.createTextNode(html); 
-
-            return fd_div;
-        }
-
-        function show_flight_declarations(flight_declarations) {
-            const results_list = document.getElementById('search-results');    
-            results_list.innerHTML = "";
-            flight_declarations.forEach(flight_declaration => {
-                results_list.appendChild(render_declaration_info(flight_declaration));
-            });
-
-
-        }
-
-        function computeCircle(radius) {
-            var positions = [];
-            for (var i = 0; i < 360; i++) {
-                var radians = Cesium.Math.toRadians(i);
-                positions.push(
-                new Cesium.Cartesian2(
-                    radius * Math.cos(radians),
-                    radius * Math.sin(radians)
-                )
-                );
-            }
-            return positions;
-        }
-
-        function get_flight_declarations(e) {
-
-            $.ajax({
-                url: '/get_flight_declarations',
-                type: 'GET'
-
-            }).done(response => {
-                // console.log(response);
-                // render flight declarations
-                let raw_declarations = response.all_declarations;
-
-                let all_declaration_length = Object.keys(raw_declarations).length;
-                let all_declarations = [];
-                if (all_declaration_length == 0) {
-                    // no declarations
-                } else {
-                    for (let fd in raw_declarations) {
-                        const current_declaration = JSON.parse(raw_declarations[fd]);
-
-                        const fd_geo_json = current_declaration['flight_declaration']['parts'];
-                        // render fd_geo_json
-                        let degree_array_heights = [];
-                        for (let feature_counter = 0; feature_counter < fd_geo_json.features.length; feature_counter++) {
-                            
-                            const feature = fd_geo_json.features[feature_counter];
-                            let coords = feature.geometry.coordinates;       
-                            let max_altitude = feature['properties']['max_altitude']['metres'];
-                            let min_altitude = feature['properties']['min_altitude']['metres'];                            
-                            let mean_altitude = ((max_altitude + min_altitude)/2);
-                            for (let coord_counter = 0; coord_counter < coords.length; coord_counter++) {
-                                const cur_coord = coords[coord_counter];
-                                degree_array_heights.push(cur_coord[0]);
-                                degree_array_heights.push(cur_coord[1]);
-                                degree_array_heights.push(mean_altitude);                                
-                            }
-                        }
-
-                        var flight_box = viewer.entities.add({                            
-                            polylineVolume: {
-                                positions: Cesium.Cartesian3.fromDegreesArrayHeights(degree_array_heights),
-                                shape: computeCircle(50.0),
-                                cornerType: Cesium.CornerType.BEVELED,
-                                material: Cesium.Color.GHOSTWHITE.withAlpha(0.15),
-                                outline: false,
-                                outlineColor: Cesium.Color.RED,
-                            },
-                        });
-
-                        all_declarations.push(current_declaration);
-
-                    }
-                }
-                show_flight_declarations(all_declarations || []);
-
-
-            }).fail(error => {
-                if (error.status == 422) {
-                    humane.log("Error in getting declarations", {
-                        addnCls: 'humane-flatty-error'
-                    });
-                }
-                console.log(error);
-            });
-        }
+        
     </script>
 </body>
 
