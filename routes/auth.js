@@ -279,8 +279,8 @@ router.post("/set_flight_approval/:uuid", secured(), (req, response, next) => {
     redis_client.get(r_key, function (err, results) {
       if (err || results == null) {
         let post_data = {
-          "client_id": process.env.PASSPORT_CLIENT_ID,
-          "client_secret": process.env.PASSPORT_CLIENT_SECRET,
+          "client_id": process.env.PASSPORT_BLENDER_CLIENT_ID,
+          "client_secret": process.env.PASSPORT_BLENDER_CLIENT_SECRET,
           "grant_type": "client_credentials",
           "scope": process.env.PASSPORT_BLENDER_SCOPE,
           "audience": process.env.PASSPORT_BLENDER_AUDIENCE
@@ -369,8 +369,8 @@ router.get("/retrieve_flight_declarations", secured(), (req, response, next) => 
     redis_client.get(r_key, function (err, results) {
       if (err || results == null) {
         let post_data = {
-          "client_id": process.env.PASSPORT_CLIENT_ID,
-          "client_secret": process.env.PASSPORT_CLIENT_SECRET,
+          "client_id": process.env.PASSPORT_BLENDER_CLIENT_ID,
+          "client_secret": process.env.PASSPORT_BLENDER_CLIENT_SECRET,
           "grant_type": "client_credentials",
           "scope": process.env.PASSPORT_BLENDER_SCOPE,
           "audience": process.env.PASSPORT_BLENDER_AUDIENCE
@@ -468,6 +468,7 @@ router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
     var io = req.app.get('socketio');
     let geo_fence_query = client.intersectsQuery('geo_fence').object(aoi['features'][0]);
     geo_fence_query.execute().then(results => {
+
       io.sockets.in(email).emit("message", {
         'type': 'message',
         "alert_type": "aoi_geo_fence",
@@ -476,10 +477,11 @@ router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
       return results;
     }).then(geo_fence => {
       // Setup a Geofence for the results 
-
+      
       for (let index = 0; index < geo_fence.objects.length; index++) {
         const geo_fence_element = geo_fence.objects[index].object;
         let geo_fence_bbox = bbox(geo_fence_element);
+        
         let geo_live_fence_query = client.intersectsQuery('observation').detect('enter', 'exit').bounds(geo_fence_bbox[0], geo_fence_bbox[1], geo_fence_bbox[2], geo_fence_bbox[3]);
         let geo_fence_stream = geo_live_fence_query.executeFence((err, geo_fence_results) => {
           if (err) {

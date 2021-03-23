@@ -145,7 +145,6 @@
     });
 
     server.on('close', function (e) {
-        
         console.log('Cesium development server stopped.');
     });
 
