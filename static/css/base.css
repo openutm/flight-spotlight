@@ -8,6 +8,12 @@ h1 {
     font-family: 'Karla', sans-serif;
 }
 
+#date-container {
+    margin-left:10px;
+}
+.schedule-button {
+    margin-left:10px;
+}
 textarea#geo_polygon_string {    
     font-family: 'Karla', sans-serif;
     height: 100px;    
@@ -51,18 +57,13 @@ a:hover {
     color: #00AED8;
 }
 
-ul {
+.information ul {
     list-style: none;
     /* width: 400px; */
     margin-left: 0;
     font-size: 16px;
     padding-left: 1em;
     text-indent: -1em;
-}
-
-li {
-    top: 5px;
-    padding: 2px;
 }
 
 #latest-status li {
@@ -77,12 +78,6 @@ li {
     font-family: "Karla", Arial, Helvetica, sans-serif;
     text-transform: uppercase;
     font-size: 22px;
-}
-
-.sysname {
-    font-family: "Karla", Times, serif;
-    text-transform: uppercase;
-    font-size: 18px;
 }
 
 .information h2 {
@@ -214,17 +209,3 @@ input[type="text"]:focus {
     display: block;
 }
 
-/* @media (min-width: 768px) {
-    .sidebar {
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        right: 0;
-        z-index: 1000;
-        /*padding: 20px;*/
-        overflow-x: hidden;
-        overflow-y: hidden;
-        /*background-color: #f5f5f5;*/
-        border-right: 1px solid #eee;
-    }
-} */

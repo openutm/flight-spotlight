@@ -9,14 +9,14 @@
     <link href='https://fonts.googleapis.com/css?family=Karla' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
 
-    <link type="text/css" rel="stylesheet" href="assets/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/style.css">
-    <link rel="stylesheet" type="text/css" href="assets/css/base.css">
+    <link type="text/css" rel="stylesheet" href="/assets/css/bootstrap.min.css">
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/base.css">
     <link rel="stylesheet" href="/assets/css/datepicker/bootstrap-datepicker3.min.css">
 
     <link rel="stylesheet" href="/assets/js/humane/flatty.css">
 
-    <script type="text/javascript" src="/assets/js/jquery/jquery.min.js"></script>    
+    <script type="text/javascript" src="/assets/js/jquery/jquery.min.js"></script>
     <script type="text/javascript" src="/assets/js/socket.io/socket.io.min.js"></script>
     <script type="text/javascript" src="/assets/js/humane/humane.min.js"></script>
     <script type="text/javascript" src="/assets/js/datepicker/bootstrap-datepicker.min.js"></script>
@@ -29,21 +29,21 @@
 </head>
 
 <body>
-    
+
     <nav class="navbar navbar-expand-lg     navbar-light bg-light">
         <a class="navbar-brand" href="#">
             <img src="/assets/img/logo_transparent_sm.png" height="50">
         </a>
         <div class="collapse navbar-collapse" id="navbarNav">
-            
-          </div>
-          <div class="form-inline my-2 my-lg-0">
+
+        </div>
+        <div class="form-inline my-2 my-lg-0">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                  <a class="nav-link" href="/spotlight">Live Flights</a>
+                    <a class="nav-link" href="/spotlight">Live Flights</a>
                 </li>
                 <li class="nav-item active">
-                  <a class="nav-link" href="/noticeboard">Noticeboard<span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="/noticeboard">Noticeboard<span class="sr-only">(current)</span></a>
                 </li>
                 <!-- <li class="nav-item">
                   <a class="nav-link" href="#">Nav 2</a>
@@ -51,50 +51,46 @@
                 <li class="nav-item">
                   <a class="nav-link disabled" href="#">Nav 3</a>
                 </li> -->
-              </ul>
-            </div>
-      </nav>
-      
-  
+            </ul>
+        </div>
+    </nav>
+
+
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-4 col-md-4 main">
-                
+
                 <br>
                 <div class="information">
-
-                    <div class="row mb-3">
-                        
-                        <div id="date-container" class="row">
+                    <div class="mb-3">
+                        <div id="date-container" class="">
                             <div class="input-daterange input-group" id="datepicker">
-                            <span class="input-group-addon">From </span>&nbsp;
-                            <input type="text" id="start" class="input-sm form-control" name="start" />
-                            &nbsp;<span class="input-group-addon">To</span>&nbsp;
-                            <input type="text" id="end" class="input-sm form-control" name="end" />
+                                <span class="input-group-addon">From </span>&nbsp;
+                                <input type="text" id="start" class="input-sm form-control" name="start" />
+                                &nbsp;<span class="input-group-addon">To</span>&nbsp;
+                                <input type="text" id="end" class="input-sm form-control" name="end" />
                             </div>
                         </div>
-                        
-                        
-                        
-
                     </div>
-                    <div class="row">
-                    <p><button type="button" onclick="search_conformance_status()" id="search-timeframe" class="btn btn-primary">Show Schedule</button></p>
+                    <div class="schedule-button">
+                        <button type="button" onclick="get_flight_declarations()" id="search-timeframe"
+                            class="btn btn-primary">Show Schedule</button>
                     </div>
 
                     <div class="d-none loading-spinner" id="spinner-cont"><br>
                         <img src="/assets/img/spinner.gif" height="30px">
                     </div>
-                   
+
                     <hr>
                     <div class="d-none" id="flight-declarations">
-                        <button id="show-flight-declarations" type="button" class="btn btn-link">Get Flight Declarations</button>
+                        <button id="show-flight-declarations" type="button" class="btn btn-link">Get Flight
+                            Declarations</button>
                     </div>
                     <br>
                     <div id="search-results"></div>
 
                 </div>
-                
+
             </div>
 
             <div class="col-sm-8 col-md-8 sidebar">
@@ -104,7 +100,8 @@
     </div>
     <script type="text/javascript">
         var datepicker = $('#date-container .input-daterange').datepicker({
-            todayBtn: "linked"
+            todayBtn: "linked",
+            format: 'yyyy-mm-dd'
         });
         let start_date = 0;
         let end_date = 0;
@@ -112,14 +109,16 @@
         $('#datepicker').on('changeDate', (event) => {
             // save checkin date
             let d = event.date;
-            var datestring = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+            var datestring = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + (d.getDate() + 1)).slice(-2);
             if (event.target.id == 'start') {
-            start_date = datestring;
+                start_date = datestring;
             } else if (event.target.id == 'end') {
-            end_date = datestring;
+                end_date = datestring;
             }
         });
-            
+
+
+
         var bing = new Cesium.BingMapsImageryProvider({
             url: 'https://dev.virtualearth.net',
             key: '<%= bing_key %>',
@@ -152,26 +151,47 @@
         var cameralat;
         var cameralng;
 
-        const fd_button = $('#show-flight-declarations');
-        fd_button.on('click', get_flight_declarations);
+        // const fd_button = $('#show-flight-declarations');
+        // fd_button.on('click', get_flight_declarations);
+        function generate_approve_reject_control(flight_declaration_details) {
+            let input_control =
+                '<div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
+                flight_declaration_details['declaration_id'] + '" ';
+            if (flight_declaration_details.is_approved == true) {
+                input_control += 'checked';
+            }
+            input_control += '> <label class="form-check-label" for="' + flight_declaration_details['declaration_id'] +
+                '">' + " Flight Approved?</label></div><hr>";
 
-        function render_declaration_info(flight_declaration) {
-                       
-            let html = '';  
-            html += flight_declaration['flight_declaration']['originating_party'] + '  ';
-            html += 'Type: ' + flight_declaration['flight_declaration']['operation_mode']+ '  ';
-            html += 'Purpose: ' + flight_declaration['flight_declaration']['purpose'];            
-            
-            let fd_div = document.createTextNode(html); 
+            return input_control;
+        }
 
-            return fd_div;
+        function render_declaration_info(flight_declaration_details) {
+            let input_control = generate_approve_reject_control(flight_declaration_details)
+            let html = '';
+            html += '<h6>' + flight_declaration_details['flight_declaration_json']['originating_party'] + '  ';
+            html += 'Type: ' + flight_declaration_details['flight_declaration_json']['operation_mode'] + '</h6>  ';
+
+            html += input_control;
+
+            // let fd_div = document.createTextNode(html);
+            const newDiv = document.createElement("div");
+            newDiv.innerHTML = html;
+            return newDiv;
         }
 
         function show_flight_declarations(flight_declarations) {
-            const results_list = document.getElementById('search-results');    
-            results_list.innerHTML = "";
             flight_declarations.forEach(flight_declaration => {
-                results_list.appendChild(render_declaration_info(flight_declaration));
+                
+                const results_list = document.getElementById('search-results');
+                results_list.appendChild(render_declaration_info({
+                    'declaration_id': flight_declaration['id'],
+                    'flight_declaration_json': JSON.parse(flight_declaration[
+                        'gutma_flight_declaration']),
+                    'start_time': flight_declaration['start_datetime'],
+                    'end_time': flight_declaration['end_datetime'],
+                    'is_approved': flight_declaration['is_approved']
+                }));
             });
         }
 
@@ -180,76 +200,95 @@
             for (var i = 0; i < 360; i++) {
                 var radians = Cesium.Math.toRadians(i);
                 positions.push(
-                new Cesium.Cartesian2(
-                    radius * Math.cos(radians),
-                    radius * Math.sin(radians)
-                )
+                    new Cesium.Cartesian2(
+                        radius * Math.cos(radians),
+                        radius * Math.sin(radians)
+                    )
                 );
             }
             return positions;
         }
 
+        function render_flight_declarations(raw_declarations) {
+
+            let all_declaration_length = Object.keys(raw_declarations).length;
+            let all_declarations = [];
+            if (all_declaration_length == 0) {
+                // no declarations
+            } else {
+                for (let fd in raw_declarations) {
+                    const current_declaration = JSON.parse(raw_declarations[fd]);
+
+                    const fd_geo_json = current_declaration['flight_declaration']['parts'];
+                    // render fd_geo_json
+                    let degree_array_heights = [];
+                    for (let feature_counter = 0; feature_counter < fd_geo_json.features
+                        .length; feature_counter++) {
+
+                        const feature = fd_geo_json.features[feature_counter];
+                        let coords = feature.geometry.coordinates;
+                        let max_altitude = feature['properties']['max_altitude']['metres'];
+                        let min_altitude = feature['properties']['min_altitude']['metres'];
+                        let mean_altitude = ((max_altitude + min_altitude) / 2);
+                        for (let coord_counter = 0; coord_counter < coords.length; coord_counter++) {
+                            const cur_coord = coords[coord_counter];
+                            degree_array_heights.push(cur_coord[0]);
+                            degree_array_heights.push(cur_coord[1]);
+                            degree_array_heights.push(mean_altitude);
+                        }
+                    }
+
+                    var flight_box = viewer.entities.add({
+                        polylineVolume: {
+                            positions: Cesium.Cartesian3.fromDegreesArrayHeights(
+                                degree_array_heights),
+                            shape: computeCircle(50.0),
+                            cornerType: Cesium.CornerType.BEVELED,
+                            material: Cesium.Color.GHOSTWHITE.withAlpha(0.15),
+                            outline: false,
+                            outlineColor: Cesium.Color.RED,
+                        },
+                    });
+
+                    all_declarations.push(current_declaration);
+
+                }
+            }
+        }
+
         function get_flight_declarations(e) {
 
             $.ajax({
-                url: '/get_flight_declarations',
-                type: 'GET'
+                url: '/retrieve_flight_declarations',
+                type: 'GET',
+                data: {
+                    'start_date': start_date,
+                    'end_date': end_date
+                }
 
             }).done(response => {
-                // console.log(response);
+
+                const results_list = document.getElementById('search-results');
+                results_list.innerHTML = "";
                 // render flight declarations
-                let raw_declarations = response.all_declarations;
-
-                let all_declaration_length = Object.keys(raw_declarations).length;
-                let all_declarations = [];
-                if (all_declaration_length == 0) {
-                    // no declarations
-                } else {
-                    for (let fd in raw_declarations) {
-                        const current_declaration = JSON.parse(raw_declarations[fd]);
-
-                        const fd_geo_json = current_declaration['flight_declaration']['parts'];
-                        // render fd_geo_json
-                        let degree_array_heights = [];
-                        for (let feature_counter = 0; feature_counter < fd_geo_json.features.length; feature_counter++) {
-                            
-                            const feature = fd_geo_json.features[feature_counter];
-                            let coords = feature.geometry.coordinates;       
-                            let max_altitude = feature['properties']['max_altitude']['metres'];
-                            let min_altitude = feature['properties']['min_altitude']['metres'];                            
-                            let mean_altitude = ((max_altitude + min_altitude)/2);
-                            for (let coord_counter = 0; coord_counter < coords.length; coord_counter++) {
-                                const cur_coord = coords[coord_counter];
-                                degree_array_heights.push(cur_coord[0]);
-                                degree_array_heights.push(cur_coord[1]);
-                                degree_array_heights.push(mean_altitude);                                
-                            }
-                        }
-
-                        var flight_box = viewer.entities.add({                            
-                            polylineVolume: {
-                                positions: Cesium.Cartesian3.fromDegreesArrayHeights(degree_array_heights),
-                                shape: computeCircle(50.0),
-                                cornerType: Cesium.CornerType.BEVELED,
-                                material: Cesium.Color.GHOSTWHITE.withAlpha(0.15),
-                                outline: false,
-                                outlineColor: Cesium.Color.RED,
-                            },
-                        });
-
-                        all_declarations.push(current_declaration);
-
-                    }
+                if (response.length > 0) {
+                    let all_declarations = response;
+                    show_flight_declarations(all_declarations || []);
+                    // render_flight_declarations(all_declarations || []);
                 }
-                show_flight_declarations(all_declarations || []);
+
 
             }).fail(error => {
-                if (error.status == 422) {
+                if (error.status == 404) {
+                    humane.log("Error in getting declarations", {
+                        addnCls: 'humane-flatty-error'
+                    });
+                } else if (error.status == 422) {
                     humane.log("Error in getting declarations", {
                         addnCls: 'humane-flatty-error'
                     });
                 }
-                console.log(error);
+                // console.log(error);
             });
         }
     </script>
