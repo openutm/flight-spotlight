@@ -18,6 +18,7 @@ const flip = require('@turf/flip');
 const axios = require('axios');
 require("dotenv").config();
 const qs = require('qs');
+const asyncMiddleware = require('../util/asyncMiddleware');
 var URL = require('url').URL;
 let geojsonhint = require("@mapbox/geojsonhint");
 const {
@@ -51,6 +52,77 @@ const checkJwt = jwt({
   issuer: process.env.PASSPORT_URL + '/',
   algorithms: ['RS256']
 });
+
+
+
+async function get_passport_token() {
+  return new Promise(function (resolve, reject) {
+
+    redis_key = 'passport_token';
+
+    async.map([redis_key], function (r_key, done) {
+
+      redis_client.get(r_key, function (err, results) {
+        if (err || results == null) {
+          let post_data = {
+            "client_id": process.env.PASSPORT_CLIENT_ID,
+            "client_secret": process.env.PASSPORT_CLIENT_SECRET,
+            "grant_type": "client_credentials",
+            "scope": process.env.PASSPORT_BLENDER_SCOPE,
+            "audience": process.env.PASSPORT_BLENDER_AUDIENCE
+          };
+          axios.request({
+            url: "/oauth/token/",
+            method: "post",
+            header: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            baseURL: process.env.PASSPORT_URL,
+            data: qs.stringify(post_data)
+          }).then(passport_response => {
+
+            if (passport_response.status == 200) {
+              let a_token = passport_response.data;
+              let access_token = JSON.stringify(a_token);
+              redis_client.set(r_key, access_token);
+              redis_client.expire(r_key, 3500);
+
+              return done(null, a_token);
+            } else {
+
+              return done(null, {
+                "error": "Error in Passport Query, response not 200"
+              });
+            }
+          }).catch(axios_err => {
+
+            return done(null, {
+              "error": "Error in Passport Query, error in paramters supplied, check Client ID and / or secret"
+            });
+          });
+
+        } else {
+          let a_token = JSON.parse(results);
+          return done(null, a_token);
+        }
+
+      });
+    }, function (error, redis_output) {
+      try {
+        var passport_token = redis_output[0]['access_token'];
+      } catch {
+        var passport_token = {
+          "error": "Error in parsing token, check redis client call"
+        }
+      }
+      /// code is here 
+
+      resolve(passport_token); // successfully fill promise
+    });
+    // may be a heavy db call or http request?
+  });
+}
+
 
 
 router.get("/", (req, res) => {
@@ -263,7 +335,7 @@ router.get("/get_flight_declarations", secured(), (req, response, next) => {
 
 });
 
-router.post("/set_flight_approval/:uuid", secured(), (req, response, next) => {
+router.post("/set_flight_approval/:uuid", secured(), asyncMiddleware(async (req, res, next) => {
 
   let flight_declaration_uuid = req.params.uuid;
   const is_uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(flight_declaration_uuid);
@@ -273,178 +345,63 @@ router.post("/set_flight_approval/:uuid", secured(), (req, response, next) => {
 
   redis_key = 'passport_token';
   let approve_reject = req.body['approve_reject'];
+  const passport_token = await get_passport_token();
 
-  async.map([redis_key], function (r_key, done) {
 
-    redis_client.get(r_key, function (err, results) {
-      if (err || results == null) {
-        let post_data = {
-          "client_id": process.env.PASSPORT_BLENDER_CLIENT_ID,
-          "client_secret": process.env.PASSPORT_BLENDER_CLIENT_SECRET,
-          "grant_type": "client_credentials",
-          "scope": process.env.PASSPORT_BLENDER_SCOPE,
-          "audience": process.env.PASSPORT_BLENDER_AUDIENCE
-        };
-        axios.request({
-          url: "/oauth/token/",
-          method: "post",
-          header: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          baseURL: process.env.PASSPORT_URL,
-          data: qs.stringify(post_data)
-        }).then(passport_response => {
+  let a_r = {
+    'is_approved': approve_reject
+  };
+  let url = base_url + '/flight_declaration_review/' + flight_declaration_uuid;
+  axios.put(url, JSON.stringify(a_r), {
 
-          if (passport_response.status == 200) {
-            let a_token = passport_response.data;
-            let access_token = JSON.stringify(a_token);
-            redis_client.set(r_key, access_token);
-            redis_client.expire(r_key, 3500);
-
-            req.flash("success", "Thanks for the message! I‘ll be in touch :)");
-            res.redirect("/");
-            return done(null, a_token);
-          } else {
-
-            return done(null, {
-              "error": "Error in Passport Query, response not 200"
-            });
-          }
-        }).catch(axios_err => {
-
-          return done(null, {
-            "error": "Error in Passport Query, error in paramters supplied, check Client ID and / or secret"
-          });
-        });
-
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': "Bearer " + passport_token
+      }
+    })
+    .then(function (blender_response) {
+      if (blender_response.status == 200) {
+        response.send(blender_response.data);
       } else {
-        let a_token = JSON.parse(results);
-        return done(null, a_token);
+        // console.log(error);
+        response.send(blender_response.data);
       }
-
+    }).catch(function (error) {
+      console.log(error.data);
     });
-  }, function (error, redis_output) {
 
-    try {
-      var passport_token = redis_output[0]['access_token'];
-    } catch {
-      var passport_token = {
-        "error": "Error in parsing token, check redis client call"
-      }
-    }
-    let a_r = {
-      'is_approved': approve_reject
-    };
-    let url = base_url + '/flight_declaration_review/' + flight_declaration_uuid;
-    axios.put(url,JSON.stringify(a_r),  {
-        
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': "Bearer " + passport_token
-        }
-      })
-      .then(function (blender_response) {
-        if (blender_response.status == 200) {
-          response.send(blender_response.data);
-        } else {
-          // console.log(error);
-          response.send(blender_response.data);
-        }
-      }).catch(function (error) {
-        console.log(error.data);
-      });
+}));
 
-
-  });
-
-});
-router.get("/retrieve_flight_declarations", secured(), (req, response, next) => {
+router.get("/retrieve_flight_declarations", secured(), asyncMiddleware(async (req, res, next) => {
   const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
 
   redis_key = 'passport_token';
   let start_date = req.query['start_date'];
   let end_date = req.query['end_date'];
-  async.map([redis_key], function (r_key, done) {
+  
+  const passport_token = await get_passport_token();
 
-    redis_client.get(r_key, function (err, results) {
-      if (err || results == null) {
-        let post_data = {
-          "client_id": process.env.PASSPORT_BLENDER_CLIENT_ID,
-          "client_secret": process.env.PASSPORT_BLENDER_CLIENT_SECRET,
-          "grant_type": "client_credentials",
-          "scope": process.env.PASSPORT_BLENDER_SCOPE,
-          "audience": process.env.PASSPORT_BLENDER_AUDIENCE
-        };
-        axios.request({
-          url: "/oauth/token/",
-          method: "post",
-          header: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          baseURL: process.env.PASSPORT_URL,
-          data: qs.stringify(post_data)
-        }).then(passport_response => {
 
-          if (passport_response.status == 200) {
-            let a_token = passport_response.data;
-            let access_token = JSON.stringify(a_token);
-            redis_client.set(r_key, access_token);
-            redis_client.expire(r_key, 3500);
+  let url = base_url + '/flight_declaration?start_date=' + start_date + '&end_date=' + end_date;
+  axios.get(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': "Bearer " + passport_token
+      }
+    })
+    .then(function (blender_response) {
 
-            req.flash("success", "Thanks for the message! I‘ll be in touch :)");
-            res.redirect("/");
-            return done(null, a_token);
-          } else {
+      if (blender_response.status == 200) {
 
-            return done(null, {
-              "error": "Error in Passport Query, response not 200"
-            });
-          }
-        }).catch(axios_err => {
-
-          return done(null, {
-            "error": "Error in Passport Query, error in paramters supplied, check Client ID and / or secret"
-          });
-        });
-
+        response.send(blender_response.data);
       } else {
-        let a_token = JSON.parse(results);
-        return done(null, a_token);
-      }
 
+        // console.log(error);
+        response.send(blender_response.data);
+      }
     });
-  }, function (error, redis_output) {
 
-    try {
-      var passport_token = redis_output[0]['access_token'];
-    } catch {
-      var passport_token = {
-        "error": "Error in parsing token, check redis client call"
-      }
-    }
-
-    let url = base_url + '/flight_declaration?start_date=' + start_date + '&end_date=' + end_date;
-    axios.get(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': "Bearer " + passport_token
-        }
-      })
-      .then(function (blender_response) {
-
-        if (blender_response.status == 200) {
-
-          response.send(blender_response.data);
-        } else {
-
-          // console.log(error);
-          response.send(blender_response.data);
-        }
-      });
-  });
-
-
-});
+}));
 
 router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
   let options = {};
@@ -477,11 +434,11 @@ router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
       return results;
     }).then(geo_fence => {
       // Setup a Geofence for the results 
-      
+
       for (let index = 0; index < geo_fence.objects.length; index++) {
         const geo_fence_element = geo_fence.objects[index].object;
         let geo_fence_bbox = bbox(geo_fence_element);
-        
+
         let geo_live_fence_query = client.intersectsQuery('observation').detect('enter', 'exit').bounds(geo_fence_bbox[0], geo_fence_bbox[1], geo_fence_bbox[2], geo_fence_bbox[3]);
         let geo_fence_stream = geo_live_fence_query.executeFence((err, geo_fence_results) => {
           if (err) {
