@@ -351,7 +351,7 @@ router.post("/set_flight_approval/:uuid", secured(), asyncMiddleware(async (req,
   let a_r = {
     'is_approved': approve_reject
   };
-  let url = base_url + '/flight_declaration_review/' + flight_declaration_uuid;
+  let url = base_url + '/flight_declaration_ops/flight_declaration_review/' + flight_declaration_uuid;
   axios.put(url, JSON.stringify(a_r), {
 
       headers: {
@@ -382,7 +382,7 @@ router.get("/retrieve_flight_declarations", secured(), asyncMiddleware(async (re
   const passport_token = await get_passport_token();
 
 
-  let url = base_url + '/flight_declaration?start_date=' + start_date + '&end_date=' + end_date;
+  let url = base_url + '/flight_declaration_ops/flight_declaration?start_date=' + start_date + '&end_date=' + end_date;
   axios.get(url, {
       headers: {
         'Content-Type': 'application/json',
