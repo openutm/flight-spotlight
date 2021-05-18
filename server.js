@@ -10,8 +10,7 @@
     var OAuth2Strategy = require('passport-oauth2');
     
     var userInViews = require('./lib/middleware/userInViews');
-    const socketServer = require('socket.io');
-    const socketIO = new socketServer();
+    const socket = require("socket.io");
     require("dotenv").config();
     var userInViews = require('./lib/middleware/userInViews');
     const bodyParser = require("body-parser");
@@ -112,7 +111,7 @@
     // Constants
     var server = app.listen(process.env.PORT || 5000); // for Heroku
 
-    var io = socketIO.listen(server);
+    const io = socket(server);
     app.set('socketio', io);
     
     io.on('connection', function (socket) {
