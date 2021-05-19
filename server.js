@@ -109,13 +109,14 @@
     });
     
     // Constants
-    var server = app.listen(process.env.PORT || 5000); // for Heroku
+    var server = app.listen(process.env.PORT || 5000);
 
     const io = socket(server);
     app.set('socketio', io);
-    
+    const active_users = new Set();
     io.on('connection', function (socket) {
         socket.on('room', function (room) {
+            active_users.add(room);
             socket.join(room);
             sendWelcomeMsg(room);
         });
@@ -124,6 +125,10 @@
             var data = msg.data;
             sendStdMsg(room, data);
         });
+        socket.on("disconnect", () => {
+            active_users.delete(socket.userId);
+            io.emit("user disconnected", socket.userId);
+          });
     });
 
     function sendWelcomeMsg(room) {
