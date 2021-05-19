@@ -191,7 +191,7 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
       allow_leading_zeroes: false
     }),
     check('traffic_source').isInt({
-      gt: 1,
+      gt: -1,
       lt: 10
     }),
     check('source_type').isInt({
@@ -215,13 +215,17 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
       const traffic_source = req_body.traffic_source;
       const source_type = req_body.source_type;
       const icao_address = req_body.icao_address;
+      const obs_metadata = req_body.metadata;
+
       try {
         client.set('observation', icao_address, [lon_dd, lat_dd, altitude_mm], {
           'source_type': source_type,
-          'traffic_source': traffic_source
+          'traffic_source': traffic_source,
+          "metadata": obs_metadata
         }, {
           expire: 300
         });
+
       } catch (err) {
         console.log("Error " + err);
       }
