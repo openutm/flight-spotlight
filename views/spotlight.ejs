@@ -222,8 +222,7 @@
                 viewer.flyTo(aoi);
                 let spinner_cont = document.getElementById("spinner-cont");
                 spinner_cont.classList.remove("d-none");
-                let flight_declaration_cont = document.getElementById('flight-declarations');
-                flight_declaration_cont.classList.remove("d-none");
+                
                 humane.log(response['msg'], {
                     addnCls: 'humane-flatty-success'
                 });

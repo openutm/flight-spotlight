@@ -175,31 +175,31 @@ router.get("/spotlight", secured(), (req, response, next) => {
 
 
 router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic']), [
-    check('lat_dd').isFloat({
-      min: -180.00,
-      max: 180.00
-    }),
-    check('lon_dd').isFloat({
-      min: -180.00,
-      max: 180.00
-    }),
-    check('altitude_mm').isFloat({
-      min: 0.00
-    }),
-    check('time_stamp').isInt({
-      gt: 1,
-      allow_leading_zeroes: false
-    }),
-    check('traffic_source').isInt({
-      gt: -1,
-      lt: 10
-    }),
-    check('source_type').isInt({
-      gt: -1,
-      lt: 10
-    }),
-    check('icao_address').isString()
-  ],
+  check('lat_dd').isFloat({
+    min: -180.00,
+    max: 180.00
+  }),
+  check('lon_dd').isFloat({
+    min: -180.00,
+    max: 180.00
+  }),
+  check('altitude_mm').isFloat({
+    min: 0.00
+  }),
+  check('time_stamp').isInt({
+    gt: 1,
+    allow_leading_zeroes: false
+  }),
+  check('traffic_source').isInt({
+    gt: -1,
+    lt: 10
+  }),
+  check('source_type').isInt({
+    gt: -1,
+    lt: 10
+  }),
+  check('icao_address').isString()
+],
   (req, response, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -207,6 +207,7 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
         errors: errors.array()
       });
     } else {
+
 
       const req_body = req.body;
       const lat_dd = req_body.lat_dd;
@@ -217,11 +218,12 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
       const icao_address = req_body.icao_address;
       const obs_metadata = req_body.metadata;
 
+      
+
       try {
         client.set('observation', icao_address, [lon_dd, lat_dd, altitude_mm], {
           'source_type': source_type,
-          'traffic_source': traffic_source,
-          "metadata": obs_metadata
+          'traffic_source': traffic_source
         }, {
           expire: 300
         });
@@ -229,11 +231,37 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
       } catch (err) {
         console.log("Error " + err);
       }
+      let metadata_key = icao_address + '-metadata';
+      redis_client.hmset(metadata_key, 'properties', JSON.stringify(obs_metadata));
+      redis_client.expire(metadata_key, 300);
+
       response.send('OK');
 
     }
   });
 
+router.get("/get_metadata/:icao_address?", secured(), (req, response, next) => {
+  var icao_address = req.params.icao_address;
+  if (!icao_address) {
+    next();
+    return;
+  }
+  function get_meta_data(callback) {
+    redis_client.hgetall(icao_address + ' -metadata', function (err, object) {
+      if (err) {
+        callback({});
+      } else {
+        callback(object);
+      }
+    });
+  };
+  get_meta_data(function (metadata) {
+    response.send({
+      'metadata': metadata
+    });
+  });
+
+});
 
 router.post("/set_geo_fence", checkJwt, jwtAuthz(['spotlight.write.geo_fence']), check('geo_fence').custom(submitted_geo_fence => {
   let options = {};
@@ -358,11 +386,11 @@ router.post("/set_flight_approval/:uuid", secured(), asyncMiddleware(async (req,
   let url = base_url + '/flight_declaration_ops/flight_declaration_review/' + flight_declaration_uuid;
   axios.put(url, JSON.stringify(a_r), {
 
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': "Bearer " + passport_token
-      }
-    })
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': "Bearer " + passport_token
+    }
+  })
     .then(function (blender_response) {
       if (blender_response.status == 200) {
         response.send(blender_response.data);
@@ -376,23 +404,25 @@ router.post("/set_flight_approval/:uuid", secured(), asyncMiddleware(async (req,
 
 }));
 
+
+
 router.get("/retrieve_flight_declarations", secured(), asyncMiddleware(async (req, res, next) => {
   const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
 
   redis_key = 'passport_token';
   let start_date = req.query['start_date'];
   let end_date = req.query['end_date'];
-  
+
   const passport_token = await get_passport_token();
 
 
   let url = base_url + '/flight_declaration_ops/flight_declaration?start_date=' + start_date + '&end_date=' + end_date;
   axios.get(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': "Bearer " + passport_token
-      }
-    })
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': "Bearer " + passport_token
+    }
+  })
     .then(function (blender_response) {
 
       if (blender_response.status == 200) {
@@ -541,8 +571,8 @@ router.get("/logout", (req, res) => {
   if (port !== undefined && port !== 80 && port !== 443) {
     returnTo =
       process.env.NODE_ENV === "production" ?
-      `${returnTo}/` :
-      `${returnTo}:${port}/`;
+        `${returnTo}/` :
+        `${returnTo}:${port}/`;
   }
 
   const logoutURL = new URL(
