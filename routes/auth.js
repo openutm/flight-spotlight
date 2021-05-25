@@ -240,24 +240,27 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
     }
   });
 
-router.get("/get_metadata/:icao_address?", secured(), (req, response, next) => {
+router.get("/get_metadata/:icao_address?",  checkJwt, jwtAuthz(['spotlight.write.air_traffic']),(req, response, next) => {
+
   var icao_address = req.params.icao_address;
   if (!icao_address) {
     next();
     return;
   }
   function get_meta_data(callback) {
-    redis_client.hgetall(icao_address + ' -metadata', function (err, object) {
+    
+    redis_client.hget(icao_address + '-metadata', 'properties',function (err, object) {
       if (err) {
         callback({});
       } else {
+        
         callback(object);
       }
     });
   };
   get_meta_data(function (metadata) {
     response.send({
-      'metadata': metadata
+      'metadata': JSON.parse(metadata)
     });
   });
 
