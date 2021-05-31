@@ -5,9 +5,16 @@ var secured = require('../lib/middleware/secured');
 const router = express.Router();
 const passport = require("passport");
 const util = require("util");
+
+const tile38_host = process.env.TILE38_SERVER || '0.0.0.0';
+const tile38_port = process.env.TILE38_PORT || 9851;
+const redis_url = process.env.REDIS_URL || 'redis://local.test:6379';
+
+
 const querystring = require("querystring");
 var Tile38 = require('tile38');
-var client = new Tile38();
+
+var client = new Tile38({host: tile38_host, port: tile38_port});
 const jwt = require('express-jwt');
 const jwksRsa = require('jwks-rsa');
 const jwtAuthz = require('express-jwt-authz');
@@ -32,7 +39,7 @@ const {
   head
 } = require("request");
 const redis = require("redis");
-const redis_client = redis.createClient();
+const redis_client = redis.createClient(redis_url);
 const async = require("async");
 
 
