@@ -58,7 +58,7 @@ const checkJwt = jwt({
 async function get_passport_token() {
   return new Promise(function (resolve, reject) {
 
-    redis_key = 'passport_token';
+    redis_key = 'blender_passport_token';
 
     async.map([redis_key], function (r_key, done) {
 
