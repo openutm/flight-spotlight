@@ -193,7 +193,7 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
   check('altitude_mm').isFloat({
     min: 0.00
   }),
-  check('time_stamp').isInt({
+  check('time_stamp').isFloat({
     gt: 1,
     allow_leading_zeroes: false
   }),
@@ -226,7 +226,7 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
       const obs_metadata = req_body.metadata;
 
       
-
+      
       try {
         client.set('observation', icao_address, [lon_dd, lat_dd, altitude_mm], {
           'source_type': source_type,
