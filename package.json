@@ -1,11 +1,11 @@
 {
     "name": "flight-spotlight",
-    "version": "0.0.1",
-    "description": "A viewer to query InterUSS API and other data sources to download all flight declarations and show on a custom map.",
+    "version": "0.5.1",
+    "description": "A viewer to query InterUSS API and other data sources, store flight declarations and geofence and show on a custom map.",
     "homepage": "",
     "license": "Apache-2.0",
     "author": {
-        "name": "Hrishikesh Ballal",
+        "name": "Dr. Hrishikesh Ballal",
         "url": "https://www.openskies.sh/"
     },
     "scripts": {
@@ -16,9 +16,8 @@
         "Openskies",
         "Flight Declarations",
         "DSS",
-        "geospatial",
-        "map",
-        "globe"
+        "ASTM",
+        "Network Remote ID" 
     ],
     "repository": {
         "type": "git",
@@ -55,6 +54,7 @@
         "request": "^2.88.2",
         "requirejs": "^2.2.0",
         "socket.io": "^4.1.2",
-        "tile38": "^0.7.0"
+        "tile38": "^0.7.0",
+        "uuid":"^8.3.2"
     }
 }

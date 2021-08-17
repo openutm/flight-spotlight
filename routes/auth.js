@@ -14,7 +14,7 @@ const redis_url = process.env.REDIS_URL || 'redis://local.test:6379';
 const querystring = require("querystring");
 var Tile38 = require('tile38');
 
-var client = new Tile38({host: tile38_host, port: tile38_port});
+var tile38_client = new Tile38({host: tile38_host, port: tile38_port});
 const jwt = require('express-jwt');
 const jwksRsa = require('jwks-rsa');
 const jwtAuthz = require('express-jwt-authz');
@@ -41,7 +41,7 @@ const {
 const redis = require("redis");
 const redis_client = redis.createClient(redis_url);
 const async = require("async");
-
+const { v4: uuidv4 } = require('uuid');
 
 redis_client.on("error", function (error) {
   console.error(error);
@@ -123,7 +123,6 @@ async function get_passport_token() {
         }
       }
       /// code is here 
-
       resolve(passport_token); // successfully fill promise
     });
     // may be a heavy db call or http request?
@@ -224,11 +223,9 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
       const source_type = req_body.source_type;
       const icao_address = req_body.icao_address;
       const obs_metadata = req_body.metadata;
-
-      
       
       try {
-        client.set('observation', icao_address, [lon_dd, lat_dd, altitude_mm], {
+        tile38_client.set('observation', icao_address, [lon_dd, lat_dd, altitude_mm], {
           'source_type': source_type,
           'traffic_source': traffic_source
         }, {
@@ -284,7 +281,6 @@ router.post("/set_geo_fence", checkJwt, jwtAuthz(['spotlight.write.geo_fence']),
   }
 
 }), (req, response, next) => {
-
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return response.status(422).json({
@@ -298,12 +294,11 @@ router.post("/set_geo_fence", checkJwt, jwtAuthz(['spotlight.write.geo_fence']),
 
     let upper_limit = geo_fence_properties['upper_limit'];
     let lower_limit = geo_fence_properties['lower_limit'];
-
-    client.set('geo_fence', 'geo_fence', JSON.parse(geo_fence), {
+    // Create a new geo fence
+    tile38_client.set('geo_fence', uuidv4(), JSON.parse(geo_fence), {
       'upper_limit': upper_limit,
       'lower_limit': lower_limit
     });
-
     response.send({
       "message": "OK"
     });
@@ -425,7 +420,6 @@ router.get("/retrieve_flight_declarations", secured(), asyncMiddleware(async (re
 
   const passport_token = await get_passport_token();
 
-
   let url = base_url + '/flight_declaration_ops/flight_declaration?start_date=' + start_date + '&end_date=' + end_date;
   axios.get(url, {
     headers: {
@@ -436,10 +430,8 @@ router.get("/retrieve_flight_declarations", secured(), asyncMiddleware(async (re
     .then(function (blender_response) {
 
       if (blender_response.status == 200) {
-
         response.send(blender_response.data);
       } else {
-
         // console.log(error);
         response.send(blender_response.data);
       }
@@ -447,7 +439,7 @@ router.get("/retrieve_flight_declarations", secured(), asyncMiddleware(async (re
 
 }));
 
-router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
+router.post("/set_streaming_aoi", secured(), check('geo_json').custom(submitted_aoi => {
   let options = {};
   let errors = geojsonhint.hint(submitted_aoi, options);
   if (errors.length > 0) {
@@ -467,7 +459,7 @@ router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
     const email = req.body.email;
     const aoi_bbox = bbox(aoi['features'][0]);
     var io = req.app.get('socketio');
-    let geo_fence_query = client.intersectsQuery('geo_fence').object(aoi['features'][0]);
+    let geo_fence_query = tile38_client.intersectsQuery('geo_fence').object(aoi['features'][0]);
     geo_fence_query.execute().then(results => {
 
       io.sockets.in(email).emit("message", {
@@ -483,7 +475,7 @@ router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
         const geo_fence_element = geo_fence.objects[index].object;
         let geo_fence_bbox = bbox(geo_fence_element);
 
-        let geo_live_fence_query = client.intersectsQuery('observation').detect('enter', 'exit').bounds(geo_fence_bbox[0], geo_fence_bbox[1], geo_fence_bbox[2], geo_fence_bbox[3]);
+        let geo_live_fence_query = tile38_client.intersectsQuery('observation').detect('enter', 'exit').bounds(geo_fence_bbox[0], geo_fence_bbox[1], geo_fence_bbox[2], geo_fence_bbox[3]);
         let geo_fence_stream = geo_live_fence_query.executeFence((err, geo_fence_results) => {
           if (err) {
             console.error("something went wrong! " + err);
@@ -505,7 +497,7 @@ router.post("/set_aoi", secured(), check('geo_json').custom(submitted_aoi => {
     });
 
 
-    let aoi_query = client.intersectsQuery('observation').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).detect('inside');
+    let aoi_query = tile38_client.intersectsQuery('observation').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).detect('inside');
     let flight_aoi_fence = aoi_query.executeFence((err, results) => {
       if (err) {
         console.error("something went wrong! " + err);
