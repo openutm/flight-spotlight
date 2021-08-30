@@ -37,7 +37,7 @@ This project uses Node JS and Express JS, a Tile 38 and Redis server, and can co
 2. Enter the directory `cd flight-spotlight`
 3. Copy the sample .env file: `cp .env.sample .env`
 4. Open the .env file and fill out the credentials `nano .env`
-5. You will need help to fill out the all the links, since this is associated with Authentication, in short, it will ask you to point to a Flight Spotlight or any other OAUTH2 provider for credentials. (See below for non-Docker Installation)
+5. You will need help to fill out all the links, since this is associated with Authentication, in short, it will ask you to point to a Flight Spotlight or any other OAUTH2 provider for credentials. (See below for non-Docker Installation)
 6. Finally run the installation by typing `docker-compose up`
 
 ## Test run
@@ -50,7 +50,7 @@ Once you have the Docker container running, you can follow the instructions belo
 
 ## Openskies stack 
 
-Flight tracking data can be submitted to Flight Spotlight by an Display provider like [Flight Blender](https://github.com/openskies-sh/flight-blender) via the accompying software like [Flight Launchpad](https://github.com/openskies-sh/flight-launchpad), for more information see the diagram below
+Flight tracking data can be submitted to Flight Spotlight by an Display provider like [Flight Blender](https://github.com/openskies-sh/flight-blender) via the accompanying software like [Flight Launchpad](https://github.com/openskies-sh/flight-launchpad), for more information see the diagram below
 
 ![OpenskiesStack](images/openskies-stack.png)
 
