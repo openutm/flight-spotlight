@@ -38,9 +38,12 @@
         "cookie-parser": "^1.4.4",
         "debug": "~4.1.1",
         "dotenv": "^8.2.0",
+        "connect-ensure-login": "^0.1.1",
         "ejs": "^2.5.1",
         "express": "^4.13.4",
         "express-jwt": "^6.0.0",
+        "express-flash": "^0.0.2",
+        "express-layout": "^0.1.0",
         "express-jwt-authz": "^2.4.1",
         "express-session": "^1.17.1",
         "express-validator": "^6.9.2",
@@ -54,6 +57,7 @@
         "request": "^2.88.2",
         "requirejs": "^2.2.0",
         "socket.io": "^4.1.2",
+        "openid-client": "^3.14.0",
         "tile38": "^0.7.0",
         "uuid":"^8.3.2"
     }
