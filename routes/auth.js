@@ -14,7 +14,7 @@ const redis_url = process.env.REDIS_URL || 'redis://local.test:6379';
 const querystring = require("querystring");
 var Tile38 = require('tile38');
 
-var tile38_client = new Tile38({host: tile38_host, port: tile38_port});
+var tile38_client = new Tile38({ host: tile38_host, port: tile38_port });
 const jwt = require('express-jwt');
 const jwksRsa = require('jwks-rsa');
 const jwtAuthz = require('express-jwt-authz');
@@ -152,6 +152,7 @@ router.get("/noticeboard", secured(), (req, response, next) => {
     bing_key: bing_key,
     mapbox_key: mapbox_key,
     mapbox_id: mapbox_id,
+    user: req.user,
     errors: {},
     data: {}
   });
@@ -173,6 +174,7 @@ router.get("/spotlight", secured(), (req, response, next) => {
     bing_key: bing_key,
     mapbox_key: mapbox_key,
     mapbox_id: mapbox_id,
+    user: req.user,
     errors: {},
     data: {}
   });
@@ -223,7 +225,7 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
       const source_type = req_body.source_type;
       const icao_address = req_body.icao_address;
       const obs_metadata = req_body.metadata;
-      
+
       try {
         tile38_client.set('observation', icao_address, [lon_dd, lat_dd, altitude_mm], {
           'source_type': source_type,
@@ -244,7 +246,7 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
     }
   });
 
-router.get("/get_metadata/:icao_address?",  checkJwt, jwtAuthz(['spotlight.write.air_traffic']),(req, response, next) => {
+router.get("/get_metadata/:icao_address?", checkJwt, jwtAuthz(['spotlight.write.air_traffic']), (req, response, next) => {
 
   var icao_address = req.params.icao_address;
   if (!icao_address) {
@@ -252,12 +254,12 @@ router.get("/get_metadata/:icao_address?",  checkJwt, jwtAuthz(['spotlight.write
     return;
   }
   function get_meta_data(callback) {
-    
-    redis_client.hget(icao_address + '-metadata', 'properties',function (err, object) {
+
+    redis_client.hget(icao_address + '-metadata', 'properties', function (err, object) {
       if (err) {
         callback({});
       } else {
-        
+
         callback(object);
       }
     });
@@ -304,59 +306,6 @@ router.post("/set_geo_fence", checkJwt, jwtAuthz(['spotlight.write.geo_fence']),
     });
   }
 });
-
-// router.post("/set_flight_declaration", checkJwt, jwtAuthz(['spotlight.write.flight_declaration']), check('flight_declaration').custom(submitted_flight_declaration => {
-//   let options = {};
-//   submitted_flight_declaration = JSON.parse(submitted_flight_declaration);
-
-//   let errors = geojsonhint.hint(submitted_flight_declaration['flight_declaration']['parts'], options);
-//   if (errors.length > 0) {
-//     throw new Error('Invalid Flight Declaration supplied.');
-//   } else {
-//     return true;
-//   }
-// }), (req, response, next) => {
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     return response.status(422).json({ errors: errors.array() });
-//   }
-//   else {
-//     const req_body = req.body;
-//     const f_d = JSON.parse(req_body.flight_declaration);
-//     const flight_id = f_d.flight_id;
-//     redis_client.hset('fd', flight_id, JSON.stringify(f_d));
-//     redis_client.expire(flight_id, 3600);
-//     response.send('OK');
-//   }
-// });
-
-
-// router.post("/get_registry_data",secured(), [
-//   check('operator_id').isAlphanumeric(),
-//   check('token').isAlphanumeric()
-
-// ], (req, response, next) => {
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     return response.status(422).json({ errors: errors.array() });
-//   }
-//   else {
-
-//     const req_body =req.body;
-//     request.post( {
-//       'headers': {'Content-Type' : 'application/x-www-form-urlencoded' },
-//       'url':     'https://aircraftregistry.herokuapp.com/api/v1/operator',
-//       'auth': {
-//         'bearer': req_body.token
-//       },
-//       'form': { 'operator_id': req_body.operator_id},
-//       method: 'POST'
-//     }, function (e, r, body) {
-//       console.log(body);
-//     });
-
-//   }
-// });
 
 router.get("/get_flight_declarations", secured(), (req, response, next) => {
   function get_f_d(callback) {
@@ -533,60 +482,6 @@ router.get('/user', secured(), function (req, res, next) {
     userProfile: JSON.stringify(userProfile, null, 2),
     title: 'Profile page'
   });
-});
-
-// Perform the login, after login Auth0 will redirect to callback
-router.get('/login', passport.authenticate('oauth2', {
-  session: true,
-  scope: ''
-}), function (req, res) {
-  res.redirect('/');
-});
-
-
-router.get('/callback', function (req, res, next) {
-  passport.authenticate('oauth2', function (err, user, info) {
-    if (err) {
-      return next(err);
-    }
-    if (!user) {
-      return res.redirect('/login');
-    }
-    req.logIn(user, function (err) {
-      if (err) {
-        return next(err);
-      }
-      const returnTo = req.session.returnTo;
-      delete req.session.returnTo;
-      res.redirect(returnTo || '/spotlight');
-    });
-  })(req, res, next);
-});
-
-
-router.get("/logout", (req, res) => {
-  req.logOut();
-
-  let returnTo = req.protocol + "://" + req.hostname;
-  const port = req.connection.localPort;
-
-  if (port !== undefined && port !== 80 && port !== 443) {
-    returnTo =
-      process.env.NODE_ENV === "production" ?
-        `${returnTo}/` :
-        `${returnTo}:${port}/`;
-  }
-
-  const logoutURL = new URL(
-    util.format("https://%s/logout", process.env.AUTH0_DOMAIN)
-  );
-  const searchString = querystring.stringify({
-    client_id: process.env.AUTH0_CLIENT_ID,
-    returnTo: returnTo
-  });
-  logoutURL.search = searchString;
-
-  res.redirect(logoutURL);
 });
 
 module.exports = router;

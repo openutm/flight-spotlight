@@ -2,112 +2,124 @@
     'use strict';
     /*jshint node:true*/
 
-    var express = require('express');    
-    var compression = require('compression');
-    
-    const expressSession = require("express-session");
-    const passport = require("passport");
-    var OAuth2Strategy = require('passport-oauth2');
-    
-    var userInViews = require('./lib/middleware/userInViews');
+    var express = require('express');
+    const expressSession = require('express-session');
+    const passport = require('passport');
+    const { Issuer, Strategy } = require('openid-client');
+    var createError = require('http-errors');
+
+    const layout = require("express-layout");
     const socket = require("socket.io");
     require("dotenv").config();
     var userInViews = require('./lib/middleware/userInViews');
     const bodyParser = require("body-parser");
     const authRouter = require("./routes/auth");
-    
+
     const session = {
         secret: process.env.APP_SECRET,
         cookie: {},
         resave: false,
-        saveUninitialized: false    
-      };
-
-    let strategy = new OAuth2Strategy({
-        authorizationURL: process.env.PASSPORT_URL + process.env.PASSPORT_AUTHORIZATION_URL,
-        tokenURL: process.env.PASSPORT_URL + process.env.PASSPORT_TOKEN_URL,
-        clientID: process.env.PASSPORT_WEB_CLIENT_ID,
-        clientSecret: process.env.PASSPORT_WEB_CLIENT_SECRET,
-        callbackURL: process.env.CALLBACK_URL,
-        passReqToCallback: true,
-    },
-        function (accessToken, refreshToken, params,userProfile, cb) {
-        return cb(null, userProfile);
-        }
-    );
-    
-    strategy.userProfile = function (accesstoken, done) {
-        // choose your own adventure, or use the Strategy's oauth client
-        const headers = {
-        'User-Agent': 'request',
-        'Authorization': 'Bearer ' + accesstoken,
-        };
-        this._oauth2._request("GET", process.env.PASSPORT_URL + process.env.PASSPORT_USERINFO_URL, headers, null, null, (err, data) => {
-        if (err) { return done(err); }
-        try {
-            data = JSON.parse(data);
-        }
-        catch (e) {
-            return done(e);
-        }
-        done(null, data);
-        });
+        saveUninitialized: false
     };
 
-        
     var app = express();
-    app.use(compression());
-    app.use((req, res, next) => {
-        res.locals.isAuthenticated = req.isAuthenticated();
-        next();
-      });
-    app.use(function (err, req, res, next) {
-        if (err.name === 'UnauthorizedError') { 
-        res.send(401, 'invalid token...');
-        }
-    });
+
+    app.use(expressSession(session));
+
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }))
 
-    
-    
-    if (app.get("env") === "production") {
-        // Serve secure cookies, requires HTTPS
-        session.cookie.secure = true;
-        }
-
-    app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({
-        extended: true
-    }));
-    // var ejs = require('ejs');
     app.set('view engine', 'ejs');
 
     app.use(express.static(__dirname + '/views'));
 
     app.use('/assets', express.static('static'));
-    
-    app.use(expressSession(session));
-
-    passport.use(strategy);
-    app.use(passport.initialize());
-    app.use(passport.session());
 
 
-    passport.serializeUser((user, done) => {
-        done(null, user);
-      });
-      
-    passport.deserializeUser((user, done) => {
-    done(null, user);
-    });
+    Issuer.discover(process.env.OIDC_DOMAIN).then(passport_issuer => {
+        var client = new passport_issuer.Client({
+            client_id: process.env.CLIENT_ID,
+            client_secret: process.env.CLIENT_SECRET,
+            redirect_uris: [process.env.CALLBACK_URL],
+            response_types: ["code"]
+        });
+
+
+        app.use(passport.initialize());
+        app.use(passport.session());
         
-    app.use("/", authRouter);
+        passport.use(
+            'oidc',
+            new Strategy({ client }, (tokenSet, userinfo, done) => {
+                return done(null, tokenSet.claims());
+            })
+        );
 
-    app.use(function(err, req, res, next){        
-        return res.status(err.status).json({ message: err.message });
+        // handles serialization and deserialization of authenticated user
+        passport.serializeUser(function (user, done) {
+            done(null, user);
+        });
+        passport.deserializeUser(function (user, done) {
+            done(null, user);
+        });
+
+        // start authentication request
+        app.get('/auth', function (req, res, next) {
+            passport.authenticate('oidc', function (err, user, info) {
+                if (err) {
+                    return next(err); // will generate a 500 error
+                }
+                // Generate a JSON response reflecting authentication status
+                if (!user) {
+                    return res.send({ success: false, message: 'authentication failed' });
+                }
+                // ***********************************************************************
+                // "Note that when using a custom callback, it becomes the application's
+                // responsibility to establish a session (by calling req.login()) and send
+                // a response."
+                // Source: http://passportjs.org/docs
+                // ***********************************************************************
+                req.login(user, loginErr => {
+                    if (loginErr) {
+                        return next(loginErr);
+                    }
+                    return res.send({ success: true, message: 'authentication succeeded' });
+                });
+            })(req, res, next);
+        });
+
+        // authentication callback
+        app.get('/auth/callback', (req, res, next) => {
+            passport.authenticate('oidc', function (err, user, info) {
+                if (err) {
+                    return next(err); // will generate a 500 error
+                }
+                // Generate a JSON response reflecting authentication status
+                if (!user) {
+                    return res.send({ success: false, message: 'authentication failed' });
+                }
+                // ***********************************************************************
+                // "Note that when using a custom callback, it becomes the application's
+                // responsibility to establish a session (by calling req.login()) and send
+                // a response."
+                // Source: http://passportjs.org/docs
+                // ***********************************************************************
+                req.login(user, loginErr => {
+                    if (loginErr) {
+                        return next(loginErr);
+                    }
+                    return res.redirect('/spotlight');
+                });
+            })(req, res, next);
+        });
+       
+        app.use(passport.initialize());
+        app.use(passport.session());
+
+        app.use("/", authRouter);
+
     });
-    
+
     // Constants
     var server = app.listen(process.env.PORT || 5000);
 
@@ -128,7 +140,7 @@
         socket.on("disconnect", () => {
             active_users.delete(socket.userId);
             io.emit("user disconnected", socket.userId);
-          });
+        });
     });
 
     function sendWelcomeMsg(room) {

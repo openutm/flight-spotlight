@@ -17,7 +17,7 @@
         "Flight Declarations",
         "DSS",
         "ASTM",
-        "Network Remote ID" 
+        "Network Remote ID"
     ],
     "repository": {
         "type": "git",
@@ -35,30 +35,29 @@
         "axios": "^0.21.1",
         "body-parser": "^1.19.0",
         "compression": "^1.6.1",
+        "connect-ensure-login": "^0.1.1",
         "cookie-parser": "^1.4.4",
         "debug": "~4.1.1",
         "dotenv": "^8.2.0",
-        "connect-ensure-login": "^0.1.1",
         "ejs": "^2.5.1",
         "express": "^4.13.4",
-        "express-jwt": "^6.0.0",
         "express-flash": "^0.0.2",
-        "express-layout": "^0.1.0",
+        "express-jwt": "^6.0.0",
         "express-jwt-authz": "^2.4.1",
+        "express-layout": "^0.1.0",
         "express-session": "^1.17.1",
         "express-validator": "^6.9.2",
         "http-errors": "~1.7.3",
         "jwks-rsa": "^1.12.2",
         "morgan": "~1.9.0",
+        "openid-client": "^3.14.0",
         "passport": "^0.4.1",
-        "passport-oauth2": "^1.5.0",
         "qs": "^6.10.1",
         "redis": "^3.0.2",
         "request": "^2.88.2",
         "requirejs": "^2.2.0",
         "socket.io": "^4.1.2",
-        "openid-client": "^3.14.0",
         "tile38": "^0.7.0",
-        "uuid":"^8.3.2"
+        "uuid": "^8.3.2"
     }
 }

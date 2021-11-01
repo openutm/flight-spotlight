@@ -3,9 +3,9 @@
 - [Flight Spotlight Installation Instructions](#flight-spotlight-installation-instructions)
   - [Introduction](#introduction)
     - [Outcome and Experience](#outcome-and-experience)
-  - [Stage 1 Intial Setup (Basic server setup)](#stage-1-intial-setup-basic-server-setup)
+  - [Stage 1 Initial Setup (Basic server setup)](#stage-1-initial-setup-basic-server-setup)
     - [1.1 Setup Ubuntu Server](#11-setup-ubuntu-server)
-  - [Stage 2 Intial Setup (Docker and Docker Compose)](#stage-2-intial-setup-docker-and-docker-compose)
+  - [Stage 2 Initial Setup (Docker and Docker Compose)](#stage-2-initial-setup-docker-and-docker-compose)
     - [2.1 Install Docker and Docker Compose](#21-install-docker-and-docker-compose)
   - [Stage 3 Clone Repository](#stage-3-clone-repository)
     - [3.1 Download the software and setup Environment variables](#31-download-the-software-and-setup-environment-variables)
@@ -19,9 +19,9 @@ This document goes through a step-by-step process to setup and create a server t
 
 ### Outcome and Experience
 
-This guide assumes that you have access to a Ubuntu virtual server and have root access to it, it also assumes basic profiency with Linux commands and server setup. If you dont have the adequate knowledge, please open a issue and we can help you.
+This guide assumes that you have access to a Ubuntu virtual server and have root access to it, it also assumes basic profiency with Linux commands and server setup. If you don't have the adequate knowledge, please open a issue and we can help you.
 
-## Stage 1 Intial Setup (Basic server setup)
+## Stage 1 Initial Setup (Basic server setup)
 
 ### 1.1 Setup Ubuntu Server  
 
@@ -29,7 +29,7 @@ This guide assumes that you have access to a Ubuntu virtual server and have root
 2. It is recommended that you use SSH keys to access the server, it may already be setup for you but if not the guide above has instructions to create a SSH key.
 3. After completing the steps in the guide, you should login in to the console using the newly created user and update the system.
 
-## Stage 2 Intial Setup (Docker and Docker Compose)
+## Stage 2 Initial Setup (Docker and Docker Compose)
 
 ### 2.1 Install Docker and Docker Compose
 
@@ -43,7 +43,7 @@ We now have Ubuntu, Docker and Docker Compose Installed
 
 ## Stage 3 Clone Repository
 
-We will clone the Github repsository and download load the latest Docker Compose file.
+We will clone the Github repository and download load the latest Docker Compose file.
 
 ### 3.1 Download the software and setup Environment variables
 
@@ -51,9 +51,9 @@ We will clone the Github repsository and download load the latest Docker Compose
 2. Enter the directory `cd flight-spotlight`
 3. Copy the sample .env file: `cp .env.sample .env`
 4. Open the .env file and fill out the credentials `nano .env`
-5. You will need help to fill out the all the links, since this is associated with Authentication, in short, it will ask you to point to a Flight Spotlight or any other OAUTH2 provider for credentails.
+5. You will need help to fill out the all the links, since this is associated with Authentication, in short, it will ask you to point to a Flight Spotlight or any other OAUTH2 / OpenID Connect (OIDC) provider for credentials.
 6. Finally run the installation by typing `docker-compose up`
-7. There are additional options for Docker Compose e.g. `docker-compose up -d`, it is recommended that you familairize yourself with the software.
+7. There are additional options for Docker Compose e.g. `docker-compose up -d`, it is recommended that you familiarize yourself with the software.
 
 ## Stage 4 Final Stage Configure NGINX Reverse Proxy
 
