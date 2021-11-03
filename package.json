@@ -1,7 +1,7 @@
 {
     "name": "flight-spotlight",
     "version": "0.5.1",
-    "description": "A viewer to query InterUSS API and other data sources, store flight declarations and geofence and show on a custom map.",
+    "description": "A viewer for Airtraffic, ASTM Remote ID and Flight Authorizations",
     "homepage": "",
     "license": "Apache-2.0",
     "author": {
@@ -17,7 +17,10 @@
         "Flight Declarations",
         "DSS",
         "ASTM",
-        "Network Remote ID"
+        "Network Remote ID",
+        "Air traffic",
+        "ADS-B"
+
     ],
     "repository": {
         "type": "git",
