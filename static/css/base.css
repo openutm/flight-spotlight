@@ -16,10 +16,10 @@ h1 {
 }
 textarea#geo_polygon_string {    
     font-family: 'Karla', sans-serif;
-    height: 100px;    
-    padding: 5px;
-    display: block;
-    width: 100%;
+    /* height: 100px;     */
+    /* padding: 5px; */
+    /* display: block; */
+    /* width: 100%; */
 }
 
 .button {
@@ -36,7 +36,9 @@ textarea#geo_polygon_string {
     margin: 4px 2px;
     cursor: pointer;
 }
-
+#cesiumContainer {
+    height: 800px;
+}
 .buttongreen {
     background-color: white;
     color: black;
@@ -195,17 +197,4 @@ input[type="text"]:focus {
 
 /* lists */
 
-#cesiumContainer {
-    width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
-    /* position: absolute; */
-}
-
-.sidebar {
-    /* display: none;*/
-    height: 90%;
-    position:absolute;
-    right: 0;
-    padding: 0;
-    display: block;
-}
 

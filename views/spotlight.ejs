@@ -29,7 +29,6 @@
 <body>
     
     <%- include('navigation') -%>
-
   
     <div class="container-fluid">
         <div class="row">
@@ -47,12 +46,11 @@
                   <% } %>
                 <br>
                 <div class="information">
-
                     <form id="dss-query-form" method="post" action="/spotlight">
                         <!-- <label for="geo_polygon_string">Area of Interest</label><br> -->
-                        <textarea rows="4" cols="20" id="geo_polygon_string" value="<%= data.geo_polygon_string %>"
+                        <textarea rows="4" cols="50" id="geo_polygon_string" value="<%= data.geo_polygon_string %>"
                             name="geo_polygon_string"
-                            placeholder="Paste a valid GeoJSON of the area of interest here"></textarea>
+                            placeholder="Paste a valid GeoJSON of the area of interest as a polygon here.."></textarea>
 
                         <br>
                         <div class="form-actions">
@@ -76,6 +74,14 @@
                 <div id="cesiumContainer"></div>
             </div>
         </div>
+    </div>
+    
+    <div class="container-fluid">  
+        <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
+          <div class="col-md-12 d-flex align-items-center">
+            <p><mark>Need help?</mark> See this <a href="https://www.github.com/openskies-sh/flight-spotlight">blog post</a> for more information. &copy; Openskies Aerial Technology Limited.</p>
+          </div>
+        </footer>
     </div>
     
     <script type="text/javascript">
