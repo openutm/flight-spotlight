@@ -9,24 +9,12 @@
     
   </head>
 
-  <body class="h-100">
+  <body>
     <div id="app" class="h-100 d-flex flex-column">
       <div class="nav-container">
         <nav class="navbar navbar-expand-md navbar-light bg-light">
           <div class="container">
-            <div class="navbar-brand logo"></div>
-            <button
-              class="navbar-toggler"
-              type="button"
-              data-toggle="collapse"
-              data-target="#navbarNav"
-              aria-controls="navbarNav"
-              aria-expanded="false"
-              aria-label="Toggle navigation"
-            >
-              <span class="navbar-toggler-icon"></span>
-            </button>
-
+            <div class="navbar-brand logo">&nbsp;</div>
             <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav mr-auto">
                 <li class="nav-item">                  
@@ -38,27 +26,33 @@
         </nav>
       </div>
 
-      <div id="main-content" class="container mt-5 flex-grow-1">
-        <div id="content-home" class="page">          
-          <img class="img-responsive" height="300" src="assets/img/logo_transparent.png">
-          <p class="description">Welcome to Flight Spotlight, using this application, you can see flights and drones in real-time. You can connect to a U-Space / UTM airspace for Network Remote ID information. You can also integrate other data sources such as ADS-B feeds for showing non-drone traffic. In addition, it can display standards-compliant (EuroCAE) geofences for a area. Finally it is compatible with different data sources to display flight information drone registration data and flight declarations.</p><br>                    
-        </div>
-
-        <div class="page" id="content-profile">   
-            <a class="btn btn-primary btn-margin auth-invisible hidden" href="/auth" >Log in </a>          
+      <div class="container col-xxl-8 px-4 py-5">
+        <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+          <div class="col-10 col-sm-8 col-lg-6">
+            <img src="assets/img/logo_transparent.png" class="d-block mx-sm-auto img-fluid" alt="Flight Spotlight Logo"  loading="lazy">
+          </div>
+          <div class="col-lg-6">
+            <h4 class="display-6 fw-bold lh-1 mb-3">Open airspace connectivity</h4>
+            <p class="lead">Using this application, you can see flights and drones in an airspace real-time and in compliance with standards. You can connect to a U-Space / UTM airspace for Network Remote ID information and live air-traffic. You can also integrate other data sources such as ADS-B feeds for showing non-drone traffic. In addition, it can display standards-compliant (EuroCAE) geofences for a area. Finally, it is compatible with different data sources to display flight information drone registration data and flight declarations.</p>
+            <br>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+              <a class="btn btn-primary btn-lg px-4 gap-3" href="/auth" >Log in </a>   
+            </div>
+          </div>
         </div>
       </div>
-             
-      <br>
-      <br>
-      <br>
 
-      <footer class="bg-light text-center p-5">
-        <div class="logo"></div>
-        <p>
-          See <a href="https://www.github.com/openskies-sh/flight-spotlight">Github Repository</a> for more information. &copy; Openskies Aerial Technology Limited.
-        </p>
+            
+    <div class="container">  
+      <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
+        <div class="col-md-8 d-flex align-items-center">
+          <p>
+            See <a href="https://www.github.com/openskies-sh/flight-spotlight">Github Repository</a> for more information. &copy; Openskies Aerial Technology Limited.
+          </p>
+        </div>
       </footer>
+    </div>
+      
     </div>
 
     <script type="text/javascript" src="/assets/js/jquery/jquery.min.js"></script>
