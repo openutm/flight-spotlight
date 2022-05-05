@@ -1,8 +1,40 @@
+<script type="text/javascript">
 
-    <div class="container-fluid">  
-        <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
-          <div class="col-md-12 d-flex align-items-center">
-            <p>Flight Blender Connectivity: <% if (blender_connectivity === 0) { %><a type="button" class="btn btn-success btn-sm">Up</a>  <% } else { %> <a type="button" class="btn btn-danger btn-sm">Down</a> <% } %> Need help? See this <a href="https://www.github.com/openskies-sh/flight-spotlight">blog post</a> for more information.</p>
-          </div>
-        </footer>
+  function check_blender_connectivity() {
+
+    const blender_ping_url = '<%= data.blender_ping_url %>';
+
+    fetch(blender_ping_url)
+      .then((response) => {
+        if (response.status == 200) {
+          return response.json();
+        }
+        else {
+          return { "message": "error" };
+        }
+      })
+      .then((ping_data) => {
+        const connectivity_status_div = document.getElementById('connectivity_status');
+        if (ping_data['message'] == 'pong') {
+          connectivity_status_div.innerHTML = '<i class="bi bi-check-circle text-success"></i>';
+        }
+        else {
+          connectivity_status_div.innerHTML = '<i class="bi bi-x-square-fill text-danger"></i>';
+        }
+      }).catch((error) => {
+        // console.log(error);
+        connectivity_status_div.innerHTML = '<i class="bi bi-x-square-fill text-danger></i>';
+      });
+  }
+</script>
+
+<div class="container-fluid">
+  <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
+    <div class="col-md-12 d-flex align-items-center">
+      <p>Flight Blender Connectivity: <span id="connectivity_status">N/A</span>&nbsp;&nbsp;<button type="button"
+          class="btn btn-outline-dark btn-sm" onclick="check_blender_connectivity();">Check</button>
+        Need help? See this <a href="https://www.github.com/openskies-sh/flight-spotlight">blog post</a> for
+        more information.</p>
     </div>
+  </footer>
+</div>
