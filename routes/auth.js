@@ -137,7 +137,7 @@ router.get("/", (req, res) => {
   });
 });
 
-router.get("/noticeboard", secured(), (req, response, next) => {
+router.get("/noticeboard", secured(),  asyncMiddleware(async (req, response, next) => {
   const {
     _raw,
     _json,
@@ -146,20 +146,55 @@ router.get("/noticeboard", secured(), (req, response, next) => {
   const bing_key = process.env.BING_KEY || 'get-yours-at-https://www.bingmapsportal.com/';
   const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
   const mapbox_id = process.env.MAPBOX_ID || 'this_is_my_mapbox_map_id';
-  response.render('noticeboard', {
-    title: "Noticeboard",
-    userProfile: userProfile,
-    bing_key: bing_key,
-    mapbox_key: mapbox_key,
-    mapbox_id: mapbox_id,
-    user: req.user,
-    errors: {},
-    data: {}
+  const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
+
+  let ping_url = base_url + '/ping';
+  var blender_connectivity = 1;
+
+  axios.get(ping_url, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': "Bearer " + passport_token
+    }
+  }).then(function (blender_response) {
+    if (blender_response.status == 200) {
+      blender_connectivity = 1;
+    } else {
+      blender_connectivity = 0;
+    }
+
+    response.render('noticeboard', {
+      title: "Noticeboard",
+      userProfile: userProfile,
+      bing_key: bing_key,
+      mapbox_key: mapbox_key,
+      mapbox_id: mapbox_id,
+      blender_connectivity: blender_connectivity,
+      user: req.user,
+      errors: {},
+      data: {}
+    });
+
+  }).catch(function (error) {
+    blender_connectivity = 0;
+    response.render('error', {
+      title: "Noticeboard Error",
+      userProfile: userProfile,
+      bing_key: bing_key,
+      mapbox_key: mapbox_key,
+      mapbox_id: mapbox_id,
+      blender_connectivity: blender_connectivity,
+      user: req.user,
+      errors: { 'error': error },
+      
+      data: {}
+    });
+
   });
 
-});
+}));
 
-router.get("/spotlight", secured(), (req, response, next) => {
+router.get("/spotlight", secured(),  asyncMiddleware(async (req, response, next) => {
   const {
     _raw,
     _json,
@@ -168,18 +203,55 @@ router.get("/spotlight", secured(), (req, response, next) => {
   const bing_key = process.env.BING_KEY || 'get-yours-at-https://www.bingmapsportal.com/';
   const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
   const mapbox_id = process.env.MAPBOX_ID || 'this_is_my_mapbox_map_id';
-  response.render('spotlight', {
-    title: "Spotlight",
-    userProfile: userProfile,
-    bing_key: bing_key,
-    mapbox_key: mapbox_key,
-    mapbox_id: mapbox_id,
-    user: req.user,
-    errors: {},
-    data: {}
-  });
 
-});
+  const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
+
+
+  redis_key = 'passport_token';
+  let approve_reject = req.body['approve_reject'];
+  let ping_url = base_url + '/ping';
+  var blender_connectivity = 1;
+
+  axios.get(ping_url, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }).then(function (blender_response) {
+    if (blender_response.status == 200) {
+      blender_connectivity = 1;
+    } else {
+      blender_connectivity = 0;
+    }
+
+    response.render('spotlight', {
+      title: "Spotlight",
+      userProfile: userProfile,
+      bing_key: bing_key,
+      mapbox_key: mapbox_key,
+      mapbox_id: mapbox_id,
+      blender_connectivity: blender_connectivity,
+      user: req.user,
+      errors: {},
+      data: {}
+    });
+
+  }).catch(function (error) {
+    
+    blender_connectivity = 0;
+    response.render('error', {
+      title: "Noticeboard Error",
+      userProfile: userProfile,
+      bing_key: bing_key,
+      mapbox_key: mapbox_key,
+      mapbox_id: mapbox_id,
+      blender_connectivity: blender_connectivity,
+      user: req.user,
+      errors: { 'error': error },
+      data: {}
+    });
+
+  });
+}));
 
 
 router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic']), [
