@@ -19,7 +19,7 @@
         secret: process.env.APP_SECRET,
         cookie: {},
         resave: false,
-        saveUninitialized: false
+        saveUninitialized: true
     };
 
     var app = express();
@@ -91,12 +91,13 @@
         // authentication callback
         app.get('/auth/callback', (req, res, next) => {
             passport.authenticate('oidc', function (err, user, info) {
+                
                 if (err) {
                     return next(err); // will generate a 500 error
                 }
                 // Generate a JSON response reflecting authentication status
                 if (!user) {
-                    return res.send({ success: false, message: 'authentication failed' });
+                    return res.send({ success: false, message: 'authentication failed' , 'info':info});
                 }
                 // ***********************************************************************
                 // "Note that when using a custom callback, it becomes the application's
