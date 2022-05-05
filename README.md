@@ -1,8 +1,8 @@
 <img src="images/spotlight-logo.png" width="350">
 
-Flight Spotlight is web-application to see flights _in realtime_ by subscribing to updates to a geographic area, it can be launched using a browser typically on a desktop. It can display live manned and unmanned air traffic on a 3D globe. In the context of UTM / U-Space you can identify drone traffic using Network Remote-ID, accept feeds for broadcast remote-id. At the moment since ASTM Remote-ID is released, it is implemented, as other standards are released, they can be enabled as well.
+Flight Spotlight enables you to see flights _in realtime_ by subscribing to updates to a geographic area. It can display live manned and unmanned air traffic on a 3D globe and additionally display geo-fences etc. In the context of UTM / U-Space you can identify drone traffic using Network Remote-ID, accept feeds for broadcast Remote-ID data and plug in live ADS-B or other air-traffic data. From an unmanned aviation perspective, currently there is  ASTM Network and Broadcast Remote-ID standards and they are implemented, as other standards are released, they can be enabled as well.
 
-The live feed and the identification is processed using a complementary server application called [Flight Blender](https://flightblender.com). Flight Blender can fuse and stream manned and unmanned flight data using multiple technologies: ADS-B, Radar, FLARM etc. Network Remote-ID capabilities are also provided by Flight Blender as a specialized module.
+The live feed and the identification data is processed using a complementary server application called [Flight Blender](https://flightblender.com). Flight Blender can fuse and stream manned and unmanned flight data using multiple technologies: ADS-B, Radar, FLARM etc. Network Remote-ID capabilities are also provided by Flight Blender as a specialized module.
 
 ## Features
 
