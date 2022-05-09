@@ -1,11 +1,9 @@
 <script type="text/javascript">
 
   function check_blender_connectivity() {
-
-    const blender_ping_url = '<%= data.blender_ping_url %>';
-
+    const blender_ping_url = '/blender_status';
     fetch(blender_ping_url)
-      .then((response) => {
+      .then((response) => {        
         if (response.status == 200) {
           return response.json();
         }
@@ -13,16 +11,17 @@
           return { "message": "error" };
         }
       })
-      .then((ping_data) => {
+      .then((ping_data) => {        
         const connectivity_status_div = document.getElementById('connectivity_status');
         if (ping_data['message'] == 'pong') {
-          connectivity_status_div.innerHTML = '<i class="bi bi-check-circle text-success"></i>';
+          connectivity_status_div.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
         }
         else {
           connectivity_status_div.innerHTML = '<i class="bi bi-x-square-fill text-danger"></i>';
         }
       }).catch((error) => {
-        // console.log(error);
+        console.log(error);
+        const connectivity_status_div = document.getElementById('connectivity_status');
         connectivity_status_div.innerHTML = '<i class="bi bi-x-square-fill text-danger></i>';
       });
   }

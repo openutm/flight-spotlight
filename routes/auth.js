@@ -147,8 +147,6 @@ router.get("/noticeboard", secured(), (req, response, next) => {
   const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
   const mapbox_id = process.env.MAPBOX_ID || 'this_is_my_mapbox_map_id';
 
-  const blender_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
-  const blender_ping_url = blender_url + '/ping';
   response.render('noticeboard', {
     title: "Noticeboard",
     userProfile: userProfile,
@@ -157,7 +155,7 @@ router.get("/noticeboard", secured(), (req, response, next) => {
     mapbox_id: mapbox_id,
     user: req.user,
     errors: {},
-    data: {'blender_ping_url':blender_ping_url}
+    data: {}
   });
 });
 
@@ -171,8 +169,6 @@ router.get("/spotlight", secured(), (req, response, next) => {
   const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
   const mapbox_id = process.env.MAPBOX_ID || 'this_is_my_mapbox_map_id';
 
-  const blender_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
-  const blender_ping_url = blender_url + '/ping';
   response.render('spotlight', {
     title: "Spotlight",
     userProfile: userProfile,
@@ -181,7 +177,7 @@ router.get("/spotlight", secured(), (req, response, next) => {
     mapbox_id: mapbox_id,
     user: req.user,
     errors: {},
-    data: {'blender_ping_url':blender_ping_url}
+    data: {}
   });
 
 });
@@ -250,6 +246,23 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
 
     }
   });
+
+router.get('/blender_status', secured(), function (req, response, next) {
+
+    const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
+    let ping_url = base_url + '/ping';
+    axios.get(ping_url, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then(function (blender_response) {
+      response.send(blender_response.data);
+    }).catch(function (blender_error) {
+      response.send({
+        'message': "error"
+      });
+    });
+});
 
 router.get("/get_metadata/:icao_address?", checkJwt, jwtAuthz(['spotlight.write.air_traffic']), (req, response, next) => {
 
