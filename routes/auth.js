@@ -385,10 +385,16 @@ router.get("/retrieve_flight_declarations", secured(), asyncMiddleware(async (re
   redis_key = 'blender_passport_token';
   let start_date = req.query['start_date'];
   let end_date = req.query['end_date'];
+  let page = req.query['page'];
+
+
 
   const passport_token = await get_passport_token();
 
   let url = base_url + '/flight_declaration_ops/flight_declaration?start_date=' + start_date + '&end_date=' + end_date;
+  if (page){
+    url+= '&page=' + page;
+  }
   axios.get(url, {
     headers: {
       'Content-Type': 'application/json',
