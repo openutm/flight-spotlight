@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Openskies Flight Launchpad</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" href="/assets/img/favicon.png">
+    <link href='https://fonts.googleapis.com/css?family=Karla' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+
+    <link type="text/css" rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="/assets/css/bootstrap-icons.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/base.css">    
+    
+    <link rel="stylesheet" href="/assets/css/launchpad/bootstrap-daterangepicker.css">
+    <link rel="stylesheet" href="/assets/css/launchpad/leaflet.css">
+    <link rel="stylesheet" href="/assets/css/launchpad/launchpad-style.css">   
+    <link rel="stylesheet" href="/assets/js/humane/flatty.css">
+
+</head>
+<body>
+
+  <%- include('navigation') -%>
+
+  <div class="container">
+
+    <div class="row">
+      <div class="col-8">
+        <br><br>
+        
+          <h3>Submit a flight plan</h3>
+        
+        <br>  
+        <div class="row">
+          <div class="col-8">
+          <% if (Object.keys(errors).length !== 0) { %>          
+          <ul class="list-group list-group-light">
+            <% Object.values(errors).forEach(error => { %>
+              <li class="list-group-item px-3 border-0 rounded-3 list-group-item-danger mb-2" role="alert"><%= error.msg %></li>
+            <% }) %>
+          </ul>
+          <% } %>
+        </div>
+        </div>      
+        <form action="submit-declaration" method="post">
+          <div class="form-group <%= errors.message ? 'form-field-invalid' : '' %>">
+            <label for="geojson_upload_control"><mark>Paste Flightplan GeoJSON</mark></label>
+            <textarea class="form-control" onblur="this.value=remove_spaces(this.value);" onchange="update_geo_json()"
+              name="geojson_upload_control" rows="4" cols="50" class="form-control-file"
+              id="geojson_upload_control"></textarea>
+            <small id="uploadhelp" class="form-text text-muted">Paste your flight plan as a GeoJSON, once you paste the map on the bottom is updated. You can also create a GeoJSON via <a href="https://geojson.io" target="_blank">Geojson.io</a></small>
+            <% if (errors.geojson_upload_control) { %>
+              <div class="error"><%= errors.geojson_upload_control.msg %></div>
+            <% } %>
+            <br><br>
+            <label for="operator_name"><mark>Operator Name</mark></label>
+              <% if (operators == "") { %>
+                <input class="form-control" id="operator_name" type="text" name="operator_name" />
+              <% } else {%>
+                <select id="operator_name">
+                  <% const o = operators.split(',');
+                    o.forEach(function (item, index)  { %>
+                      <option value="<%- item %>"><%- item %></option>
+                    
+                  <% }); %>
+                </select>
+              <% } %>
+            <br>            
+            <label for="altitude_agl"><mark>Altitude (mts. agl)</mark></label>
+            <input class="form-control" id="altitude_agl" type="text" name="altitude_agl" />
+            <br>
+
+            <label for="op-datetime"><mark>Operation datetme</mark></label>
+            <input style="width:320px;" id="op-datetime" type="text" name="datetimes" />
+            <br>
+            <label for="operation_type"><mark>Operation Type</mark></label>
+            <select class="form-control" name="operation_type" id="operation_type" class="form-control">
+              <option selected>Choose...</option>
+              <option value="1">VLOS</option>
+              <option value="2" selected>BVLOS</option>
+            </select>
+            <br>
+          </div>
+
+          <input class="btn btn-primary" type="submit" value="Submit Flight Plan" />
+        </form>
+      </div>
+    </div>
+    <br>
+    <div class="row">
+      <div class="col-12">
+        <h6>Flight Plan Preview</h6>
+        <div id="map"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="application/javascript" src="/assets/js/jquery/jquery.min.js" charset="utf-8"></script>
+  <script type="application/javascript" src="/assets/js/launchpad/moment.min.js" charset="utf-8"></script>
+  <script type="application/javascript" src="/assets/js/bootstrap/bootstrap.bundle.min.js" charset="utf-8"></script>
+  <script type="application/javascript" src="/assets/js/launchpad/daterangepicker.min.js" charset="utf-8"></script>
+  <script type="application/javascript" src="/assets/js/launchpad/leaflet.js" charset="utf-8"></script>
+
+  <script type="text/javascript">
+    
+    $(function () {
+      $('input[name="datetimes"]').daterangepicker({
+        timePicker: true,
+        startDate: moment().startOf('hour'),
+        endDate: moment().startOf('hour').add(1, 'hour'),
+        locale: {
+          format: 'YYYY-MM-DDTHH:mm:ss'
+        }
+      });
+    });
+
+    // Creates a leaflet map binded to an html <div> with id "map"
+    // setView will set the initial map view to the location at coordinates
+    // 13 represents the initial zoom level with higher values being more zoomed in
+    var map = L.map('map',{attributionControl:false}).setView([43.659752, -79.378161], 2);
+
+    // Adds the basemap tiles to your web map
+    // Additional providers are available at: https://leaflet-extras.github.io/leaflet-providers/preview/
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 21
+    }).addTo(map);
+
+    var geojson_feature_layer = L.featureGroup().addTo(map);
+
+    function remove_spaces(string) {
+      return string.replace(/\n/g, "").replace(/ /g, '');
+    }
+
+    function update_geo_json() {
+      var geojson_control = document.getElementById('geojson_upload_control');
+      var geo_json = geojson_control.value;
+      try {
+        geojson_feature_layer.clearLayers();
+        let layer = L.geoJSON(JSON.parse(geo_json), {
+          "color": "#ff7800",
+          "weight": 5,
+          "opacity": 0.65
+        });
+        geojson_feature_layer.addLayer(layer);
+        map.fitBounds(geojson_feature_layer.getBounds());
+      } catch (err) {
+        console.log(err);
+        geojson_feature_layer.clearLayers();
+      }
+
+    }
+  </script>
+  <%- include('footer') -%>

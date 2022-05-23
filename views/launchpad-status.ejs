@@ -1,0 +1,45 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Openskies Flight Launchpad</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" href="/assets/img/favicon.png">
+    <link href='https://fonts.googleapis.com/css?family=Karla' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+
+    <link type="text/css" rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="/assets/css/bootstrap-icons.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/base.css">    
+    
+    <link rel="stylesheet" href="/assets/css/launchpad/launchpad-style.css">   
+    
+
+</head>
+<body>
+    
+  <%- include('navigation') -%>
+
+  <div class="container">
+    <br><br>
+    <div class="row">
+      <div class="col">
+        <h4>Declaration Status <small class="text-muted">Check your flight declaration status</small></h4> <br>           
+        <%  if (data.is_approved) { %>            
+          <div class="alert alert-success flash flash-success">Congratulatons! your declaration is submitted, it has been approved</div>
+        <% }  else { %>      
+          <div class="alert alert-warning flash flash-warning">Your flight declaration is submitted, it has not been approved yet.</div>
+        <% } %>
+      </div>
+    </div>  
+    
+
+      </div>
+      <br>
+      <br>
+      
+  <%- include('footer') -%>
+</body>
+</html>

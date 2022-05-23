@@ -5,7 +5,7 @@
     fetch(blender_ping_url)
       .then((response) => {        
         if (response.status == 200) {
-          return response.json();
+          return response
         }
         else {
           return { "message": "error" };
@@ -13,7 +13,7 @@
       })
       .then((ping_data) => {        
         const connectivity_status_div = document.getElementById('connectivity_status');
-        if (ping_data['message'] == 'pong') {
+        if (ping_data['statusText'] == 'OK') {
           connectivity_status_div.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
         }
         else {

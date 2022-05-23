@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Openskies Flight Launchpad</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" href="/assets/img/favicon.png">
+    <link href='https://fonts.googleapis.com/css?family=Karla' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+
+    <link type="text/css" rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="/assets/css/bootstrap-icons.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/base.css">    
+    
+    <link rel="stylesheet" href="/assets/css/launchpad/launchpad-style.css">   
+    
+
+</head>
+<body>
+    
+  <%- include('navigation') -%>
+
+  <div class="container">
+    <br><br>
+    <% if (Object.keys(errors).length !== 0) { %>
+    <div class="row">
+        <div class="col-8">
+        <% if (Object.keys(errors).length !== 0) { %>      
+          <p>Error in submitting your flight plan, please use the message below to share with your administrators:</p><br>
+          <ul class="list-group list-group-light">
+            <% Object.values(errors).forEach(error => { %>
+              <li class="list-group-item px-3 border-0 rounded-3 list-group-item-danger mb-2" role="alert"><%= error.message %></li>
+            <% }) %>
+          </ul>
+        <% } %>
+      </div>
+    </div>  
+    <% } else {%>
+    <div class="row">
+      <div class="col-12">        
+        <% if (data) { %>  
+        <h4>Success <small class="text-muted">Flight declaration submitted!</small></h4>            
+        <div class="alert alert-success" role="alert">Your declaration is submitted, it has not been approved, you can check the status of approval at the status page: <a href="/launchpad/operation-status/<%= data.id %>"><%= data.id %></a></div>
+        <% }  %>
+      </div>
+    </div>
+<% } %>
+
+      </div>
+      <br>
+      <br>
+      
+  <%- include('footer') -%>
+</body>
+</html>
