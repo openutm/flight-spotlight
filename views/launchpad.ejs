@@ -42,7 +42,7 @@
           <% } %>
         </div>
         </div>      
-        <form action="submit-declaration" method="post">
+        <form action="/launchpad/submit-declaration" method="post">
           <div class="form-group <%= errors.message ? 'form-field-invalid' : '' %>">
             <label for="geojson_upload_control"><mark>Paste Flightplan GeoJSON</mark></label>
             <textarea class="form-control" onblur="this.value=remove_spaces(this.value);" onchange="update_geo_json()"
