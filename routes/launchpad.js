@@ -190,7 +190,7 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
     })
       .then(function (blender_response) {
         
-        console.log(blender_response);
+        // console.log(blender_response.data);
         res.render('launchpad-operation-submission-status', {
           title: "Thank you for your submission!",
           errors: [],
