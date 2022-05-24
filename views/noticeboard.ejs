@@ -39,17 +39,6 @@
         <div class="row">
             <div class="col-sm-4 col-md-4 main">
                 <br>
-                <% if (Object.keys(errors).length === 0) { %>
-                    <h6>Welcome <%= user.email %></h6>
-                  <% } else { %>
-                    <h5 class="errors-heading">Oops, please correct the following:</h5>
-                    <ul class="errors-list ">
-                      <% Object.values(errors).forEach(error => { %>
-                        <li class=""><%= error.msg %></li>
-                      <% }) %>
-                    </ul>
-                  <% } %>
-                <br>
                 <div class="information">
                     <div class="mb-3">
                         <div id="date-container" class="">
@@ -75,8 +64,10 @@
                         <button id="show-flight-declarations" type="button" class="btn btn-link">Get Flight
                             Declarations</button>
                     </div>
+                    
+                    <ul id="search-results" class="list-group list-group-flush"></ul>
                     <br>
-                    <div id="search-results"></div>
+                    <div id="search-pagination"></div>
 
                 </div>
 
@@ -98,6 +89,7 @@
         });
         let start_date = 0;
         let end_date = 0;
+        let user = <%- JSON.stringify(userProfile) %>;
         // var data = <% JSON.stringify(data) %>;
         $('#datepicker').on('changeDate', (event) => {
             // save checkin date
@@ -156,13 +148,12 @@
                 input_control += 'checked';
             }
             input_control += '> <label class="form-check-label" for="' + flight_declaration_details['declaration_id'] +
-                '">' + " Flight Approved?</label></div><hr>";
+                '">' + " Flight Approved?</label></div>";
 
             return input_control;
         }
 
         function render_declaration_info(flight_declaration_details) {
-            let input_control = generate_approve_reject_control(flight_declaration_details)
             let html = '';
             html += "<h5><a href='#' onclick='highlight_flight_declaration(" + '"' + flight_declaration_details[
                 'declaration_id'] + '"' + ")'>" + flight_declaration_details['flight_declaration_json'][
@@ -170,23 +161,93 @@
             ] + '</a></h5> ';
 
             html += '<h6>Type: ' + flight_declaration_details['flight_declaration_json']['operation_mode'] + ' </h6>';
-
-            html += input_control;
+            if(user.role == 'authority'){
+                let input_control = generate_approve_reject_control(flight_declaration_details);
+                html += input_control;
+            }
+            
+            
 
             // let fd_div = document.createTextNode(html);
-            const newDiv = document.createElement("div");
+            const newDiv = document.createElement("li");
+            newDiv.setAttribute('class','list-group-item');
             newDiv.innerHTML = html;
             return newDiv;
         }
 
         function show_flight_declarations(flight_declarations) {
             viewer.dataSources.remove(path_done, true); // Removing old data.
-            let fd_length = flight_declarations.length;
+            let fd_length = flight_declarations.results.length;
+            
+            const search_pagination = document.getElementById('search-pagination');
+            search_pagination.innerHTML = '';
+
+            const pagination_links = flight_declarations.links;
+            
+            const pages = flight_declarations.pages;
+            if (pages > 0){
+                let page_details = document.createElement('p');
+                page_details.innerHTML = "Showing page " + flight_declarations.page + " of " +  flight_declarations.pages;
+                search_pagination.appendChild(page_details);
+                var pagination_ul = document.createElement('ul');
+                pagination_ul.className = "pagination";
+                
+                if (pagination_links.previous) {
+                let previous_page =  document.createElement('li');
+                previous_page.setAttribute('class','page-item');
+                let previous_link = document.createElement('a');
+                previous_link.setAttribute('class', 'page-link');
+                previous_link.setAttribute('href','#');
+                let previous_detail = pagination_links.previous;
+                
+                const previous_url = new URL(previous_detail);
+                const urlParams = new URLSearchParams(previous_url.search);
+                const s_date = urlParams.get('start_date');
+                const e_date = urlParams.get('end_date');
+                const page =  urlParams.get('page');
+
+                let previous_onclick = 'get_filtered_flight_declarations('+'"' +s_date+'","' +e_date+'","' +page+'"' +')';
+                previous_link.setAttribute('onclick', previous_onclick);
+                previous_link.innerHTML = "Previous";
+                previous_page.appendChild(previous_link);
+                pagination_ul.appendChild(previous_page);
+                }
+
+                if (pagination_links.next) {
+                let next_page =  document.createElement('li');
+                next_page.setAttribute('class','page-item');
+                let next_link = document.createElement('a');
+                next_link.setAttribute('class', 'page-link');
+                next_link.setAttribute('href','#');
+                let next_detail = pagination_links.next;
+                
+                const next_url = new URL(next_detail);
+                const urlParams = new URLSearchParams(next_url.search);
+                const s_date = urlParams.get('start_date');
+                const e_date = urlParams.get('end_date');
+                const page =  urlParams.get('page');
+
+                let next_onclick = 'get_filtered_flight_declarations('+'"' +s_date+'","' +e_date+'","' +page+'"' +')';
+        
+                next_link.setAttribute('onclick', next_onclick);
+                next_link.innerHTML = "Next";
+                next_page.appendChild(next_link);
+                pagination_ul.appendChild(next_page);
+                
+                
+            }
+            search_pagination.appendChild(pagination_ul);
+
+
+            }
+
+
             for (let i = 0; i < fd_length; i++) {
-                const flight_declaration = flight_declarations[i];
+                const flight_declaration = flight_declarations.results[i];
 
 
                 const results_list = document.getElementById('search-results');
+                
                 results_list.appendChild(render_declaration_info({
                     'declaration_id': flight_declaration['id'],
                     'flight_declaration_json': JSON.parse(flight_declaration[
@@ -213,11 +274,9 @@
         }
 
         function highlight_flight_declaration(declaration_id) {
-            for (let index = 0; index < all_flight_declarations.length; index++) {
-                const cur_declaration = all_flight_declarations[index];
+            for (let index = 0; index < all_flight_declarations.results.length; index++) {
+                const cur_declaration = all_flight_declarations.results[index];
                 if (cur_declaration['id'] == declaration_id) {
-
-
                     // const current_declaration = JSON.parse(raw_declarations[fd]);
                     const current_declaration_json = JSON.parse(cur_declaration['gutma_flight_declaration']);
                     const fd_geo_json = current_declaration_json['flight_declaration']['parts'];
@@ -274,27 +333,31 @@
             });
         }
 
-        function get_flight_declarations(e) {
+        function get_filtered_flight_declarations(s_date, e_date,page) {
 
             $.ajax({
                 url: '/retrieve_flight_declarations',
                 type: 'GET',
                 data: {
-                    'start_date': start_date,
-                    'end_date': end_date
+                    'start_date': s_date,
+                    'end_date': e_date,
+                    'page':page
                 }
 
             }).done(response => {
 
+                humane.log("Retrieved data", {
+                        addnCls: 'humane-flatty-success'
+                    });
                 const results_list = document.getElementById('search-results');
                 results_list.innerHTML = "";
                 // render flight declarations
-                if (response.length > 0) {
+                
                     let all_declarations = response;
                     show_flight_declarations(all_declarations || []);
                     all_flight_declarations = all_declarations;
                     // render_flight_declarations(all_declarations || []);
-                }
+                
 
 
             }).fail(error => {
@@ -309,6 +372,53 @@
                 }
                 // console.log(error);
             });
+        }
+        function get_flight_declarations(e) {
+            if (start_date == 0 || end_date == 0){
+                
+                humane.log("Choose a start and end date", {
+                        addnCls: 'humane-flatty-info'
+                    });
+            }
+            else {
+
+            $.ajax({
+                url: '/retrieve_flight_declarations',
+                type: 'GET',
+                data: {
+                    'start_date': start_date,
+                    'end_date': end_date
+                }
+
+            }).done(response => {
+
+                humane.log("Retrieved data", {
+                        addnCls: 'humane-flatty-success'
+                    });
+                const results_list = document.getElementById('search-results');
+                results_list.innerHTML = "";
+                // render flight declarations
+                
+                    let all_declarations = response;
+                    show_flight_declarations(all_declarations || []);
+                    all_flight_declarations = all_declarations;
+                    // render_flight_declarations(all_declarations || []);
+                
+
+
+            }).fail(error => {
+                if (error.status == 404) {
+                    humane.log("Error in getting declarations", {
+                        addnCls: 'humane-flatty-error'
+                    });
+                } else if (error.status == 422) {
+                    humane.log("Error in getting declarations", {
+                        addnCls: 'humane-flatty-error'
+                    });
+                }
+                // console.log(error);
+            });
+        }
         }
     </script>
 </body>

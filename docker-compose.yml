@@ -15,12 +15,15 @@ services:
         command: [ "redis-server", "/redis.conf" ]
         container_name: "redis"
         
-    web:
+    spotlight:
       command : npm start
       env_file:
         - .env
       image: openskiessh/flight-spotlight
       container_name: flight-spotlight
+      depends_on:
+        - redis
+        - tile38
       ports:
         - "5000:5000"
-      network_mode: "host"
+      

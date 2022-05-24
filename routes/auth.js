@@ -147,8 +147,6 @@ router.get("/noticeboard", secured(), (req, response, next) => {
   const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
   const mapbox_id = process.env.MAPBOX_ID || 'this_is_my_mapbox_map_id';
 
-  const blender_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
-  const blender_ping_url = blender_url + '/ping';
   response.render('noticeboard', {
     title: "Noticeboard",
     userProfile: userProfile,
@@ -157,7 +155,7 @@ router.get("/noticeboard", secured(), (req, response, next) => {
     mapbox_id: mapbox_id,
     user: req.user,
     errors: {},
-    data: {'blender_ping_url':blender_ping_url}
+    data: {}
   });
 });
 
@@ -171,8 +169,6 @@ router.get("/spotlight", secured(), (req, response, next) => {
   const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
   const mapbox_id = process.env.MAPBOX_ID || 'this_is_my_mapbox_map_id';
 
-  const blender_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
-  const blender_ping_url = blender_url + '/ping';
   response.render('spotlight', {
     title: "Spotlight",
     userProfile: userProfile,
@@ -181,7 +177,7 @@ router.get("/spotlight", secured(), (req, response, next) => {
     mapbox_id: mapbox_id,
     user: req.user,
     errors: {},
-    data: {'blender_ping_url':blender_ping_url}
+    data: {}
   });
 
 });
@@ -250,6 +246,27 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
 
     }
   });
+
+router.get('/blender_status', secured(), function (req, response, next) {
+
+    const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
+    let ping_url = base_url + '/ping';
+    axios.get(ping_url, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then(function (blender_response) {
+      // response.send(blender_response.data);
+      
+      response.send({
+        'message': "OK"
+      });
+    }).catch(function (blender_error) {
+      response.send({
+        'message': "error"
+      });
+    });
+});
 
 router.get("/get_metadata/:icao_address?", checkJwt, jwtAuthz(['spotlight.write.air_traffic']), (req, response, next) => {
 
@@ -333,11 +350,9 @@ router.post("/set_flight_approval/:uuid", secured(), asyncMiddleware(async (req,
 
   const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
 
-
-  redis_key = 'passport_token';
+  redis_key = 'blender_passport_token';
   let approve_reject = req.body['approve_reject'];
   const passport_token = await get_passport_token();
-
 
   let a_r = {
     'is_approved': approve_reject
@@ -367,14 +382,19 @@ router.post("/set_flight_approval/:uuid", secured(), asyncMiddleware(async (req,
 
 router.get("/retrieve_flight_declarations", secured(), asyncMiddleware(async (req, res, next) => {
   const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
-
-  redis_key = 'passport_token';
+  redis_key = 'blender_passport_token';
   let start_date = req.query['start_date'];
   let end_date = req.query['end_date'];
+  let page = req.query['page'];
+
+
 
   const passport_token = await get_passport_token();
 
   let url = base_url + '/flight_declaration_ops/flight_declaration?start_date=' + start_date + '&end_date=' + end_date;
+  if (page){
+    url+= '&page=' + page;
+  }
   axios.get(url, {
     headers: {
       'Content-Type': 'application/json',
@@ -384,10 +404,10 @@ router.get("/retrieve_flight_declarations", secured(), asyncMiddleware(async (re
     .then(function (blender_response) {
 
       if (blender_response.status == 200) {
-        response.send(blender_response.data);
+        res.send(blender_response.data);
       } else {
         // console.log(error);
-        response.send(blender_response.data);
+        res.send(blender_response.data);
       }
     });
 

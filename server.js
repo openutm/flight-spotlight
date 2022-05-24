@@ -13,7 +13,8 @@
     require("dotenv").config();
     var userInViews = require('./lib/middleware/userInViews');
     const bodyParser = require("body-parser");
-    const authRouter = require("./routes/auth");
+    const authRouter = require("./routes/auth");    
+    const launchpadRouter = require('./routes/launchpad');
 
     const session = {
         secret: process.env.APP_SECRET,
@@ -117,7 +118,8 @@
         app.use(passport.initialize());
         app.use(passport.session());
 
-        app.use("/", authRouter);
+        app.use("/", authRouter);        
+        app.use('/', launchpadRouter);
 
     });
 
