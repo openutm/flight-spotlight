@@ -380,38 +380,38 @@ router.post("/set_flight_approval/:uuid", secured(), asyncMiddleware(async (req,
 
 
 
-// router.get("/retrieve_flight_declarations", secured(), asyncMiddleware(async (req, res, next) => {
-//   const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
-//   redis_key = 'blender_passport_token';
-//   let start_date = req.query['start_date'];
-//   let end_date = req.query['end_date'];
-//   let page = req.query['page'];
+router.get("/retrieve_flight_declarations", secured(), asyncMiddleware(async (req, res, next) => {
+  const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
+  redis_key = 'blender_passport_token';
+  let start_date = req.query['start_date'];
+  let end_date = req.query['end_date'];
+  let page = req.query['page'];
 
-//   const passport_token = await get_passport_token();
+  const passport_token = await get_passport_token();
 
-//   let url = base_url + '/flight_declaration_ops/flight_declaration?start_date=' + start_date + '&end_date=' + end_date;
-//   if (page) {
-//     url += '&page=' + page;
-//   }
-//   axios.get(url, {
-//     headers: {
-//       'Content-Type': 'application/json',
-//       'Authorization': "Bearer " + passport_token
-//     }
-//   })
-//     .then(function (blender_response) {
+  let url = base_url + '/flight_declaration_ops/flight_declaration?start_date=' + start_date + '&end_date=' + end_date;
+  if (page) {
+    url += '&page=' + page;
+  }
+  axios.get(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': "Bearer " + passport_token
+    }
+  })
+    .then(function (blender_response) {
 
-//       if (blender_response.status == 200) {
-//         res.send(blender_response.data);
-//       } else {
-//         // console.log(error);
-//         res.send(blender_response.data);
-//       }
-//     });
+      if (blender_response.status == 200) {
+        res.send(blender_response.data);
+      } else {
+        // console.log(error);
+        res.send(blender_response.data);
+      }
+    });
 
-// }));
+}));
 
-router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next) => {
+router.get("/noticeboard/table", secured(), asyncMiddleware(async (req, response, next) => {
 
   const {
     _raw,
@@ -451,7 +451,7 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
 
   if ((start_date == 0 || end_date == 0)) {
 
-    response.render('noticeboard', {
+    response.render('noticeboard-text', {
       title: "Noticeboard",
       userProfile: userProfile,
       bing_key: bing_key,
