@@ -43,6 +43,7 @@
             client_secret: process.env.CLIENT_SECRET,
             redirect_uris: [process.env.CALLBACK_URL],
             response_types: ["code"]
+
         });
 
 
@@ -166,7 +167,7 @@
     server.on('close', function (e) {
         console.log('Cesium development server stopped.');
     });
-
+    
     var isFirstSig = true;
     process.on('SIGINT', function () {
         if (isFirstSig) {
