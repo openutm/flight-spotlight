@@ -29,19 +29,25 @@
 <body>
 
     <%- include('navigation') -%>
-
     <div class="container-fluid">
         <div class="row">
-            <div class="col-sm-12 col-md-12">
-                <br>
+            <div class="col-sm-8 col-md-8"><br>
+                <h4>Flight Declarations Table <small class="text-muted">With faded secondary text</small>
+                </h3></h4>
                     <ul id="search-results" class="list-group list-group-flush">
                         <%if (data.successful !='NA') { %>
                             <% const declarations_len = data.results.length;
+                                var op_types = {'0':'VLOS', '1': 'BVLOS'};
+                                var op_state = {'0':'Accepted', '1': 'Activated', '2': 'Contingent', '3': 'Nonconforming', '4': 'Completed'};
                                 if (declarations_len !== 0) {
                                 for (var j = 0; j < declarations_len; j++ ) { 
-                                var cur_declaration = data.results[j]; %>
-                                <li class="list-group-item">
-                                    <%- JSON.stringify(cur_declaration) %>                                            
+                                var cur_declaration = JSON.parse(data.results[j].gutma_flight_declaration); 
+                                %>
+                                <li class="list-group-item"><br>
+                                    <h5><%= cur_declaration.originating_party %> 
+                                    </h5>
+                                    <p>Operation Type: <%= op_types[data.results[j].type_of_operation] %> &nbsp;&nbsp;  Operation Status: <%= op_state[data.results[j].state] %></p>
+                                    <p> Is Approved?:<%if (data.results[j].is_approved =='1'){ %> <i class="bi bi-check-circle-fill text-success"></i> <% } else {%> <i class="bi bi-x-square-fill text-danger"></i><%}%><br></p>                  
                                 </li>
                             <% } } else { %>
                             <li class="list-group-item">
@@ -57,8 +63,28 @@
                           <% } %>
 
                     </ul>
+                    
                     <br>
-                    <div id="search-pagination"></div>
+                    <div id="search-pagination">
+                        <small>Showing page <%= data.page %> of <%= data.pages%></small><br>
+                        <% if (data.links) { 
+                            %> <ul class="pagination">
+                                <% if (data.links.previous){ 
+                                    const previous_page = data.page +1;
+                                    const previous_url = window.location.href + "&page=" + next_page;
+                                    
+                                    %>
+                                <li class="page-item"><a class="page-link" href="<% previous_url %>">Previous</a></li>
+                                 
+                               <% } 
+                               if (data.links.next){ 
+                                const next_page = data.page +1;
+                                const next_url = window.location.href + "&page=" + next_page;
+                                %>
+                                <li class="page-item"><a class="page-link" href="<% next_url %>">Next</a></li>
+                              </ul>
+                        <% } } %>
+                    </div>
                 </div>
                 
 

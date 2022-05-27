@@ -72,8 +72,8 @@ async function get_passport_token() {
       redis_client.get(r_key, function (err, results) {
         if (err || results == null) {
           let post_data = {
-            "client_id": process.env.PASSPORT_CLIENT_ID,
-            "client_secret": process.env.PASSPORT_CLIENT_SECRET,
+            "client_id": process.env.PASSPORT_BLENDER_CLIENT_ID,
+            "client_secret": process.env.PASSPORT_BLENDER_CLIENT_SECRET,
             "grant_type": "client_credentials",
             "scope": process.env.PASSPORT_BLENDER_SCOPE,
             "audience": process.env.PASSPORT_BLENDER_AUDIENCE
@@ -137,27 +137,27 @@ router.get("/", (req, res) => {
   });
 });
 
-// router.get("/noticeboard", secured(), (req, response, next) => {
-//   const {
-//     _raw,
-//     _json,
-//     ...userProfile
-//   } = req.user;
-//   const bing_key = process.env.BING_KEY || 'get-yours-at-https://www.bingmapsportal.com/';
-//   const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
-//   const mapbox_id = process.env.MAPBOX_ID || 'this_is_my_mapbox_map_id';
+router.get("/noticeboard", secured(), (req, response, next) => {
+  const {
+    _raw,
+    _json,
+    ...userProfile
+  } = req.user;
+  const bing_key = process.env.BING_KEY || 'get-yours-at-https://www.bingmapsportal.com/';
+  const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
+  const mapbox_id = process.env.MAPBOX_ID || 'this_is_my_mapbox_map_id';
 
-//   response.render('noticeboard', {
-//     title: "Noticeboard",
-//     userProfile: userProfile,
-//     bing_key: bing_key,
-//     mapbox_key: mapbox_key,
-//     mapbox_id: mapbox_id,
-//     user: req.user,
-//     errors: {},
-//     data: {}
-//   });
-// });
+  response.render('noticeboard', {
+    title: "Noticeboard",
+    userProfile: userProfile,
+    bing_key: bing_key,
+    mapbox_key: mapbox_key,
+    mapbox_id: mapbox_id,
+    user: req.user,
+    errors: {},
+    data: {}
+  });
+});
 
 router.get("/spotlight", secured(), (req, response, next) => {
   const {
@@ -421,11 +421,6 @@ router.get("/noticeboard/table", secured(), asyncMiddleware(async (req, response
   let req_query = req.query;
   const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
 
-
-
-  const bing_key = process.env.BING_KEY || 'get-yours-at-https://www.bingmapsportal.com/';
-  const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
-  const mapbox_id = process.env.MAPBOX_ID || 'this_is_my_mapbox_map_id';
   let s_date = req_query.start_date;
   let page = 0;
 
@@ -484,12 +479,9 @@ router.get("/noticeboard/table", secured(), asyncMiddleware(async (req, response
 
         if (blender_response.status == 200) {
 
-          response.render('noticeboard', {
+          response.render('noticeboard-text', {
             title: "Noticeboard",
             userProfile: userProfile,
-            bing_key: bing_key,
-            mapbox_key: mapbox_key,
-            mapbox_id: mapbox_id,
             user: req.user,            
             successful:1,
             errors: {},
@@ -504,7 +496,7 @@ router.get("/noticeboard/table", secured(), asyncMiddleware(async (req, response
         }
       }).catch(function (error) {
 
-        console.log(error.data);
+        // console.log(error.data);
         return response.sendStatus(500);
       });
   ;

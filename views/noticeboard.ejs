@@ -61,41 +61,15 @@
 
                     <hr>
                     <div class="d-none" id="flight-declarations">
-                        <button id="show-flight-declarations" onclick="get_flight_declarations()"  type="button" class="btn btn-link">Get Flight
+                        <button id="show-flight-declarations" type="button" class="btn btn-link">Get Flight
                             Declarations</button>
                     </div>
-<!--                     
+                    
                     <ul id="search-results" class="list-group list-group-flush"></ul>
                     <br>
                     <div id="search-pagination"></div>
-                     -->
-                    <ul id="search-results" class="list-group list-group-flush">
-                        <%if (data.successful !='NA') { %>
-                            <% const declarations_len = data.results.length;
-                                if (declarations_len !== 0) {
-                                for (var j = 0; j < declarations_len; j++ ) { 
-                                var cur_declaration = data.results[j]; %>
-                                <li class="list-group-item">
-                                    <%- JSON.stringify(cur_declaration) %>                                            
-                                </li>
-                            <% } } else { %>
-                            <li class="list-group-item">
-                                <p>No flight declarations found for the timeframe.</p>
-                            </li>
-                        <% } %>
-                        
-                        <% } else { %>
-                
-                        <li class="list-group-item">
-                            <p>No flight declarations found for the timeframe.</p>
-                          </li>
-                          <% } %>
 
-                    </ul>
-                    <br>
-                    <div id="search-pagination"></div>
                 </div>
-                
 
             </div>
 
@@ -128,13 +102,6 @@
                 end_date = datestring;
             }
         });
-
-        
-  function get_flight_declarations() {
-    let operator_id = '<%- data.operator_id %>';
-    let url = '?start_date=' + start_date + '&end_date=' + end_date;    
-    window.location.href = url;
-  }
 
 
 
@@ -190,8 +157,6 @@
             let html = '';
             html += "<h5><a href='#' onclick='highlight_flight_declaration(" + '"' + flight_declaration_details['declaration_id'] + '"' + ")'>" + flight_declaration_details['flight_declaration_json']['originating_party'] + '</a></h5> ';
             const op_mode_lookup = {'1':'vlos', '2':'bvlos'};
-            console.log(flight_declaration_details);
-            console.log(flight_declaration_details['flight_declaration_json']['operation_mode'])
             const op_mode = op_mode_lookup[flight_declaration_details['flight_declaration_json']['operation_mode']];
             html += '<h6>Type: ' + op_mode + ' </h6>';
             if(user.role == 'authority'){
@@ -374,7 +339,7 @@
                 data: {
                     'start_date': s_date,
                     'end_date': e_date,
-                    'page':page,                    
+                    'page':page
                 }
 
             }).done(response => {
@@ -406,53 +371,53 @@
                 // console.log(error);
             });
         }
-        // function get_flight_declarations(e) {
-        //     if (start_date == 0 || end_date == 0){
+        function get_flight_declarations(e) {
+            if (start_date == 0 || end_date == 0){
                 
-        //         humane.log("Choose a start and end date", {
-        //                 addnCls: 'humane-flatty-info'
-        //             });
-        //     }
-        //     else {
+                humane.log("Choose a start and end date", {
+                        addnCls: 'humane-flatty-info'
+                    });
+            }
+            else {
 
-        //     $.ajax({
-        //         url: '/retrieve_flight_declarations',
-        //         type: 'GET',
-        //         data: {
-        //             'start_date': start_date,
-        //             'end_date': end_date
-        //         }
+            $.ajax({
+                url: '/retrieve_flight_declarations',
+                type: 'GET',
+                data: {
+                    'start_date': start_date,
+                    'end_date': end_date
+                }
 
-        //     }).done(response => {
+            }).done(response => {
 
-        //         humane.log("Retrieved data", {
-        //                 addnCls: 'humane-flatty-success'
-        //             });
-        //         const results_list = document.getElementById('search-results');
-        //         results_list.innerHTML = "";
-        //         // render flight declarations
+                humane.log("Retrieved data", {
+                        addnCls: 'humane-flatty-success'
+                    });
+                const results_list = document.getElementById('search-results');
+                results_list.innerHTML = "";
+                // render flight declarations
                 
-        //             let all_declarations = response;
-        //             show_flight_declarations(all_declarations || []);
-        //             all_flight_declarations = all_declarations;
-        //             // render_flight_declarations(all_declarations || []);
+                    let all_declarations = response;
+                    show_flight_declarations(all_declarations || []);
+                    all_flight_declarations = all_declarations;
+                    // render_flight_declarations(all_declarations || []);
                 
 
 
-        //     }).fail(error => {
-        //         if (error.status == 404) {
-        //             humane.log("Error in getting declarations", {
-        //                 addnCls: 'humane-flatty-error'
-        //             });
-        //         } else if (error.status == 422) {
-        //             humane.log("Error in getting declarations", {
-        //                 addnCls: 'humane-flatty-error'
-        //             });
-        //         }
-        //         // console.log(error);
-        //     });
-        // }
-        // }
+            }).fail(error => {
+                if (error.status == 404) {
+                    humane.log("Error in getting declarations", {
+                        addnCls: 'humane-flatty-error'
+                    });
+                } else if (error.status == 422) {
+                    humane.log("Error in getting declarations", {
+                        addnCls: 'humane-flatty-error'
+                    });
+                }
+                // console.log(error);
+            });
+        }
+        }
     </script>
 </body>
 
