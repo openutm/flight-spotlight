@@ -155,19 +155,16 @@
 
         function render_declaration_info(flight_declaration_details) {
             let html = '';
-            html += "<h5><a href='#' onclick='highlight_flight_declaration(" + '"' + flight_declaration_details[
-                'declaration_id'] + '"' + ")'>" + flight_declaration_details['flight_declaration_json'][
-                'originating_party'
-            ] + '</a></h5> ';
-
-            html += '<h6>Type: ' + flight_declaration_details['flight_declaration_json']['operation_mode'] + ' </h6>';
+            html += "<h5><a href='#' onclick='highlight_flight_declaration(" + '"' + flight_declaration_details['declaration_id'] + '"' + ")'>" + flight_declaration_details['flight_declaration_json']['originating_party'] + '</a></h5> ';
+            const op_mode_lookup = {'1':'vlos', '2':'bvlos'};
+            console.log(flight_declaration_details);
+            console.log(flight_declaration_details['flight_declaration_json']['operation_mode'])
+            const op_mode = op_mode_lookup[flight_declaration_details['flight_declaration_json']['operation_mode']];
+            html += '<h6>Type: ' + op_mode + ' </h6>';
             if(user.role == 'authority'){
                 let input_control = generate_approve_reject_control(flight_declaration_details);
                 html += input_control;
             }
-            
-            
-
             // let fd_div = document.createTextNode(html);
             const newDiv = document.createElement("li");
             newDiv.setAttribute('class','list-group-item');
@@ -183,11 +180,17 @@
             search_pagination.innerHTML = '';
 
             const pagination_links = flight_declarations.links;
-            
+        
             const pages = flight_declarations.pages;
+            let table_mode_elem =document.createElement('p');
+            let table_link = document.createElement('a')
+            table_link.href = window.location.href + "/table?start_date="+ start_date+"&end_date="+end_date;
+            table_link.innerHTML = "See as a table";
+            table_mode_elem.appendChild(table_link);
+            search_pagination.appendChild(table_mode_elem)
             if (pages > 0){
                 let page_details = document.createElement('p');
-                page_details.innerHTML = "Showing page " + flight_declarations.page + " of " +  flight_declarations.pages;
+                page_details.innerHTML = "Showing page " + flight_declarations.page + " of " +  flight_declarations.pages 
                 search_pagination.appendChild(page_details);
                 var pagination_ul = document.createElement('ul');
                 pagination_ul.className = "pagination";
@@ -233,8 +236,6 @@
                 next_link.innerHTML = "Next";
                 next_page.appendChild(next_link);
                 pagination_ul.appendChild(next_page);
-                
-                
             }
             search_pagination.appendChild(pagination_ul);
 
@@ -279,9 +280,8 @@
                 if (cur_declaration['id'] == declaration_id) {
                     // const current_declaration = JSON.parse(raw_declarations[fd]);
                     const current_declaration_json = JSON.parse(cur_declaration['gutma_flight_declaration']);
-                    const fd_geo_json = current_declaration_json['flight_declaration']['parts'];
+                    const fd_geo_json = current_declaration_json['parts'];
                     // render fd_geo_json   
-
                     var dataSource = Cesium.GeoJsonDataSource.load(fd_geo_json).then(
                         function (dataSource) {
                             // var p = dataSource.entities.values;

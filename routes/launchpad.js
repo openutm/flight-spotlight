@@ -32,14 +32,14 @@ async function get_passport_token() {
       redis_client.get(r_key, function (err, results) {
         if (err || results == null) {
           let post_data = {
-            "client_id": process.env.PASSPORT_CLIENT_ID,
-            "client_secret": process.env.PASSPORT_CLIENT_SECRET,
+            "client_id": process.env.PASSPORT_BLENDER_CLIENT_ID,
+            "client_secret": process.env.PASSPORT_BLENDER_CLIENT_SECRET,
             "grant_type": "client_credentials",
             "scope": process.env.PASSPORT_BLENDER_SCOPE,
             "audience": process.env.PASSPORT_BLENDER_AUDIENCE
           };
           axios.request({
-            url: "/oauth/token/",
+            url: process.env.PASSPORT_TOKEN_URL || '/oauth/token',
             method: "post",
             header: {
               'Content-Type': 'application/x-www-form-urlencoded'
@@ -165,15 +165,20 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
     }
 
     const flight_declaration_json = {
+      "exchange_type": "flight_declaration",
+      "flight_id": "5a7f3377-b991-4cc8-af2d-379d57f786d1",
+      "plan_id": "a5b5484c-a23c-4e83-8bb8-a6a5c294e45b",
       "start_time": date_split[0],
       "end_time": date_split[2],
       "flight_declaration": {
-        "exchange_type": "flight_declaration",
+        "purpose": "Delivery",
+        "expect_telemetry": true,
+        "vehicle_id": "157de9bb-6b49-496b-bf3f-0b768ce6a3b6",
+        "operator_id": "4a725cb5-02d2-4f78-888f-b93088d324be",
+        "contact_url": "https://utm.originatingparty.com/contact?5a7f3377-b991-4cc8-af2d-379d57f786d1",
+        "operation_mode": op_mode,
         "originating_party": op_name,
-        "flight_declaration": {
-          "parts": geo_json_with_altitude
-        },
-        "operation_mode": operation_mode_lookup[op_mode]
+        "parts": geo_json_with_altitude,
       }
     };
 
