@@ -50,7 +50,7 @@
             
             <div class="row">
                 <div class="col-md-10">
-                 <h4>Flight Declarations Table <small class="text-muted">Operator and Status shown</small>
+                 <h4>Flight Noticeboard <small class="text-muted">Operator and Status details</small>
             </h4>
                     <table id="flight-declarations" class="table table-striped" style="width:100%">
                         <thead>
@@ -80,14 +80,16 @@
                                         <td><%= op_state[data.results[j].state] %></td>
                                     
                                     </tr>   
-                            <%  }  } } else { %>
-                                <td>  <p>No flight declarations found for the timeframe.</p></td>
+                            <% }  } %>
+                            <td>  <p>No flight declarations found, please select a broader timeframe.</p></td>
+                        <%  } else { %>
+                                <td>  <p>No flight declarations found, please select a timeframe.</p></td>
                                 <% } %>
                            
                         </tbody>
                     </table>
                     <%if (data.successful !='NA') { %>
-                    <p>Showing page <%= data.page %> of <%= data.pages%></p>
+                    <p>Showing page <%= data.page %> of <%= data.pages%>. <a href="/noticeboard/map">See on <i class="bi bi-globe"></i> Map</a></p>
                         <% if (data.links) {
                             const pagination_links = data.links; 
                             %> <ul class="pagination">
@@ -104,7 +106,7 @@
 
                                 %>                                   
                              
-                                <li class="page-item"><a class="page-link" href='<%= "/noticeboard/table?start_date=" + s_date +"&end_date=" + e_date + "&page=" + previous_page %>''>Previous</a></li>
+                                <li class="page-item"><a class="page-link" href='<%= "/noticeboard?start_date=" + s_date +"&end_date=" + e_date + "&page=" + previous_page %>''>Previous</a></li>
                                 <% } %>
                                    
                                 <% if (data.links.next) { 
@@ -119,7 +121,7 @@
 
                                 %>
                                     
-                                    <li class="page-item"><a class="page-link" href='<%= "/noticeboard/table?start_date=" + s_date +"&end_date=" + e_date + "&page=" + next_page %>''>Next</a></li>
+                                    <li class="page-item"><a class="page-link" href='<%= "/noticeboard?start_date=" + s_date +"&end_date=" + e_date + "&page=" + next_page %>''>Next</a></li>
                                 <% } %>
                             </ul>
                         

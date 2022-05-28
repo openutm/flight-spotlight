@@ -137,7 +137,7 @@ router.get("/", (req, res) => {
   });
 });
 
-router.get("/noticeboard", secured(), (req, response, next) => {
+router.get("/noticeboard/map", secured(), (req, response, next) => {
   const {
     _raw,
     _json,
@@ -411,7 +411,7 @@ router.get("/retrieve_flight_declarations", secured(), asyncMiddleware(async (re
 
 }));
 
-router.get("/noticeboard/table", secured(), asyncMiddleware(async (req, response, next) => {
+router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next) => {
 
   const {
     _raw,
@@ -423,7 +423,9 @@ router.get("/noticeboard/table", secured(), asyncMiddleware(async (req, response
 
   let s_date = req_query.start_date;
   let page = 0;
-
+  function isValidDate(d) {
+    return d instanceof Date && !isNaN(d);
+  }
   try {
     page = req_query.page;
   } catch (err) {
@@ -443,6 +445,9 @@ router.get("/noticeboard/table", secured(), asyncMiddleware(async (req, response
   } catch (error) {
     end_date = 0;
   }
+
+  if (isValidDate(start_date)) {} else { start_date = 0};
+  if (isValidDate(end_date)) {} else { end_date = 0};
 
   if ((start_date == 0 || end_date == 0)) {
 
