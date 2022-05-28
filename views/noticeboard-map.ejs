@@ -206,8 +206,13 @@
                 const s_date = urlParams.get('start_date');
                 const e_date = urlParams.get('end_date');
                 const page =  urlParams.get('page');
-
-                let previous_onclick = 'get_filtered_flight_declarations('+'"' +s_date+'","' +e_date+'","' +page+'"' +')';
+                var previous_onclick;
+                if (page){
+                    previous_onclick = 'get_filtered_flight_declarations('+'"' +s_date+'","' +e_date+'","' +page+'"' +')';
+                }
+                else{
+                    previous_onclick = 'get_filtered_flight_declarations('+'"' +s_date+'","' +e_date+ '"' +')';
+                }
                 previous_link.setAttribute('onclick', previous_onclick);
                 previous_link.innerHTML = "Previous";
                 previous_page.appendChild(previous_link);
@@ -227,8 +232,16 @@
                 const s_date = urlParams.get('start_date');
                 const e_date = urlParams.get('end_date');
                 const page =  urlParams.get('page');
+                var next_onclick;
+                if (page){
+                    
+                    next_onclick = 'get_filtered_flight_declarations('+'"' +s_date+'","' +e_date+'","' +page+'"' +')';
+                }
+                else{
+                    next_onclick = 'get_filtered_flight_declarations('+'"' +s_date+'","' +e_date +'"' +')';
 
-                let next_onclick = 'get_filtered_flight_declarations('+'"' +s_date+'","' +e_date+'","' +page+'"' +')';
+                }
+
         
                 next_link.setAttribute('onclick', next_onclick);
                 next_link.innerHTML = "Next";

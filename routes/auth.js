@@ -147,7 +147,7 @@ router.get("/noticeboard", secured(), (req, response, next) => {
   const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
   const mapbox_id = process.env.MAPBOX_ID || 'this_is_my_mapbox_map_id';
 
-  response.render('noticeboard', {
+  response.render('noticeboard-map', {
     title: "Noticeboard",
     userProfile: userProfile,
     bing_key: bing_key,
@@ -449,9 +449,6 @@ router.get("/noticeboard/table", secured(), asyncMiddleware(async (req, response
     response.render('noticeboard-text', {
       title: "Noticeboard",
       userProfile: userProfile,
-      bing_key: bing_key,
-      mapbox_key: mapbox_key,
-      mapbox_id: mapbox_id,
       user: req.user,
       errors: {},
       data: {'results':[], 
