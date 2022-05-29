@@ -80,9 +80,9 @@
                                         <td><%= op_state[data.results[j].state] %></td>
                                     
                                     </tr>   
-                            <% }  } %>
+                            <% }  else { %>
                             <td>  <p>No flight declarations found, please select a broader timeframe.</p></td>
-                        <%  } else { %>
+                        <%  } } else { %>
                                 <td>  <p>No flight declarations found, please select a timeframe.</p></td>
                                 <% } %>
                            
