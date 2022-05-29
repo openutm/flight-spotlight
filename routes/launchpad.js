@@ -183,7 +183,7 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
     };
 
 
-    const base_url = process.env.BLENDER_FQDN || 'http://local.test:8000';
+    const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
     let declaration_url = base_url + '/flight_declaration_ops/set_flight_declaration';
     const passport_token = await get_passport_token();
     let cred = "Bearer " + passport_token;
