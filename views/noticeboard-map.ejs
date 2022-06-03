@@ -125,10 +125,23 @@
             "animation": false,
             "selectionIndicator": false,
             "fullscreenButton": false,
-            "timeline": false,
+            
             "navigationHelpButton": false,
             "imageryProvider": bing
         });
+            //Set bounds of our simulation time
+        var start = Cesium.JulianDate.fromDate(new Date(2015, 2, 25, 16));
+        var stop = Cesium.JulianDate.addSeconds(start, 360, new Cesium.JulianDate());
+
+        //Make sure viewer is at the desired time.
+        viewer.clock.startTime = start.clone();
+        viewer.clock.stopTime = stop.clone();
+        viewer.clock.currentTime = start.clone();
+        viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP; //Loop at the end
+        viewer.clock.multiplier = 10;
+
+        //Set timeline to simulation bounds
+        viewer.timeline.zoomTo(start, stop);
 
         var scene = viewer.scene;
         var clock = viewer.clock;
@@ -293,6 +306,7 @@
                     const current_declaration_json = JSON.parse(cur_declaration['gutma_flight_declaration']);
                     const fd_geo_json = current_declaration_json['parts'];
                     // render fd_geo_json   
+                    viewer.dataSources.removeAll();
                     var dataSource = Cesium.GeoJsonDataSource.load(fd_geo_json).then(
                         function (dataSource) {
                             // var p = dataSource.entities.values;
