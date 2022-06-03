@@ -58,7 +58,6 @@
                             <th>Originating Party</th>
                             <th>Operation Type</th>
                             <th>Approved</th>
-                            <th>Operation State</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -69,16 +68,14 @@
                                     var op_state = {'0':'Accepted', '1': 'Activated', '2': 'Contingent', '3': 'Nonconforming', '4': 'Completed'};
                                     if (declarations_len !== 0) {
                                     for (var j = 0; j < declarations_len; j++ ) { 
-                                    var cur_declaration = JSON.parse(data.results[j].gutma_flight_declaration); 
+                                    var cur_declaration = data.results[j]; 
                                     %>
                                     <tr>
-
                                         <td>
                                             <%= cur_declaration.originating_party %> </td>
-                                        <td><%= op_types[data.results[j].type_of_operation] %></td>
-                                        <td><%if (data.results[j].is_approved =='1'){ %> <i class="bi bi-check-circle-fill text-success"></i> <% } else {%> <i class="bi bi-x-square-fill text-danger"></i><%}%></td>
-                                        <td><%= op_state[data.results[j].state] %></td>
-                                    
+                                        <td><%= op_types[cur_declaration.type_of_operation] %></td>
+                                        <td><%if (cur_declaration.is_approved =='1'){ %> <i class="bi bi-check-circle-fill"></i> <% } else {%> <i class="bi bi-x-square-fill"></i><%}%></td>
+                                       
                                     </tr>   
                             <% }  }  else { %>
                             <td>  <p>No flight declarations found, please select a broader timeframe.</p></td>

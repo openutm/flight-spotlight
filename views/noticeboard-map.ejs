@@ -168,9 +168,9 @@
 
         function render_declaration_info(flight_declaration_details) {
             let html = '';
-            html += "<h5><a href='#' onclick='highlight_flight_declaration(" + '"' + flight_declaration_details['declaration_id'] + '"' + ")'>" + flight_declaration_details['flight_declaration_json']['originating_party'] + '</a></h5> ';
-            const op_mode_lookup = {'1':'vlos', '2':'bvlos'};
-            const op_mode = op_mode_lookup[flight_declaration_details['flight_declaration_json']['operation_mode']];
+            html += "<h5><a href='#' onclick='highlight_flight_declaration(" + '"' + flight_declaration_details['declaration_id'] + '"' + ")'>" + flight_declaration_details['originating_party'] + '</a></h5> ';
+            const op_mode_lookup = {1:'vlos', 2:'bvlos'};
+            const op_mode = op_mode_lookup[flight_declaration_details['type_of_operation']];
             html += '<h6>Type: ' + op_mode + ' </h6>';
             if(user.role == 'authority'){
                 let input_control = generate_approve_reject_control(flight_declaration_details);
@@ -273,14 +273,7 @@
 
                 const results_list = document.getElementById('search-results');
                 
-                results_list.appendChild(render_declaration_info({
-                    'declaration_id': flight_declaration['id'],
-                    'flight_declaration_json': JSON.parse(flight_declaration[
-                        'gutma_flight_declaration']),
-                    'start_time': flight_declaration['start_datetime'],
-                    'end_time': flight_declaration['end_datetime'],
-                    'is_approved': flight_declaration['is_approved']
-                }));
+                results_list.appendChild(render_declaration_info(flight_declaration));
             }
         }
 
@@ -303,7 +296,8 @@
                 const cur_declaration = all_flight_declarations.results[index];
                 if (cur_declaration['id'] == declaration_id) {
                     // const current_declaration = JSON.parse(raw_declarations[fd]);
-                    const current_declaration_json = JSON.parse(cur_declaration['gutma_flight_declaration']);
+                    const current_declaration_json = flight_declaration[
+                        'flight_declaration_geojson'];
                     const fd_geo_json = current_declaration_json['parts'];
                     // render fd_geo_json   
                     viewer.dataSources.removeAll();

@@ -165,21 +165,11 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
     }
 
     const flight_declaration_json = {
-      "exchange_type": "flight_declaration",
-      "flight_id": "5a7f3377-b991-4cc8-af2d-379d57f786d1",
-      "plan_id": "a5b5484c-a23c-4e83-8bb8-a6a5c294e45b",
-      "start_time": date_split[0],
-      "end_time": date_split[2],
-      "flight_declaration": {
-        "purpose": "Delivery",
-        "expect_telemetry": true,
-        "vehicle_id": "157de9bb-6b49-496b-bf3f-0b768ce6a3b6",
-        "operator_id": "4a725cb5-02d2-4f78-888f-b93088d324be",
-        "contact_url": "https://utm.originatingparty.com/contact?5a7f3377-b991-4cc8-af2d-379d57f786d1",
-        "operation_mode": op_mode,
-        "originating_party": op_name,
-        "parts": geo_json_with_altitude,
-      }
+      "start_datetime": date_split[0],
+      "end_datetime": date_split[2],
+      "type_of_operation": op_mode,
+      "originating_party": op_name,
+      "flight_declaration_geo_json": geo_json_with_altitude
     };
 
 
