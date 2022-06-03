@@ -151,13 +151,13 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
     for (let index = 0; index < geo_json_features_length; index++) {
       const geo_json_feature = geo_json_features[index];
       var properties = {
-        'min_altitude': {
-          'meters': altitude_agl,
+        "min_altitude": {
+          "meters": altitude_agl,
           "datum": "agl"
         },
-        'max_altitude': {
-          'meters': altitude_agl,
-          'datum': "agl"
+        "max_altitude": {
+          "meters": altitude_agl,
+          "datum": "agl"
         }
       };
       geo_json_feature['properties'] = properties;
