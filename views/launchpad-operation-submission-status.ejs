@@ -34,7 +34,16 @@
           <p>Error in submitting your flight plan, please use the message below to share with your administrators:</p><br>
           <ul class="list-group list-group-light">
             <% Object.values(errors).forEach(error => { %>
-              <li class="list-group-item px-3 border-0 rounded-3 list-group-item-danger mb-2" role="alert"><%= error.message %></li>
+              <li class="list-group-item px-3 border-0 rounded-3 list-group-item-danger mb-2" role="alert"><%= error.message %> 
+
+            </li>
+            <li class="list-group-item px-3 border-0 rounded-3 mb-2">
+              <div class="bg-light rounded">
+                <h5 id="">Error Details from Blender</h5>
+                <p><%= error.data.detail %></p>
+                </div>
+              
+            </li>
             <% }) %>
           </ul>
         <% } %>

@@ -48,7 +48,7 @@
             <textarea class="form-control" onblur="this.value=remove_spaces(this.value);" onchange="update_geo_json()"
               name="geojson_upload_control" rows="4" cols="50" class="form-control-file"
               id="geojson_upload_control"></textarea>
-            <small id="uploadhelp" class="form-text text-muted">Paste your flight plan as a GeoJSON, once you paste the map on the bottom is updated. You can also create a GeoJSON via <a href="https://geojson.io" target="_blank">Geojson.io</a></small>
+            <small id="uploadhelp" class="form-text text-muted">Paste your flight plan as a GeoJSON, once you paste the map on the bottom is updated. You can also create a GeoJSON via <a href="https://geojson.io" target="_blank">geojson.io</a></small>
             <% if (errors.geojson_upload_control) { %>
               <div class="error"><%= errors.geojson_upload_control.msg %></div>
             <% } %>

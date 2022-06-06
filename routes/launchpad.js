@@ -39,7 +39,7 @@ async function get_passport_token() {
             "audience": process.env.PASSPORT_BLENDER_AUDIENCE
           };
           axios.request({
-            url: process.env.PASSPORT_TOKEN_URL || '/oauth/token',
+            url: process.env.PASSPORT_TOKEN_URL || '/oauth/token/',
             method: "post",
             header: {
               'Content-Type': 'application/x-www-form-urlencoded'
@@ -196,7 +196,7 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
       })
       .catch(function (error) {
         
-        const e = [{'message':error.message}]
+        const e = [{'message':error.message,"data":error.response.data}]
         res.render('launchpad-operation-submission-status', {
           title: "Thank you for your submission!",
           errors: e,

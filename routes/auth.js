@@ -217,7 +217,6 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
       });
     } else {
 
-
       const req_body = req.body;
       const lat_dd = req_body.lat_dd;
       const lon_dd = req_body.lon_dd;
@@ -446,8 +445,8 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
     end_date = 0;
   }
 
-  if (isValidDate(start_date)) {} else { start_date = 0};
-  if (isValidDate(end_date)) {} else { end_date = 0};
+  if (isValidDate(start_date)) { } else { start_date = 0 };
+  if (isValidDate(end_date)) { } else { end_date = 0 };
 
   if ((start_date == 0 || end_date == 0)) {
 
@@ -456,8 +455,10 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
       userProfile: userProfile,
       user: req.user,
       errors: {},
-      data: {'results':[], 
-      'successful': 'NA'}
+      data: {
+        'results': [],
+        'successful': 'NA'
+      }
     }, function (ren_err, html) {
       response.send(html);
     });
@@ -470,7 +471,7 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
     if (page) {
       declaration_url += '&page=' + page;
     }
-    
+
     axios.get(declaration_url, {
       headers: {
         'Content-Type': 'application/json',
@@ -484,8 +485,8 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
           response.render('noticeboard-text', {
             title: "Noticeboard",
             userProfile: userProfile,
-            user: req.user,            
-            successful:1,
+            user: req.user,
+            successful: 1,
             errors: {},
             data: blender_response.data
           }, function (ren_err, html) {
@@ -501,7 +502,6 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
         // console.log(error.data);
         return response.sendStatus(500);
       });
-  ;
 
   }
 }));

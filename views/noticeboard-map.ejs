@@ -155,12 +155,12 @@
         function generate_approve_reject_control(flight_declaration_details) {
             let input_control =
                 '<div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
-                flight_declaration_details['declaration_id'] + '"  onchange="set_approval(' + "'" +
-                flight_declaration_details['declaration_id'] + "'" + ')" ';
+                flight_declaration_details['id'] + '"  onchange="set_approval(' + "'" +
+                flight_declaration_details['id'] + "'" + ')" ';
             if (flight_declaration_details.is_approved == true) {
                 input_control += 'checked';
             }
-            input_control += '> <label class="form-check-label" for="' + flight_declaration_details['declaration_id'] +
+            input_control += '> <label class="form-check-label" for="' + flight_declaration_details['id'] +
                 '">' + " Flight Approved?</label></div>";
 
             return input_control;
@@ -168,14 +168,15 @@
 
         function render_declaration_info(flight_declaration_details) {
             let html = '';
-            html += "<h5><a href='#' onclick='highlight_flight_declaration(" + '"' + flight_declaration_details['declaration_id'] + '"' + ")'>" + flight_declaration_details['originating_party'] + '</a></h5> ';
+            html += "<div class='card'><h5 class='card-header'><a href='#' onclick='highlight_flight_declaration(" + '"' + flight_declaration_details['id'] + '"' + ")'>" + flight_declaration_details['originating_party'] + '</a></h5> ';
             const op_mode_lookup = {1:'vlos', 2:'bvlos'};
             const op_mode = op_mode_lookup[flight_declaration_details['type_of_operation']];
-            html += '<h6>Type: ' + op_mode + ' </h6>';
+            html += '<div class="card-body"><h6 class="card-title">Type: ' + op_mode + ' </h6>';
             if(user.role == 'authority'){
                 let input_control = generate_approve_reject_control(flight_declaration_details);
                 html += input_control;
             }
+            html += '</div></div>'
             // let fd_div = document.createTextNode(html);
             const newDiv = document.createElement("li");
             newDiv.setAttribute('class','list-group-item');
@@ -195,8 +196,8 @@
             const pages = flight_declarations.pages;
             let table_mode_elem =document.createElement('p');
             let table_link = document.createElement('a')
-            table_link.href = window.location.href + "/table?start_date="+ start_date+"&end_date="+end_date;
-            table_link.innerHTML = "See as a table";
+            table_link.href = "/noticeboard?start_date="+ start_date+"&end_date="+end_date;
+            table_link.innerHTML = "See as a <i class='bi bi-table'></i> table";
             table_mode_elem.appendChild(table_link);
             search_pagination.appendChild(table_mode_elem)
             if (pages > 0){
@@ -296,13 +297,14 @@
                 const cur_declaration = all_flight_declarations.results[index];
                 if (cur_declaration['id'] == declaration_id) {
                     // const current_declaration = JSON.parse(raw_declarations[fd]);
-                    const current_declaration_json = flight_declaration[
-                        'flight_declaration_geojson'];
-                    const fd_geo_json = current_declaration_json['parts'];
+                    const fd_geo_json = cur_declaration['flight_declaration_geojson'];
+                    
+                    console.log(fd_geo_json)
                     // render fd_geo_json   
                     viewer.dataSources.removeAll();
                     var dataSource = Cesium.GeoJsonDataSource.load(fd_geo_json).then(
                         function (dataSource) {
+                            
                             // var p = dataSource.entities.values;
                             // for (var i = 0; i < p.length; i++) {
                             //     p[i].polygon.extrudedHeight = 15; // or height property

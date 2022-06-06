@@ -64,7 +64,7 @@
                             <tr>
                             <%if (data.successful !='NA') { %>
                                 <% const declarations_len = data.results.length;
-                                    var op_types = {'0':'VLOS', '1': 'BVLOS'};
+                                    var op_types = {1:'VLOS', 2: 'BVLOS'};
                                     var op_state = {'0':'Accepted', '1': 'Activated', '2': 'Contingent', '3': 'Nonconforming', '4': 'Completed'};
                                     if (declarations_len !== 0) {
                                     for (var j = 0; j < declarations_len; j++ ) { 

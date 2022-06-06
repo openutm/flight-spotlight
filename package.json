@@ -20,7 +20,6 @@
         "Network Remote ID",
         "Air traffic",
         "ADS-B"
-
     ],
     "repository": {
         "type": "git",
@@ -40,6 +39,7 @@
         "compression": "^1.6.1",
         "connect-ensure-login": "^0.1.1",
         "cookie-parser": "^1.4.4",
+        "csurf": "^1.10.0",
         "debug": "~4.1.1",
         "dotenv": "^8.2.0",
         "ejs": "^3.1.7",
@@ -52,6 +52,7 @@
         "express-validator": "^6.9.2",
         "http-errors": "~1.7.3",
         "jwks-rsa": "^1.12.2",
+        "luxon": "^1.26.0",
         "morgan": "~1.9.0",
         "openid-client": "^3.14.0",
         "passport": "^0.4.1",
@@ -61,8 +62,6 @@
         "requirejs": "^2.2.0",
         "socket.io": "^4.1.2",
         "tile38": "^0.7.0",
-        "uuid": "^8.3.2",            
-        "csurf": "^1.10.0",
-        "luxon": "^1.26.0"
+        "uuid": "^8.3.2"
     }
 }
