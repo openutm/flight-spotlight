@@ -89,6 +89,7 @@
         });
         let start_date = 0;
         let end_date = 0;
+        
         let user = <%- JSON.stringify(userProfile) %>;
         // var data = <% JSON.stringify(data) %>;
         $('#datepicker').on('changeDate', (event) => {
@@ -102,8 +103,6 @@
                 end_date = datestring;
             }
         });
-
-
 
         var bing = new Cesium.BingMapsImageryProvider({
             url: 'https://dev.virtualearth.net',
@@ -122,31 +121,19 @@
             "baseLayerPicker": false,
             "infoBox": false,
             "sceneModePicker": false,
+            "timeline": false,
             "animation": false,
             "selectionIndicator": false,
-            "fullscreenButton": false,
-            
+            "fullscreenButton": false,            
             "navigationHelpButton": false,
             "imageryProvider": bing
         });
             //Set bounds of our simulation time
-        var start = Cesium.JulianDate.fromDate(new Date(2015, 2, 25, 16));
-        var stop = Cesium.JulianDate.addSeconds(start, 360, new Cesium.JulianDate());
+        // var start = Cesium.JulianDate.fromDate(new Date(2015, 2, 25, 16));
+        // var stop = Cesium.JulianDate.addSeconds(start, 360, new Cesium.JulianDate());
 
-        //Make sure viewer is at the desired time.
-        viewer.clock.startTime = start.clone();
-        viewer.clock.stopTime = stop.clone();
-        viewer.clock.currentTime = start.clone();
-        viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP; //Loop at the end
-        viewer.clock.multiplier = 10;
-
-        //Set timeline to simulation bounds
-        viewer.timeline.zoomTo(start, stop);
-
-        var scene = viewer.scene;
-        var clock = viewer.clock;
-        var camera = viewer.camera;
-
+        let scene = viewer.scene;
+        let camera = viewer.camera;        
         var cameralat;
         var cameralng;
 
@@ -270,12 +257,12 @@
 
             for (let i = 0; i < fd_length; i++) {
                 const flight_declaration = flight_declarations.results[i];
-
-
-                const results_list = document.getElementById('search-results');
-                
+                const results_list = document.getElementById('search-results');                
                 results_list.appendChild(render_declaration_info(flight_declaration));
             }
+
+         
+
         }
 
         function computeCircle(radius) {

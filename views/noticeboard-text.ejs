@@ -52,6 +52,7 @@
                 <div class="col-md-10">
                  <h4>Flight Noticeboard <small class="text-muted">Operator and Status details</small>
             </h4>
+            <br>
                     <table id="flight-declarations" class="table table-striped" style="width:100%">
                         <thead>
                           <tr>
@@ -78,15 +79,15 @@
                                        
                                     </tr>   
                             <% }  }  else { %>
-                            <td>  <p>No flight declarations found, please select a broader timeframe.</p></td>
+                            <td>  <p>No flight declarations found, please select a broader timeframe.</p></td><td></td><td></td>
                         <% } } else { %>
-                                <td>  <p>No flight declarations found, please select a timeframe.</p></td>
+                                <td>  <p>No flight declarations found, please select a timeframe.</p></td><td></td><td></td>
                                 <% } %>
                            
                         </tbody>
                     </table>
                     <%if (data.successful !='NA') { %>
-                    <p>Showing page <%= data.page %> of <%= data.pages%>. <a href="/noticeboard/map">See on <i class="bi bi-globe"></i> Map</a></p>
+                    <p>Showing page <%= data.page %> of <%= data.pages%>. <a href="/noticeboard/map">See on <i class="bi bi-globe"></i> Globe</a></p>
                         <% if (data.links) {
                             const pagination_links = data.links; 
                             %> <ul class="pagination">
@@ -137,8 +138,21 @@
             todayBtn: "linked",
             format: 'yyyy-mm-dd'
         });
-        let start_date = 0;
-        let end_date = 0;
+        
+        const map_querystring = window.location.search;
+        const date_params = new URLSearchParams(map_querystring);
+        
+        let start_date = date_params.get('start_date');               
+        let end_date = date_params.get('end_date');
+        
+        if (!start_date) {
+            start_date = 0;
+        }
+
+        if (!end_date) {
+            end_date = 0;
+        }
+        
         
         $('#datepicker').on('changeDate', (event) => {
             // save checkin date
