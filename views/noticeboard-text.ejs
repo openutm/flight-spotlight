@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="/assets/js/humane/flatty.css">
 
     <script type="text/javascript" src="/assets/js/jquery/jquery.min.js"></script>
-    <script type="text/javascript" src="/assets/js/socket.io/socket.io.min.js"></script>
+    
     <script type="text/javascript" src="/assets/js/humane/humane.min.js"></script>
 
     <script type="text/javascript" src="/assets/js/bootstrap/bootstrap.bundle.min.js"></script>
@@ -40,8 +40,7 @@
                             <input type="text" id="end" class="input-sm form-control" name="end" />
                         </div>
                         <br>
-                        <button type="button" onclick="get_flight_declarations()" id="search-timeframe"
-                            class="btn btn-primary">Show Schedule</button>
+                        <button type="button" onclick="get_flight_declarations()" id="search-timeframe" class="btn btn-primary">Show Schedule</button>
                     </div>
             </div>        
 
@@ -71,19 +70,18 @@
                                     for (var j = 0; j < declarations_len; j++ ) { 
                                     var cur_declaration = data.results[j]; 
                                     %>
-                                    <tr>
                                         <td>
                                             <%= cur_declaration.originating_party %> </td>
                                         <td><%= op_types[cur_declaration.type_of_operation] %></td>
                                         <td><%if (cur_declaration.is_approved =='1'){ %> <i class="bi bi-check-circle-fill"></i> <% } else {%> <i class="bi bi-x-square-fill"></i><%}%></td>
                                        
-                                    </tr>   
                             <% }  }  else { %>
                             <td>  <p>No flight declarations found, please select a broader timeframe.</p></td><td></td><td></td>
                         <% } } else { %>
                                 <td>  <p>No flight declarations found, please select a timeframe.</p></td><td></td><td></td>
                                 <% } %>
                            
+                            </tr>   
                         </tbody>
                     </table>
                     <%if (data.successful !='NA') { %>
@@ -138,21 +136,6 @@
             todayBtn: "linked",
             format: 'yyyy-mm-dd'
         });
-        
-        const map_querystring = window.location.search;
-        const date_params = new URLSearchParams(map_querystring);
-        
-        let start_date = date_params.get('start_date');               
-        let end_date = date_params.get('end_date');
-        
-        if (!start_date) {
-            start_date = 0;
-        }
-
-        if (!end_date) {
-            end_date = 0;
-        }
-        
         
         $('#datepicker').on('changeDate', (event) => {
             // save checkin date

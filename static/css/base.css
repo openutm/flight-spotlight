@@ -37,7 +37,7 @@ textarea#geo_polygon_string {
     cursor: pointer;
 }
 #cesiumContainer {
-    height: 800px;
+    height: 600px;
 }
 .buttongreen {
     background-color: white;
