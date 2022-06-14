@@ -269,7 +269,7 @@
                 const cur_declaration = all_flight_declarations[index];
                 if (cur_declaration['id'] == declaration_id) {
                     // const current_declaration = JSON.parse(raw_declarations[fd]);
-                    const fd_geo_json = cur_declaration['flight_declaration_geojson'];
+                    const fd_geo_json = cur_declaration['flight_declaration_raw_geojson'];
                     viewer.dataSources.removeAll();
                     var dataSource = Cesium.GeoJsonDataSource.load(fd_geo_json).then(
                         function (dataSource) {
