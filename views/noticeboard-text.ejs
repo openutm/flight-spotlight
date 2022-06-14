@@ -61,7 +61,7 @@
                           </tr>
                         </thead>
                         <tbody>
-                            <tr>
+                           
                             <%if (data.successful !='NA') { %>
                                 <% const declarations_len = data.results.length;
                                     var op_types = {1:'VLOS', 2: 'BVLOS'};
@@ -70,18 +70,23 @@
                                     for (var j = 0; j < declarations_len; j++ ) { 
                                     var cur_declaration = data.results[j]; 
                                     %>
+                                    <tr>
                                         <td>
                                             <%= cur_declaration.originating_party %> </td>
                                         <td><%= op_types[cur_declaration.type_of_operation] %></td>
                                         <td><%if (cur_declaration.is_approved =='1'){ %> <i class="bi bi-check-circle-fill"></i> <% } else {%> <i class="bi bi-x-square-fill"></i><%}%></td>
-                                       
+                                    </tr>   
                             <% }  }  else { %>
+                                <tr>
                             <td>  <p>No flight declarations found, please select a broader timeframe.</p></td><td></td><td></td>
+                                </tr>
                         <% } } else { %>
+                            <tr>
                                 <td>  <p>No flight declarations found, please select a timeframe.</p></td><td></td><td></td>
+                            </tr>
                                 <% } %>
                            
-                            </tr>   
+                            
                         </tbody>
                     </table>
                     <%if (data.successful !='NA') { %>
