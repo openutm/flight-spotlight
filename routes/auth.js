@@ -670,7 +670,7 @@ router.post("/set_streaming_aoi", secured(), check('geo_json').custom(submitted_
 
     setTimeout(() => {
       flight_aoi_fence.close();
-    }, 20000);
+    }, 60000);
 
   };
 });
