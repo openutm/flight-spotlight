@@ -10,7 +10,6 @@ const tile38_host = process.env.TILE38_SERVER || '0.0.0.0';
 const tile38_port = process.env.TILE38_PORT || 9851;
 const redis_url = process.env.REDIS_URL || 'redis://local.test:6379';
 
-
 const querystring = require("querystring");
 var Tile38 = require('tile38');
 
@@ -241,9 +240,6 @@ router.get("/noticeboard/map", secured(), asyncMiddleware(async (req, response, 
 }));
 
 
-
-
-
 router.get("/spotlight", secured(), (req, response, next) => {
   const {
     _raw,
@@ -441,9 +437,9 @@ router.post("/set_flight_approval/:uuid", secured(), asyncMiddleware(async (req,
 
   let a_r = {
     'is_approved': approve_reject,
-    'approved_by':approved_by
+    'approved_by': approved_by
   };
-  
+
   let url = base_url + '/flight_declaration_ops/flight_declaration_review/' + flight_declaration_uuid;
   axios.put(url, JSON.stringify(a_r), {
 
@@ -464,7 +460,6 @@ router.post("/set_flight_approval/:uuid", secured(), asyncMiddleware(async (req,
     });
 
 }));
-
 
 
 router.get("/retrieve_flight_declarations", secured(), asyncMiddleware(async (req, res, next) => {
@@ -594,12 +589,6 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
   }
 }));
 
-
-
-
-
-
-
 router.post("/set_streaming_aoi", secured(), check('geo_json').custom(submitted_aoi => {
   let options = {};
   let errors = geojsonhint.hint(submitted_aoi, options);
@@ -622,7 +611,6 @@ router.post("/set_streaming_aoi", secured(), check('geo_json').custom(submitted_
     var io = req.app.get('socketio');
     let geo_fence_query = tile38_client.intersectsQuery('geo_fence').object(aoi['features'][0]);
     geo_fence_query.execute().then(results => {
-
       io.sockets.in(email).emit("message", {
         'type': 'message',
         "alert_type": "aoi_geo_fence",
@@ -631,11 +619,9 @@ router.post("/set_streaming_aoi", secured(), check('geo_json').custom(submitted_
       return results;
     }).then(geo_fence => {
       // Setup a Geofence for the results 
-
       for (let index = 0; index < geo_fence.objects.length; index++) {
         const geo_fence_element = geo_fence.objects[index].object;
         let geo_fence_bbox = bbox(geo_fence_element);
-
         let geo_live_fence_query = tile38_client.intersectsQuery('observation').detect('enter', 'exit').bounds(geo_fence_bbox[0], geo_fence_bbox[1], geo_fence_bbox[2], geo_fence_bbox[3]);
         let geo_fence_stream = geo_live_fence_query.executeFence((err, geo_fence_results) => {
           if (err) {
@@ -657,7 +643,6 @@ router.post("/set_streaming_aoi", secured(), check('geo_json').custom(submitted_
       console.error("something went wrong! " + err);
     });
 
-
     let aoi_query = tile38_client.intersectsQuery('observation').bounds(aoi_bbox[0], aoi_bbox[1], aoi_bbox[2], aoi_bbox[3]).detect('inside');
     let flight_aoi_fence = aoi_query.executeFence((err, results) => {
       if (err) {
@@ -672,12 +657,20 @@ router.post("/set_streaming_aoi", secured(), check('geo_json').custom(submitted_
     });
 
     flight_aoi_fence.onClose(() => {
-      console.log("AOI geofence was closed");
+      console.debug("AOI geofence was closed");
+      io.sockets.in(email).emit("message", {
+        'type': 'message',
+        "alert_type": "aoi_closed",
+      });
     });
 
     response.send({
-      'msg': "Scanning flights in AOI and Geofences"
+      'msg': "Scanning flights in AOI and Geofences for 60 seconds"
     });
+
+    setTimeout(() => {
+      flight_aoi_fence.close();
+    }, 20000);
 
   };
 });

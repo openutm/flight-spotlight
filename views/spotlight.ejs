@@ -91,6 +91,10 @@
             list.appendChild(item);
         }
 
+        var clearList = function(){
+            list.innerHTML = "";
+        }
+
         const email = '<%= userProfile.email %>';
         var socket = io.connect(socketHost);
         socket.on('connect_failed', function () {
@@ -108,75 +112,6 @@
         socket.on('connect_timeout', function () {
             console.log("timed out");
 
-        });
-        socket.on('message', function (spotlight_data) {
-            // console.log(flight_data);
-            if (spotlight_data.type == 'message') {
-
-                if (spotlight_data.alert_type == 'aoi') {
-
-                    const cur_result = spotlight_data.results.object;
-                    
-                    // console.log(Math.floor(Date.now() / 1000) +":  " + cur_result.coordinates[1], cur_result.coordinates[0], cur_result.coordinates[2]);                    
-                    viewer.entities.add({
-                        position: Cesium.Cartesian3.fromDegrees(cur_result.coordinates[1], cur_result
-                            .coordinates[0], cur_result.coordinates[2]),
-                            
-                        // label: {text: s},
-                        label: {
-                            text: spotlight_data.results.id,
-                            font: "10px Helvetica",
-                            fillColor: Cesium.Color.WHITE,
-                            outlineColor: Cesium.Color.BLACK,
-                            outlineWidth: 1,
-                            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-                            },
-                        point: {
-                            pixelSize: 5,
-                            color: Cesium.Color.RED,
-                            outlineWidth: 0
-                        },
-                        path: {
-                            resolution: 1,
-                            leadTime: 0,
-                            trailTime: 5,
-                            material: new Cesium.PolylineGlowMaterialProperty({
-                                glowPower: 0.1,
-                                color: Cesium.Color.YELLOW
-                            }),
-                            width: 3
-                        },
-                        
-                    });
-                } else if (spotlight_data.alert_type == 'aoi_geo_fence') {
-                    const result_geo_json = spotlight_data.results.objects;
-
-                    for (let index = 0; index < result_geo_json.length; index++) {
-                        const geo_json_element = result_geo_json[index]['object'];
-                        const geo_fence_heights = result_geo_json[index]['fields'];
-                        var dataSource = Cesium.GeoJsonDataSource.load(geo_json_element).then(
-                            function (dataSource) {
-                                var p = dataSource.entities.values;
-                                for (var i = 0; i < p.length; i++) {
-                                    p[i].polygon.height = geo_fence_heights[1]; // or height property
-                                    p[i].polygon.extrudedHeight = geo_fence_heights[
-                                    0]; // or height property
-                                    p[i].polygon.outlineColor = Cesium.Color.PINK.withAlpha(0.2),
-                                        p[i].polygon.material = Cesium.Color.HOTPINK.withAlpha(0.2)
-                                }
-                                viewer.dataSources.add(dataSource);
-                                viewer.zoomTo(dataSource);
-                            }
-                        );
-
-                    }
-                } else if (spotlight_data.alert_type == 'geo_fence_crossed') {
-                    let d = new Date();
-                    addToList('<span class="date">' + d.toLocaleTimeString() + '</span> ' + spotlight_data
-                        .results);
-
-                }
-            }
         });
 
         var bing = new Cesium.BingMapsImageryProvider({
@@ -236,7 +171,7 @@
                 
                 humane.log(response['msg'], {
                     addnCls: 'humane-flatty-success'
-                });
+                });               
 
 
             }).fail(error => {
@@ -250,6 +185,88 @@
         }
 
         
+        socket.on('message', function (spotlight_data) {
+            // console.log(flight_data);
+            if (spotlight_data.type == 'message') {
+
+                if (spotlight_data.alert_type == 'aoi') {
+
+                    const cur_result = spotlight_data.results.object;
+                    
+                    // console.log(Math.floor(Date.now() / 1000) +":  " + cur_result.coordinates[1], cur_result.coordinates[0], cur_result.coordinates[2]);                    
+                    viewer.entities.add({
+                        position: Cesium.Cartesian3.fromDegrees(cur_result.coordinates[1], cur_result
+                            .coordinates[0], cur_result.coordinates[2]),
+                            
+                        // label: {text: s},
+                        label: {
+                            text: spotlight_data.results.id,
+                            font: "10px Helvetica",
+                            fillColor: Cesium.Color.WHITE,
+                            outlineColor: Cesium.Color.BLACK,
+                            outlineWidth: 1,
+                            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                            },
+                        point: {
+                            pixelSize: 5,
+                            color: Cesium.Color.RED,
+                            outlineWidth: 0
+                        },
+                        path: {
+                            resolution: 1,
+                            leadTime: 0,
+                            trailTime: 5,
+                            material: new Cesium.PolylineGlowMaterialProperty({
+                                glowPower: 0.1,
+                                color: Cesium.Color.YELLOW
+                            }),
+                            width: 3
+                        },
+                        
+                    });
+                } else if (spotlight_data.alert_type == 'aoi_closed')  {
+                        // GeoFence Closed
+                        // Clear all traffic
+                        viewer.dataSources.removeAll();
+                        viewer.entities.removeAll();
+                        humane.log("Airspace scanning closed", {
+                        addnCls: 'humane-flatty-info'
+                    });
+                    
+                    let spinner_cont = document.getElementById("spinner-cont");
+                    spinner_cont.classList.add("d-none");
+                    clearList();
+                    
+                } 
+                else if (spotlight_data.alert_type == 'aoi_geo_fence') {
+                    const result_geo_json = spotlight_data.results.objects;
+
+                    for (let index = 0; index < result_geo_json.length; index++) {
+                        const geo_json_element = result_geo_json[index]['object'];
+                        const geo_fence_heights = result_geo_json[index]['fields'];
+                        var dataSource = Cesium.GeoJsonDataSource.load(geo_json_element).then(
+                            function (dataSource) {
+                                var p = dataSource.entities.values;
+                                for (var i = 0; i < p.length; i++) {
+                                    p[i].polygon.height = geo_fence_heights[1]; // or height property
+                                    p[i].polygon.extrudedHeight = geo_fence_heights[
+                                    0]; // or height property
+                                    p[i].polygon.outlineColor = Cesium.Color.PINK.withAlpha(0.2),
+                                        p[i].polygon.material = Cesium.Color.HOTPINK.withAlpha(0.2)
+                                }
+                                viewer.dataSources.add(dataSource);
+                                viewer.zoomTo(dataSource);
+                            }
+                        );
+
+                    }
+                } else if (spotlight_data.alert_type == 'geo_fence_crossed') {
+                    let d = new Date();
+                    addToList('<span class="date">' + d.toLocaleTimeString() + '</span> ' + spotlight_data.results);
+
+                }
+            }
+        });
     </script>
 </body>
 
