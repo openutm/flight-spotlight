@@ -57,9 +57,6 @@
             <div class="d-none" id="flight-declarations">
                 <button id="show-flight-declarations" type="button" class="btn btn-link">Get Flight Declarations</button>
             </div>         
-                    <ul class="list-group list-group-flush">
-                        
-                        <li class="list-group-item p-0 ">
                             <%if (data.successful !='NA') { %>
                                 <% const declarations_len = data.results.length;
                                     var op_types = {1:'VLOS', 2: 'BVLOS'};
@@ -77,15 +74,15 @@
                                                 </div>
                                             <% } %>
                                         </div>
+                                        </div>
+                                        <br>
+
                                        
                                 <% }  }  else { %>
                                       <p>No flight declarations found, please select a broader timeframe.</p>
                                 <% } } else { %>
                                  <p>No flight declarations found, please select a timeframe.</p>
                                 <% } %>
-                            </li>
-                    </ul>
-                    <br>                    
                     <%if (data.successful !='NA') { %>
                         <p>Showing page <%= data.page %> of <%= data.pages%>. <a href="/noticeboard">See as a <i class='bi bi-table'></i> table</a></p>
                             <% if (data.links) {
@@ -141,35 +138,33 @@
             <div class="col-sm-12 col-md-12">
                 
                 <div id="declaration_timeline">
-                <ul class="timeline-events">
-                    <%if (data.successful !='NA') { %>
-                        <% const declarations_len = data.results.length;
-                            var op_types = {1:'VLOS', 2: 'BVLOS'};
-                            if (declarations_len !== 0) {
-                                for (var j1 = 0; j1 < declarations_len; j1++ ) { 
-                                var cur_declaration = data.results[j1]; 
-                                const start_date_time = cur_declaration.start_datetime.split('T');
-                                let start_date = start_date_time[0];
-                                let start_time = start_date_time[1].slice(0, -4);
-                                const end_date_time = cur_declaration.end_datetime.split('T');
-                                let end_date = end_date_time[0];
-                                let end_time = end_date_time[1].slice(0, -4);
+                    <ul class="timeline-events">
+                        <%if (data.successful !='NA') { %>
+                            <% const declarations_len = data.results.length;
+                                var op_types = {1:'VLOS', 2: 'BVLOS'};
+                                if (declarations_len !== 0) {
+                                    for (var j1 = 0; j1 < declarations_len; j1++) { 
+                                    var cur_declaration = data.results[j1]; 
+                                    const start_date_time = cur_declaration.start_datetime.split('T');
+                                    let start_date = start_date_time[0];
+                                    let start_time = start_date_time[1].slice(0, -4);
+                                    const end_date_time = cur_declaration.end_datetime.split('T');
+                                    let end_date = end_date_time[0];
+                                    let end_time = end_date_time[1].slice(0, -4);
 
-                                let start_datetime_str = start_date + ' ' + start_time;
-                                let end_datetime_str = end_date+ ' ' + end_time;
+                                    let start_datetime_str = start_date + ' ' + start_time;
+                                    let end_datetime_str = end_date+ ' ' + end_time;
+                                %>
 
-                                var timeline_json = {"start":start_datetime_str ,"end": end_datetime_str, "content":cur_declaration.originating_party};
-                            %>
-
-                        <li data-timeline-node="{ start: '<%= start_datetime_str%>',end:'<%= end_datetime_str%>', bgColor:'#808080'}">
-                            <span class="event-label"><%= cur_declaration.originating_party %></span>
-                            </li>
-                    
-                    <% }  }  else { %>
-                        <li><p>No flight declarations found, please select a broader timeframe.</li>
-                    <% } } %>
-                </ul>
-            </div>
+                                <li data-timeline-node="{ id:'<%= j1+1 %>',start:'<%= start_datetime_str %>',end:'<%= end_datetime_str %>',bgColor:'#808080',row:'<%= j1+1 %>'}">
+                                <span class="event-label"><%= cur_declaration.originating_party %></span>
+                                </li>
+                        
+                        <% }  }  else { %>
+                            <li><p>No flight declarations found, please select a broader timeframe.</li>
+                        <% } } %>
+                    </ul>
+                </div>
         </div>
     </div>
     </div>
@@ -223,7 +218,7 @@
 
         const s_parse = Date.parse(start_date);
         const timeline_start = new Date(s_parse);
-
+        const user_name = '<%= user.email %>';
         var bing = new Cesium.BingMapsImageryProvider({
             url: 'https://dev.virtualearth.net',
             key: '<%= bing_key %>',
@@ -291,24 +286,28 @@
 
         function set_approval(flight_declaration_id) {
             let is_approved = 0;
+
             if (document.getElementById(flight_declaration_id).checked) {
                 is_approved = 1;
             }
             let data = {
-                    'approve_reject': is_approved
+                    'approve_reject': is_approved,
+                    'approved_by':user_name
                 }
-            $.ajax({
+            var promise = $.ajax({
                 url: '/set_flight_approval/' + flight_declaration_id,
                 type: 'POST',
                 data: JSON.stringify(data),
                 contentType: 'application/json'
 
-            }).done(response => {
+            });
+            promise.done(response => {
                 humane.log("Submitted Approval / Review", {
                         addnCls: 'humane-flatty-success'
                     });
 
-            }).fail(error => {
+            });
+            promise.fail(error => {
                 
                 if (error.status == 404) {
                     humane.log("Error in updating declaration", {
@@ -328,31 +327,31 @@
             const start_date_str = start_date + ' 00:00';
             const end_date_str = end_date + ' 23:59';
 
-        const timeline_options = {
-            headline: {
-                display: true,
-                title:   "Flight Timeline",
-            },
-            scale: "hour",    
-            size :3,
-            rows:6,
-            rowHeight: 20,
-            startDatetime: start_date_str,            
-            endDatetime: end_date_str,            
-            ruler: {                
-                top: {
-                    lines: [ "day" ],   
-                    
+            const timeline_options = {
+                headline: {
+                    display: true,
+                    title:   "Flight Timeline",
                 },
-                bottom: {
-                    lines:[ "hour"],         
-                    format:{
-                        timeZone: "UTC", weekday: "short", year: "numeric", month: "long", day: "numeric", hour:"numeric"
+                scale: "hour",                
+                rows:5,
+                rowHeight: 20,
+                startDatetime: start_date_str,            
+                endDatetime: end_date_str,            
+                ruler: {                
+                    top: {
+                        lines: [ "day" ],   
+                        
+                    },
+                    bottom: {
+                        lines:[ "hour"],         
+                        format:{
+                            weekday: "short", year: "numeric", month: "long", day: "numeric", hour:"numeric"
+                        }
                     }
                 }
-            }
-        };        
-        $('#declaration_timeline').Timeline(timeline_options);
+            };        
+            $('#declaration_timeline').Timeline(timeline_options);
+
         }
         
     </script>

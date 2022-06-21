@@ -132,10 +132,12 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
     let date_split = date_range.split(' ');
     let op_mode = req.body['operation_type'];
     let altitude_agl = req.body['altitude_agl'];
+    let submitted_by = req.body['submitted_by'];
     let op_name = req.body['operator_name'];
     let geojson_upload = JSON.parse(req.body['geojson_upload_control']);
     let start_date = DateTime.fromISO(date_split[0]);
     let end_date = DateTime.fromISO(date_split[2]);
+    let is_approved = process.env.DEFAULT_APPROVED || 0;
 
     operation_mode_lookup = {
       '1': 'vlos',
@@ -168,6 +170,8 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
       "start_datetime": date_split[0],
       "end_datetime": date_split[2],
       "type_of_operation": op_mode,
+      "submitted_by": submitted_by,
+      "is_approved": is_approved,
       "originating_party": op_name,
       "flight_declaration_geo_json": geo_json_with_altitude
     };
@@ -229,8 +233,6 @@ router.get('/launchpad/operation-status/:uuid', asyncMiddleware(async (req, res,
   }
 
   const passport_token = await get_passport_token();
-
-
   const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
   let url = base_url + '/flight_declaration_ops/flight_declaration/' + operationUUID;
 

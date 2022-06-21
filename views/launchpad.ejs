@@ -66,6 +66,7 @@
                 </select>
               <% } %>
             <br>            
+            <input type="hidden" id="submitted_by" name="submitted_by" value="<%= user.email %>">
             <label for="altitude_agl"><mark>Altitude (mts. agl)</mark></label>
             <input class="form-control" id="altitude_agl" type="text" name="altitude_agl" />
             <br>
@@ -81,7 +82,6 @@
             </select>
             <br>
           </div>
-
           <input class="btn btn-primary" type="submit" value="Submit Flight Plan" />
         </form>
       </div>

@@ -436,11 +436,14 @@ router.post("/set_flight_approval/:uuid", secured(), asyncMiddleware(async (req,
 
   redis_key = 'blender_passport_token';
   let approve_reject = req.body['approve_reject'];
+  let approved_by = req.body['approved_by'];
   const passport_token = await get_passport_token();
 
   let a_r = {
-    'is_approved': approve_reject
+    'is_approved': approve_reject,
+    'approved_by':approved_by
   };
+  
   let url = base_url + '/flight_declaration_ops/flight_declaration_review/' + flight_declaration_uuid;
   axios.put(url, JSON.stringify(a_r), {
 
