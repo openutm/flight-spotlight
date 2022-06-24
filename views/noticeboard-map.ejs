@@ -57,6 +57,7 @@
             <div class="d-none" id="flight-declarations">
                 <button id="show-flight-declarations" type="button" class="btn btn-link">Get Flight Declarations</button>
             </div>         
+            <ul class="list-group list-group-flush">
                             <%if (data.successful !='NA') { %>
                                 <% const declarations_len = data.results.length;
                                     var op_types = {1:'VLOS', 2: 'BVLOS'};
@@ -65,17 +66,16 @@
                                     for (var j = 0; j < declarations_len; j++ ) { 
                                     var cur_declaration = data.results[j]; 
                                     %>
-                                        <div class="card"><h6 class="card-header"><a href="#" onclick="highlight_flight_declaration('<%- cur_declaration.id %>')"> <%= cur_declaration.originating_party %></a>&nbsp;<small class="text-muted"><%= op_types[cur_declaration.type_of_operation] %></small></h6> 
-                                        <div class="card-body">     
+                                    <li class="list-group-item">
+                                        <h6><a href="#" onclick="highlight_flight_declaration('<%- cur_declaration.id %>')"> <%= cur_declaration.originating_party %></a>&nbsp;<small class="text-muted"><%= op_types[cur_declaration.type_of_operation] %></small></h6> 
+                                        
                                             <%if (user.role == 'authority') { %>
                                                 <div class="form-check form-switch"><input class="form-check-input" type="checkbox" onchange="set_approval('<%- cur_declaration.id %>')" id="<%- cur_declaration.id %>" <% if (cur_declaration.is_approved) {%>checked <%}%>)>
                                                     <label class="form-check-label" for="' + flight_declaration_details['id'] +
                                                     '"> Flight Approved?</label>
                                                 </div>
                                             <% } %>
-                                        </div>
-                                        </div>
-                                        <br>
+                                    </li>
 
                                        
                                 <% }  }  else { %>
@@ -83,6 +83,8 @@
                                 <% } } else { %>
                                  <p>No flight declarations found, please select a timeframe.</p>
                                 <% } %>
+            </ul>
+            <br>
                     <%if (data.successful !='NA') { %>
                         <p>Showing page <%= data.page %> of <%= data.pages%>. <a href="/noticeboard">See as a <i class='bi bi-table'></i> table</a></p>
                             <% if (data.links) {
