@@ -5,7 +5,7 @@
     var express = require('express');
     const expressSession = require('express-session');
     const passport = require('passport');
-    const { Issuer, Strategy } = require('openid-client');
+    const { Issuer, Strategy, custom } = require('openid-client');
     var createError = require('http-errors');
 
     const layout = require("express-layout");
@@ -22,7 +22,9 @@
         resave: false,
         saveUninitialized: true
     };
-
+    custom.setHttpOptionsDefaults({
+        timeout: 5000,
+      });
     var app = express();
 
     app.use(expressSession(session));
