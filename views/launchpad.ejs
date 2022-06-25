@@ -55,7 +55,7 @@
             <br><br>
             <label for="operator_name"><mark>Operator Name</mark></label>
               <% if (operators == "") { %>
-                <input class="form-control" id="operator_name" type="text" name="operator_name" />
+                <input class="form-control" id="operator_name" placeholder="e.g. Aerobridge Drones F521" type="text" name="operator_name" />
               <% } else {%>
                 <select id="operator_name">
                   <% const o = operators.split(',');
