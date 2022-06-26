@@ -83,22 +83,22 @@
                               name="altitude_agl" />
                             <br>
 
-                            <label for="op-date"><mark>Operation date</mark></label>
-                            <select id="op-date" class="form-control" name="op-date">
+                            <label for="op_date"><mark>Operation date</mark></label>
+                            <select id="op_date" class="form-control" name="op_date">
                             </select>
                             <br>
                             <div class="row">
                               <div class="col-5">
 
-                                <label for="op-start"><mark>Intended Start</mark></label>
-                                <select id="op-start" class="form-control" name="op-start">
+                                <label for="op_start"><mark>Intended Start</mark></label>
+                                <select id="op_start" class="form-control" name="op_start">
                                 </select>
                                 <br>
                               </div>
     
                               <div class="col-5">
-                                <label for="op-end"><mark>Intended End</mark></label>
-                                <select id="op-end" class="form-control" name="op-end">
+                                <label for="op_end"><mark>Intended End</mark></label>
+                                <select id="op_end" class="form-control" name="op_end">
                                 </select>
                                 <br>
                               </div>
@@ -135,7 +135,7 @@
     <script type="text/javascript">
 
 
-      var dateRange = document.getElementById('op-date'),
+      var dateRange = document.getElementById('op_date'),
         monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
           "Sep", "Oct", "Nov", "Dec"
         ];
@@ -175,13 +175,13 @@
         }
 
       }
-      populate('op-start'); // use selector for your select
-      populate('op-end');
+      populate('op_start'); // use selector for your select
+      populate('op_end');
 
       function end_date_update(e) {
         // console.log(e.target[e.target.selectedIndex].value + " selected");
         const selected_start = parseInt(e.target[e.target.selectedIndex].value);
-        var operation_end = document.getElementById("op-end");
+        var operation_end = document.getElementById("op_end");
         for (var i = 0; i < operation_end.length; i++) {
           if (operation_end.options[i].value <= selected_start) {
             operation_end.options[i].disabled = true;
@@ -206,7 +206,7 @@
 
       //   }
       // }
-      const op_start_control = document.getElementById('op-start');
+      const op_start_control = document.getElementById('op_start');
       op_start_control.addEventListener("change", end_date_update);
       // const op_end_control = document.getElementById('op-end');
       // op_end_control.addEventListener("change", start_date_update);

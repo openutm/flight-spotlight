@@ -93,8 +93,8 @@ async function get_passport_token() {
 var flight_operation_validate = [
   check('operator_name').isLength({
     min: 5,
-    max: 20
-  }).withMessage("Operator name is required and must be more than 5 characters")
+    max: 50
+  }).withMessage("Operator name is required and must be more than 5 and less than 50 characters")
     .trim(),
   check('geojson_upload_control').custom(submitted_geo_json => {
 
@@ -107,7 +107,17 @@ var flight_operation_validate = [
       return true;
     }
   }),
-  check('altitude_agl').isInt({ min: 0, max: 150 }).withMessage("Altitude must be provided as an integer between 0 to 150 mts.")
+  check('altitude_agl').isInt({ min: 0, max: 150 }).withMessage("Altitude must be provided as an integer between 0 to 150 mts."),
+  check("op_start", "op_end")
+    .isInt()
+    .custom((op_start , {req}) => {
+      if (parseInt(op_start) > parseInt(req.body.op_end)) {
+        // trow error if passwords do not match
+        throw new Error("Operation End Time cannot be before Start. ");
+      } else {
+        return true;
+      }
+    }),
 ];
 
 router.post('/launchpad/submit-declaration', flight_operation_validate, async function (req, res, next) {
@@ -128,9 +138,9 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
   }
   else {
 
-    let start_date = req.body['op-date'];
-    let start_time = req.body['op-start'];
-    let end_time = req.body['op-end'];
+    let start_date = req.body['op_date'];
+    let start_time = req.body['op_start'];
+    let end_time = req.body['op_end'];
     let op_mode = req.body['operation_type'];
     let altitude_agl = req.body['altitude_agl'];
     let submitted_by = req.body['submitted_by'];
