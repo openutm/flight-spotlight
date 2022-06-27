@@ -1,0 +1,32 @@
+<p>&nbsp;</p>
+<div class="row">
+    <div class="col-sm-12 col-md-12">
+
+        <div id="declaration_timeline">
+            <ul class="timeline-events">
+                <%if (data.successful !=' NA' ) { %>
+                    <% const declarations_len=data.results.length; var op_types={1:'VLOS', 2: 'BVLOS' }; if
+                        (declarations_len !==0) { for (var j1=0; j1 < declarations_len; j1++) { var
+                        cur_declaration=data.results[j1]; const
+                        start_date_time=cur_declaration.start_datetime.split('T'); let start_date=start_date_time[0];
+                        let start_time=start_date_time[1].slice(0, -4); const
+                        end_date_time=cur_declaration.end_datetime.split('T'); let end_date=end_date_time[0]; let
+                        end_time=end_date_time[1].slice(0, -4); let start_datetime_str=start_date + ' ' + start_time;
+                        let end_datetime_str=end_date+ ' ' + end_time; %>
+
+                        <li
+                            data-timeline-node="{ id:'<%= j1+1 %>',start:'<%= start_datetime_str %>',end:'<%= end_datetime_str %>',bgColor:'#808080',row:'<%= j1+1 %>'}">
+                            <span class="event-label">
+                                <%= cur_declaration.originating_party %>
+                            </span>
+                        </li>
+
+                        <% } } else { %>
+                            <li>
+                                <p>No flight declarations found, please select a broader timeframe.
+                            </li>
+                            <% } } %>
+            </ul>
+        </div>
+    </div>
+</div>

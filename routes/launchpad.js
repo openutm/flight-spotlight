@@ -93,8 +93,8 @@ async function get_passport_token() {
 var flight_operation_validate = [
   check('operator_name').isLength({
     min: 5,
-    max: 20
-  }).withMessage("Operator name is required and must be more than 5 characters")
+    max: 50
+  }).withMessage("Operator name is required and must be more than 5 and less than 50 characters")
     .trim(),
   check('geojson_upload_control').custom(submitted_geo_json => {
 
@@ -107,7 +107,17 @@ var flight_operation_validate = [
       return true;
     }
   }),
-  check('altitude_agl').isInt({ min: 0, max: 150 }).withMessage("Altitude must be provided as an integer between 0 to 150 mts.")
+  check('altitude_agl').isInt({ min: 0, max: 150 }).withMessage("Altitude must be provided as an integer between 0 to 150 mts."),
+  check("op_start", "op_end")
+    .isInt()
+    .custom((op_start , {req}) => {
+      if (parseInt(op_start) > parseInt(req.body.op_end)) {
+        // trow error if passwords do not match
+        throw new Error("Operation End Time cannot be before Start. ");
+      } else {
+        return true;
+      }
+    }),
 ];
 
 router.post('/launchpad/submit-declaration', flight_operation_validate, async function (req, res, next) {
@@ -123,23 +133,35 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
       errors: errors.mapped(),
       operators: operators,
       user: "",
-      userProfile:""
+      userProfile: ""
     });
   }
   else {
 
-    let date_range = req.body['datetimes'];
-    let date_split = date_range.split(' ');
+    let start_date = req.body['op_date'];
+    let start_time = req.body['op_start'];
+    let end_time = req.body['op_end'];
     let op_mode = req.body['operation_type'];
     let altitude_agl = req.body['altitude_agl'];
     let submitted_by = req.body['submitted_by'];
     let op_name = req.body['operator_name'];
     let geojson_upload = JSON.parse(req.body['geojson_upload_control']);
-    let start_date = DateTime.fromISO(date_split[0]);
-    let end_date = DateTime.fromISO(date_split[2]);
-    let is_approved = process.env.DEFAULT_APPROVED || 0;
 
-    operation_mode_lookup = {
+    let is_approved = process.env.DEFAULT_APPROVED || 0;
+    var tmp_s_date = DateTime.fromISO(start_date);
+    var tmp_e_date = DateTime.fromISO(start_date);
+
+    const start_hours = Math.floor(start_time / 60);
+    const start_minutes = start_time % 60;
+    // Set hours
+    const s_date = tmp_s_date.set({ 'hour': start_hours, 'minutes': start_minutes });
+
+    const end_hours = Math.floor(end_time / 60);
+    const end_minutes = end_time % 60;
+
+    const e_date = tmp_e_date.set({ 'hour': end_hours, 'minutes': end_minutes });
+
+    let operation_mode_lookup = {
       '1': 'vlos',
       '2': 'bvlos'
     };
@@ -167,15 +189,14 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
     }
 
     const flight_declaration_json = {
-      "start_datetime": date_split[0],
-      "end_datetime": date_split[2],
+      "start_datetime": s_date.toISO(),
+      "end_datetime": e_date.toISO(),
       "type_of_operation": op_mode,
       "submitted_by": submitted_by,
       "is_approved": is_approved,
       "originating_party": op_name,
       "flight_declaration_geo_json": geo_json_with_altitude
     };
-
 
     const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
     let declaration_url = base_url + '/flight_declaration_ops/set_flight_declaration';
@@ -188,7 +209,6 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
       }
     })
       .then(function (blender_response) {
-        
         // console.log(blender_response.data);
         res.render('launchpad-operation-submission-status', {
           title: "Thank you for your submission!",
@@ -199,8 +219,7 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
         });
       })
       .catch(function (error) {
-        
-        const e = [{'message':error.message,"data":error.response.data}]
+        const e = [{ 'message': error.message, "data": error.response.data }]
         res.render('launchpad-operation-submission-status', {
           title: "Thank you for your submission!",
           errors: e,
@@ -220,7 +239,7 @@ router.get('/launchpad', ensureLoggedIn('/'), (req, response, next) => {
     ...userProfile
   } = req.user;
   const operators = process.env.OPERATORS || "";
-  response.render('launchpad', { 'operators': operators, 'user': req.user, 'errors': [],'userProfile':userProfile });
+  response.render('launchpad', { 'operators': operators, 'user': req.user, 'errors': [], 'userProfile': userProfile });
 });
 
 router.get('/launchpad/operation-status/:uuid', asyncMiddleware(async (req, res, next) => {
