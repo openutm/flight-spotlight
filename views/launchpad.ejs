@@ -30,6 +30,7 @@
           <br><br>
 
           <h3>Submit a flight plan</h3>
+          <p>Use this form to submit a Flight Plan into the UTM system.</p>
 
           <br>
           <div class="row">
@@ -217,10 +218,11 @@
 
       // Adds the basemap tiles to your web map
       // Additional providers are available at: https://leaflet-extras.github.io/leaflet-providers/preview/
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: 'abcd',
-        maxZoom: 21
+        maxZoom: 21,
+        dragging: false,
       }).addTo(map);
 
       var geojson_feature_layer = L.featureGroup().addTo(map);
