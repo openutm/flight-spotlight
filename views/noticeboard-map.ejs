@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>Openskies Flight Noticeboard</title>
+    <title>Openskies Flight Noticeboard Map</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" href="/assets/img/favicon.png">
@@ -13,7 +13,7 @@
 
     <link type="text/css" rel="stylesheet" href="/assets/css/bootstrap-icons.css">
     <link rel="stylesheet" type="text/css" href="/assets/css/base.css">
-    <link rel="stylesheet" href="/assets/css/datepicker/bootstrap-datepicker3.min.css">
+    
     <link rel="stylesheet" href="/assets/css/timeline/jquery.timeline.min.css">
     <link rel="stylesheet" href="/assets/js/humane/flatty.css">
 
@@ -22,88 +22,78 @@
         @import url(/assets/Build/Cesium/Widgets/widgets.css);
     </style>
 </head>
-
 <body>
-
     <%- include('navigation') -%>
+        <div class="container-fluid information">
+            <div class="row">
+                <div class="col-sm-4 col-md-4 main">
+                    <div class="">
+                        
 
-    <div class="container-fluid">
-      
-        
-        
-        <div class="row">
-
-            <div class="col-sm-4 col-md-4 main">
-                <div class="information">       
-                            
-                    <div class="pt-3 pb-3">
-                        <div id="date-container" class="">
-                            <div class="input-daterange input-group" id="datepicker">
-                                <span class="input-group-addon">From </span>&nbsp;
-                                <input type="text" id="start" class="input-sm form-control" name="start" />
-                                &nbsp;<span class="input-group-addon">To</span>&nbsp;
-                                <input type="text" id="end" class="input-sm form-control" name="end" />
-                            </div>
+                        <div class="pt-2 pb-2">
+                            <select id="query_date" class="form-control" name="query_date">
+                            </select>
                         </div>
-                    </div>
-                    <div class="schedule-button pt-3">
-                        <button type="button" onclick="get_flight_declarations()" id="search-timeframe" class="btn btn-primary">Show Schedule</button>
-                    </div>
+                        <div class="schedule-button pt-1 pb-1">
+                            <button type="button" onclick="get_flight_declarations()" id="search-timeframe"
+                                class="btn btn-primary">Show Schedule</button>
+                        </div>
 
-                    <div class="d-none loading-spinner" id="spinner-cont"><br>
-                        <img src="/assets/img/spinner.gif" height="30px">
-                    </div>
-                    <p>&nbsp;</p>
-            <div class="d-none" id="flight-declarations">
-                <button id="show-flight-declarations" type="button" class="btn btn-link">Get Flight Declarations</button>
-            </div>         
-            <ul class="list-group list-group-flush">
-                            <%if (data.successful !='NA') { %>
-                                <% const declarations_len = data.results.length;
-                                    var op_types = {1:'VLOS', 2: 'BVLOS'};
-                                    var op_state = {'0':'Accepted', '1': 'Activated', '2': 'Contingent', '3': 'Nonconforming', '4': 'Completed'};
-                                    if (declarations_len !== 0) {
-                                    for (var j = 0; j < declarations_len; j++ ) { 
-                                    var cur_declaration = data.results[j]; 
-                                    %>
+                        <div class="d-none loading-spinner" id="spinner-cont"><br>
+                            <img src="/assets/img/spinner.gif" height="30px">
+                        </div>
+                        <p>&nbsp;</p>
+                        <div class="d-none" id="flight-declarations">
+                            <button id="show-flight-declarations" type="button" class="btn btn-link">Get Flight
+                                Declarations</button>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <%if (data.successful !='NA' ) { %>
+                                <% const declarations_len=data.results.length; var op_types={1:'VLOS', 2: 'BVLOS' }; var
+                                    op_state={'0':'Accepted', '1' : 'Activated' , '2' : 'Contingent' , '3'
+                                    : 'Nonconforming' , '4' : 'Completed' }; if (declarations_len !==0) { for (var j=0;
+                                    j < declarations_len; j++ ) { var cur_declaration=data.results[j]; %>
                                     <li class="list-group-item">
-                                        <h6><a href="#" onclick="highlight_flight_declaration('<%- cur_declaration.id %>')"> <%= cur_declaration.originating_party %></a>&nbsp;<small class="text-muted"><%= op_types[cur_declaration.type_of_operation] %></small></h6> 
-                                        
-                                            <%if (user.role == 'authority') { %>
-                                                <div class="form-check form-switch"><input class="form-check-input" type="checkbox" onchange="set_approval('<%- cur_declaration.id %>')" id="<%- cur_declaration.id %>" <% if (cur_declaration.is_approved) {%>checked <%}%>)>
+                                        <h6><a href="#"
+                                                onclick="highlight_flight_declaration('<%- cur_declaration.id %>')">
+                                                <%= cur_declaration.originating_party %>
+                                            </a>&nbsp;<small class="text-muted">
+                                                <%= op_types[cur_declaration.type_of_operation] %>
+                                                <%if (user.role=='operator' ) { %>
+                                                    <%if (cur_declaration.is_approved =='1'){ %>&nbsp;&nbsp;<i class="bi bi-check-circle"></i> <% } else {%>&nbsp;&nbsp;<i class="bi bi-x-square"></i><%}%>
+                                                <% } %>
+                                            </small></h6>
+
+                                        <%if (user.role=='authority' ) { %>
+                                            <div class="form-check form-switch"><input class="form-check-input"
+                                                    type="checkbox" onchange="set_approval('<%- cur_declaration.id %>')"
+                                                    id="<%- cur_declaration.id %>" <% if (cur_declaration.is_approved)
+                                                    {%>checked <%}%>)>
                                                     <label class="form-check-label" for="' + flight_declaration_details['id'] +
                                                     '"> Flight Approved?</label>
-                                                </div>
+                                            </div>
                                             <% } %>
                                     </li>
+                                    <% } } else { %>
+                                        <p>No flight declarations found, please select a broader timeframe.</p>
+                                        <% } } else { %>
+                                            <p>No flight declarations found, please select a timeframe.</p>
+                                            <% } %>
+                        </ul>
+                        <br>
+                        <%if (data.successful !='NA' ) { %>
+                            <p>Showing page <%= data.page %> of <%= data.pages%>. <a href="/noticeboard">See as a <i
+                                                class='bi bi-table'></i> table</a></p>
+                            <% if (data.links) { const pagination_links=data.links; %>
+                                <ul class="pagination">
+                                    <% if (data.links.previous) { const previous_page=data.page -1; let
+                                        previous_detail=pagination_links.previous; const previous_url=new
+                                        URL(previous_detail); const urlParams=new URLSearchParams(previous_url.search);
+                                        const s_date=urlParams.get('start_date'); const
+                                        e_date=urlParams.get('end_date'); const page=urlParams.get('page'); %>
 
-                                       
-                                <% }  }  else { %>
-                                      <p>No flight declarations found, please select a broader timeframe.</p>
-                                <% } } else { %>
-                                 <p>No flight declarations found, please select a timeframe.</p>
-                                <% } %>
-            </ul>
-            <br>
-                    <%if (data.successful !='NA') { %>
-                        <p>Showing page <%= data.page %> of <%= data.pages%>. <a href="/noticeboard">See as a <i class='bi bi-table'></i> table</a></p>
-                            <% if (data.links) {
-                                const pagination_links = data.links; 
-                                %> <ul class="pagination">
-                                  
-                                    <% if (data.links.previous) { 
-                                        const previous_page = data.page -1;
-                                        let previous_detail = pagination_links.previous;      
-                                        const previous_url = new URL(previous_detail);
-                                        const urlParams = new URLSearchParams(previous_url.search);
-                                        const s_date = urlParams.get('start_date');
-                                        const e_date = urlParams.get('end_date');
-                                        const page =  urlParams.get('page');
-    
-    
-                                    %>                                   
-                                 
-                                    <li class="page-item"><a class="page-link" href='<%= "/noticeboard?start_date=" + s_date +"&end_date=" + e_date + "&page=" + previous_page %>''>Previous</a></li>
+                                        <li class="page-item"><a class="page-link"
+                                                href='<%= "/noticeboard?start_date=" + s_date +"&end_date=" + e_date + "&page=" + previous_page %>''>Previous</a></li>
                                     <% } %>
                                        
                                     <% if (data.links.next) { 
@@ -111,90 +101,75 @@
                                         let next_detail = pagination_links.next;      
                                         const next_url = new URL(next_detail);
                                         const urlParams = new URLSearchParams(next_url.search);
-                                        const s_date = urlParams.get('start_date');
-                                        const e_date = urlParams.get('end_date');
-                                        const page =  urlParams.get('page');
-    
-    
-                                    %>
-                                        
-                                        <li class="page-item"><a class="page-link" href='<%= "/noticeboard?start_date=" + s_date +"&end_date=" + e_date + "&page=" + next_page %>''>Next</a></li>
+                                        const s_date = urlParams.get(' start_date'); const
+                                                e_date=urlParams.get('end_date'); const page=urlParams.get('page'); %>
+
+                                        <li class="page-item"><a class="page-link"
+                                                href='<%= "/noticeboard?start_date=" + s_date +"&end_date=" + e_date + "&page=" + next_page %>''>Next</a></li>
                                     <% } %>
                                 </ul>                            
                             <% } } %>
-
-
-
                 </div>
-
-            </div>
-                    
+            </div>  
             <div class="col-sm-8 col-md-8 sidebar">
                 <div id="cesiumContainer"></div>
             </div>
-
         </div>
-        
-        <p>&nbsp;</p>
-        <div class="row">    
-            <div class="col-sm-12 col-md-12">
-                
-                <div id="declaration_timeline">
-                    <ul class="timeline-events">
-                        <%if (data.successful !='NA') { %>
-                            <% const declarations_len = data.results.length;
-                                var op_types = {1:'VLOS', 2: 'BVLOS'};
-                                if (declarations_len !== 0) {
-                                    for (var j1 = 0; j1 < declarations_len; j1++) { 
-                                    var cur_declaration = data.results[j1]; 
-                                    const start_date_time = cur_declaration.start_datetime.split('T');
-                                    let start_date = start_date_time[0];
-                                    let start_time = start_date_time[1].slice(0, -4);
-                                    const end_date_time = cur_declaration.end_datetime.split('T');
-                                    let end_date = end_date_time[0];
-                                    let end_time = end_date_time[1].slice(0, -4);
-
-                                    let start_datetime_str = start_date + ' ' + start_time;
-                                    let end_datetime_str = end_date+ ' ' + end_time;
-                                %>
-
-                                <li data-timeline-node="{ id:'<%= j1+1 %>',start:'<%= start_datetime_str %>',end:'<%= end_datetime_str %>',bgColor:'#808080',row:'<%= j1+1 %>'}">
-                                <span class="event-label"><%= cur_declaration.originating_party %></span>
-                                </li>
-                        
-                        <% }  }  else { %>
-                            <li><p>No flight declarations found, please select a broader timeframe.</li>
-                        <% } } %>
-                    </ul>
-                </div>
+        <%- include('flight-timeline') -%>
         </div>
-    </div>
-    </div>
-
-
     <%- include('footer') -%>
-    
     <script type="text/javascript" src="/assets/js/jquery/jquery.min.js"></script>
     <script type="text/javascript" src="/assets/js/humane/humane.min.js"></script>
     <script type="text/javascript" src="/assets/js/timeline/jquery.timeline.min.js"></script>
 
     <script type="text/javascript" src="/assets/js/bootstrap/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="/assets/js/datepicker/bootstrap-datepicker.min.js"></script>
-
-
+    
     <script type="text/javascript">
         var path_done;
         var all_flight_declarations =  <%- JSON.stringify(data.results) %>;
-        var datepicker = $('#date-container .input-daterange').datepicker({
-            todayBtn: "linked",
-            format: 'yyyy-mm-dd'
-        });
+      
+
+        function end_date_update(e) {
+                
+                const selected_date_y = new Date(e.target.value);
+                const selected_date_t = new Date(e.target.value);
+                const yesterdays_date = selected_date_y.setDate(selected_date_y.getDate() - 1);
+                const tomorrows_date = selected_date_t.setDate(selected_date_t.getDate() + 1);               
+
+                const tmp_y = new Date(yesterdays_date);
+                const tmp_t = new Date(tomorrows_date);
+                
+                start_date = tmp_y.toISOString().split('T')[0];
+                end_date =  tmp_t.toISOString().split('T')[0];
+
+            }
+
+
+        let dateRange = document.getElementById('query_date'),
+        monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug","Sep", "Oct", "Nov", "Dec"];
+        dateRange.addEventListener("change", end_date_update);
+        const days = ["today", "tomorrow", "dayafter"];
+        for (var day = 0; day < 3; day++) {
+            var date = new Date();
+            date.setDate(date.getDate() + day);
+            var dateAsString = [date.getDate(), monthNames[date.getMonth()],
+            date.getFullYear()
+            ].join(' ');
+            if (day == 0) {
+            dateRange.options[dateRange.options.length] = new
+                Option(dateAsString, date.toISOString(), true, true);
+            } else {
+            dateRange.options[dateRange.options.length] = new
+                Option(dateAsString, date.toISOString());
+            }
+        }
+
         const map_querystring = window.location.search;
         const date_params = new URLSearchParams(map_querystring);
-        
-        let start_date = date_params.get('start_date');               
+
+        let start_date = date_params.get('start_date');
         let end_date = date_params.get('end_date');
-        
+
         if (!start_date) {
             start_date = 0;
         }
@@ -202,8 +177,8 @@
         if (!end_date) {
             end_date = 0;
         }
-        
-        
+
+
         let user = <%- JSON.stringify(userProfile) %>;
         // var data = <% JSON.stringify(data) %>;
         $('#datepicker').on('changeDate', (event) => {
@@ -241,26 +216,26 @@
             "timeline": false,
             "animation": false,
             "selectionIndicator": false,
-            "fullscreenButton": false,            
+            "fullscreenButton": false,
             "navigationHelpButton": false,
             "imageryProvider": bing
         });
-            //Set bounds of our simulation time
+        //Set bounds of our simulation time
         // var start = Cesium.JulianDate.fromDate(new Date(2015, 2, 25, 16));
         // var stop = Cesium.JulianDate.addSeconds(start, 360, new Cesium.JulianDate());
 
         let scene = viewer.scene;
-        let camera = viewer.camera;        
+        let camera = viewer.camera;
         var cameralat;
         var cameralng;
 
-        
-    function get_flight_declarations() {        
-        let url = '?start_date=' + start_date + '&end_date=' + end_date;    
-        window.location.href = url;
-    }
 
-        
+        function get_flight_declarations() {
+            let url = '?start_date=' + start_date + '&end_date=' + end_date;
+            window.location.href = url;
+        }
+
+
         function highlight_flight_declaration(declaration_id) {
             for (let index = 0; index < all_flight_declarations.length; index++) {
                 const cur_declaration = all_flight_declarations[index];
@@ -270,7 +245,7 @@
                     viewer.dataSources.removeAll();
                     var dataSource = Cesium.GeoJsonDataSource.load(fd_geo_json).then(
                         function (dataSource) {
-                            
+
                             // var p = dataSource.entities.values;
                             // for (var i = 0; i < p.length; i++) {
                             //     p[i].polygon.extrudedHeight = 15; // or height property
@@ -293,9 +268,9 @@
                 is_approved = 1;
             }
             let data = {
-                    'approve_reject': is_approved,
-                    'approved_by':user_name
-                }
+                'approve_reject': is_approved,
+                'approved_by': user_name
+            }
             var promise = $.ajax({
                 url: '/set_flight_approval/' + flight_declaration_id,
                 type: 'POST',
@@ -305,12 +280,12 @@
             });
             promise.done(response => {
                 humane.log("Submitted Approval / Review", {
-                        addnCls: 'humane-flatty-success'
-                    });
+                    addnCls: 'humane-flatty-success'
+                });
 
             });
             promise.fail(error => {
-                
+
                 if (error.status == 404) {
                     humane.log("Error in updating declaration", {
                         addnCls: 'humane-flatty-error'
@@ -323,8 +298,8 @@
                 console.log(error);
             });
         }
-        
-        if (start_date == 0 || end_date == 0){ } else {
+
+        if (start_date == 0 || end_date == 0) { } else {
 
             const start_date_str = start_date + ' 00:00';
             const end_date_str = end_date + ' 23:59';
@@ -332,30 +307,35 @@
             const timeline_options = {
                 headline: {
                     display: true,
-                    title:   "Flight Timeline",
+                    title: "Flight Timeline",
                 },
-                scale: "hour",                
-                rows:5,
-                rowHeight: 20,
-                startDatetime: start_date_str,            
-                endDatetime: end_date_str,            
-                ruler: {                
+                scale: "hour",
+                type:"mixed",
+                rows: 5,
+                rowHeight: 25,
+                startDatetime: start_date_str,
+                endDatetime: end_date_str,
+                ruler: {
                     top: {
-                        lines: [ "day" ],   
-                        
+                        lines: ["day"],
+
                     },
                     bottom: {
-                        lines:[ "hour"],         
-                        format:{
-                            weekday: "short", year: "numeric", month: "long", day: "numeric", hour:"numeric"
+                        lines: ["hour"],
+                        format: {
+                            weekday: "short", year: "numeric", month: "long", day: "numeric", hour: "numeric"
                         }
                     }
                 }
-            };        
-            $('#declaration_timeline').Timeline(timeline_options);
-
+            };
+            try {
+                $('#declaration_timeline').Timeline(timeline_options);
+            }
+            catch (error) {
+                console.log("Error in Initializing noticeboard")
+            }
         }
-        
+
     </script>
 </body>
 
