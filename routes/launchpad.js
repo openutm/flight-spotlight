@@ -107,7 +107,7 @@ var flight_operation_validate = [
       return true;
     }
   }),
-  check('altitude_agl').isInt({ min: 0, max: 150 }).withMessage("Altitude must be provided as an integer between 0 to 150 mts."),
+  check('altitude_agl').isInt({ min: 0, max: 4000 }).withMessage("Altitude must be provided as an integer between 0 to 4000 mts."),
   check("op_start", "op_end")
     .isInt()
     .custom((op_start , {req}) => {
