@@ -163,7 +163,8 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
 
     let operation_mode_lookup = {
       '1': 'vlos',
-      '2': 'bvlos'
+      '2': 'bvlos',
+      '3': 'crewed'
     };
     let geo_json_with_altitude = {
       'type': 'FeatureCollection',
