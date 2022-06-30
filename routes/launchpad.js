@@ -8,10 +8,13 @@ const {
   DateTime
 } = require("luxon");
 
+
 var redis_client = require('redis').createClient(process.env.REDIS_URL || {
   host: '127.0.0.1',
   port: 6379
 });
+redis_client.on('error', (err) => console.log('Redis Client Error', err));
+
 
 let geojsonhint = require("@mapbox/geojsonhint");
 const {
@@ -23,13 +26,12 @@ const https = require('https');
 
 
 async function get_passport_token() {
-  return new Promise(function (resolve, reject) {
 
     redis_key = 'blender_passport_token';
 
-    async.map([redis_key], function (r_key, done) {
 
-      redis_client.get(r_key, function (err, results) {
+      await redis_client.connect();
+      let a_token = await redis_client.get(redis_key, function (err, results) {
         if (err || results == null) {
           let post_data = {
             "client_id": process.env.PASSPORT_BLENDER_CLIENT_ID,
@@ -51,42 +53,31 @@ async function get_passport_token() {
             if (passport_response.status == 200) {
               let a_token = passport_response.data;
               let access_token = JSON.stringify(a_token);
-              redis_client.set(r_key, access_token);
-              redis_client.expire(r_key, 3500);
+              await redis_client.set(redis_key, access_token);
+              await redis_client.expire(redis_key, 3500);
 
-              return done(null, a_token);
+              return a_token;
             } else {
 
-              return done(null, {
+              return  {
                 "error": "Error in Passport Query, response not 200"
-              });
+              };
             }
           }).catch(axios_err => {
 
-            return done(null, {
+            return {
               "error": "Error in Passport Query, error in paramters supplied, check Client ID and / or secret"
-            });
+            };
           });
 
         } else {
           let a_token = JSON.parse(results);
-          return done(null, a_token);
+          return a_token;
         }
 
       });
-    }, function (error, redis_output) {
-      try {
-        var passport_token = redis_output[0]['access_token'];
-      } catch {
-        var passport_token = {
-          "error": "Error in parsing token, check redis client call"
-        }
-      }
-      /// code is here 
-      resolve(passport_token); // successfully fill promise
-    });
-    // may be a heavy db call or http request?
-  });
+      return a_token
+ 
 }
 
 

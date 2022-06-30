@@ -148,8 +148,8 @@
             let dateRange = document.getElementById('query_date'),
             monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug","Sep", "Oct", "Nov", "Dec"];
             dateRange.addEventListener("change", end_date_update);
-            const days = ["today", "tomorrow", "dayafter"];
-            for (var day = 0; day < 3; day++) {
+            
+            for (var day = 0; day < 7; day++) {
                 var date = new Date();
                 date.setDate(date.getDate() + day);
                 var dateAsString = [date.getDate(), monthNames[date.getMonth()],
