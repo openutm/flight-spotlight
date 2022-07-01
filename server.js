@@ -6,9 +6,9 @@
     const expressSession = require('express-session');
     const passport = require('passport');
     const { Issuer, Strategy, custom } = require('openid-client');
-    var createError = require('http-errors');
+    
 
-    const layout = require("express-layout");
+    
     const socket = require("socket.io");
     require("dotenv").config();
     var userInViews = require('./lib/middleware/userInViews');

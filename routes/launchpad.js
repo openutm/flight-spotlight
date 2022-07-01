@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
 const qs = require('qs');
-var async = require('async');
+
 const asyncMiddleware = require('../util/asyncMiddleware');
 const {
   DateTime
@@ -13,7 +13,24 @@ var redis_client = require('redis').createClient(process.env.REDIS_URL || {
   host: '127.0.0.1',
   port: 6379
 });
-redis_client.on('error', (err) => console.log('Redis Client Error', err));
+
+function redis_error_handler(err) {
+  console.debug(`node-redis version is ${require('redis/package.json').version}`);
+  console.debug(err);
+}
+
+
+(async () => {
+  redis_client.on('error', (err) => {
+    console.debug('Redis Client Error', err);
+    process.exit(1);
+  });
+  redis_client.on('ready', () => console.debug('Redis is ready..'));
+
+  const connect = await redis_client.connect().catch(redis_error_handler);;
+
+  const pong = await redis_client.ping().catch(redis_error_handler);
+})();
 
 
 let geojsonhint = require("@mapbox/geojsonhint");
@@ -22,62 +39,52 @@ const {
   validationResult
 } = require('express-validator');
 const axios = require('axios');
-const https = require('https');
 
 
 async function get_passport_token() {
+  redis_key = 'blender_passport_token';
+  const stored_token = await redis_client.get(redis_key);
 
-    redis_key = 'blender_passport_token';
+  if (stored_token == null) {
+    let post_data = {
+      "client_id": process.env.PASSPORT_BLENDER_CLIENT_ID,
+      "client_secret": process.env.PASSPORT_BLENDER_CLIENT_SECRET,
+      "grant_type": "client_credentials",
+      "scope": process.env.PASSPORT_BLENDER_SCOPE,
+      "audience": process.env.PASSPORT_BLENDER_AUDIENCE
+    };
+    let passport_response = async () => {
 
-
-      await redis_client.connect();
-      let a_token = await redis_client.get(redis_key, function (err, results) {
-        if (err || results == null) {
-          let post_data = {
-            "client_id": process.env.PASSPORT_BLENDER_CLIENT_ID,
-            "client_secret": process.env.PASSPORT_BLENDER_CLIENT_SECRET,
-            "grant_type": "client_credentials",
-            "scope": process.env.PASSPORT_BLENDER_SCOPE,
-            "audience": process.env.PASSPORT_BLENDER_AUDIENCE
-          };
-          axios.request({
-            url: process.env.PASSPORT_TOKEN_URL || '/oauth/token/',
-            method: "post",
-            header: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            baseURL: process.env.PASSPORT_URL,
-            data: qs.stringify(post_data)
-          }).then(passport_response => {
-
-            if (passport_response.status == 200) {
-              let a_token = passport_response.data;
-              let access_token = JSON.stringify(a_token);
-              await redis_client.set(redis_key, access_token);
-              await redis_client.expire(redis_key, 3500);
-
-              return a_token;
-            } else {
-
-              return  {
-                "error": "Error in Passport Query, response not 200"
-              };
-            }
-          }).catch(axios_err => {
-
-            return {
-              "error": "Error in Passport Query, error in paramters supplied, check Client ID and / or secret"
-            };
-          });
-
-        } else {
-          let a_token = JSON.parse(results);
-          return a_token;
-        }
-
+      let res = await axios.request({
+        url: process.env.PASSPORT_TOKEN_URL || '/oauth/token/',
+        method: "post",
+        header: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        baseURL: process.env.PASSPORT_URL,
+        data: qs.stringify(post_data)
       });
-      return a_token
- 
+      if (res.status == 200) {
+        let a_token = res.data;
+        let access_token = JSON.stringify(a_token);
+        await redis_client.set(redis_key, access_token);
+        await redis_client.expire(redis_key, 3500);
+
+        return a_token['access_token'];
+      } else {
+
+        return {
+          "error": "Error in Passport Query, response not 200"
+        };
+      }
+
+    }
+    return passport_response();
+
+  } else {
+    let raw_a_token = JSON.parse(stored_token);
+    return raw_a_token['access_token'];
+  }
 }
 
 
@@ -101,7 +108,7 @@ var flight_operation_validate = [
   check('altitude_agl').isInt({ min: 0, max: 4000 }).withMessage("Altitude must be provided as an integer between 0 to 4000 mts."),
   check("op_start", "op_end")
     .isInt()
-    .custom((op_start , {req}) => {
+    .custom((op_start, { req }) => {
       if (parseInt(op_start) > parseInt(req.body.op_end)) {
         // trow error if passwords do not match
         throw new Error("Operation End Time cannot be before Start. ");

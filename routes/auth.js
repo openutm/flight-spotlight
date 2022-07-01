@@ -19,32 +19,21 @@ const jwksRsa = require('jwks-rsa');
 const jwtAuthz = require('express-jwt-authz');
 // const request = require('request');
 const bbox = require("@turf/bbox");
-const intersect = require("@turf/intersect");
-const flip = require('@turf/flip');
+
 const axios = require('axios');
 require("dotenv").config();
 const qs = require('qs');
 const asyncMiddleware = require('../util/asyncMiddleware');
-var URL = require('url').URL;
+
 let geojsonhint = require("@mapbox/geojsonhint");
 const {
   check,
   validationResult
 } = require('express-validator');
-const {
-  get
-} = require("https");
-const {
-  head
-} = require("request");
 const redis = require("redis");
 const redis_client = redis.createClient(redis_url);
-const async = require("async");
-const { v4: uuidv4 } = require('uuid');
 
-redis_client.on("error", function (error) {
-  console.error(error);
-});
+const { v4: uuidv4 } = require('uuid');
 
 const checkJwt = jwt({
   secret: jwksRsa.expressJwtSecret({
@@ -59,74 +48,72 @@ const checkJwt = jwt({
   algorithms: ['RS256']
 });
 
+function redis_error_handler(err) {
+  console.debug(`node-redis version is ${require('redis/package.json').version}`);
+  console.debug(err);
+}
+
+
+(async () => {
+  redis_client.on('error', (err) => {
+    console.debug('Redis Client Error', err);
+    process.exit(1);
+  });
+  redis_client.on('ready', () => console.debug('Redis is ready..'));
+
+  const connect = await redis_client.connect().catch(redis_error_handler);;
+
+  const pong = await redis_client.ping().catch(redis_error_handler);
+})();
 
 
 async function get_passport_token() {
-  return new Promise(function (resolve, reject) {
+  redis_key = 'blender_passport_token';
+  const stored_token = await redis_client.get(redis_key);
 
-    redis_key = 'blender_passport_token';
+  if (stored_token == null) {
+    let post_data = {
+      "client_id": process.env.PASSPORT_BLENDER_CLIENT_ID,
+      "client_secret": process.env.PASSPORT_BLENDER_CLIENT_SECRET,
+      "grant_type": "client_credentials",
+      "scope": process.env.PASSPORT_BLENDER_SCOPE,
+      "audience": process.env.PASSPORT_BLENDER_AUDIENCE
+    };
+    let passport_response = async () => {
 
-    async.map([redis_key], function (r_key, done) {
-
-      redis_client.get(r_key, function (err, results) {
-        if (err || results == null) {
-          let post_data = {
-            "client_id": process.env.PASSPORT_BLENDER_CLIENT_ID,
-            "client_secret": process.env.PASSPORT_BLENDER_CLIENT_SECRET,
-            "grant_type": "client_credentials",
-            "scope": process.env.PASSPORT_BLENDER_SCOPE,
-            "audience": process.env.PASSPORT_BLENDER_AUDIENCE
-          };
-          axios.request({
-            url: "/oauth/token/",
-            method: "post",
-            header: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            baseURL: process.env.PASSPORT_URL,
-            data: qs.stringify(post_data)
-          }).then(passport_response => {
-
-            if (passport_response.status == 200) {
-              let a_token = passport_response.data;
-              let access_token = JSON.stringify(a_token);
-              redis_client.set(r_key, access_token);
-              redis_client.expire(r_key, 3500);
-
-              return done(null, a_token);
-            } else {
-
-              return done(null, {
-                "error": "Error in Passport Query, response not 200"
-              });
-            }
-          }).catch(axios_err => {
-
-            return done(null, {
-              "error": "Error in Passport Query, error in paramters supplied, check Client ID and / or secret"
-            });
-          });
-
-        } else {
-          let a_token = JSON.parse(results);
-          return done(null, a_token);
-        }
-
+      let res = await axios.request({
+        url: process.env.PASSPORT_TOKEN_URL || '/oauth/token/',
+        method: "post",
+        header: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        baseURL: process.env.PASSPORT_URL,
+        data: qs.stringify(post_data)
       });
-    }, function (error, redis_output) {
-      try {
-        var passport_token = redis_output[0]['access_token'];
-      } catch {
-        var passport_token = {
-          "error": "Error in parsing token, check redis client call"
-        }
+      if (res.status == 200) {
+        let a_token = res.data;
+        let access_token = JSON.stringify(a_token);
+        await redis_client.set(redis_key, access_token);
+        await redis_client.expire(redis_key, 3500);
+
+        return a_token['access_token'];
+      } else {
+
+        return {
+          "error": "Error in Passport Query, response not 200"
+        };
       }
-      /// code is here 
-      resolve(passport_token); // successfully fill promise
-    });
-    // may be a heavy db call or http request?
-  });
+
+    }
+    return passport_response();
+
+  } else {
+    let raw_a_token = JSON.parse(stored_token);
+    return raw_a_token['access_token'];
+  }
 }
+
+
 
 
 
