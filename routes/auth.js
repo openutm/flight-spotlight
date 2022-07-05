@@ -437,10 +437,48 @@ router.post("/set_flight_approval/:uuid", secured(), asyncMiddleware(async (req,
   })
     .then(function (blender_response) {
       if (blender_response.status == 200) {
-        response.send(blender_response.data);
+        res.send(blender_response.data);
       } else {
         // console.log(error);
-        response.send(blender_response.data);
+        res.send(blender_response.data);
+      }
+    }).catch(function (error) {
+      console.log(error.data);
+    });
+
+}));
+
+router.post("/update_flight_state/:uuid", secured(), asyncMiddleware(async (req, res, next) => {
+
+  let flight_declaration_uuid = req.params.uuid;
+  const is_uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(flight_declaration_uuid);
+
+  const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
+
+  redis_key = 'blender_passport_token';
+  let new_state = req.body['state'];
+  let submitted_by = req.body['submitted_by'];
+  const passport_token = await get_passport_token();
+
+  let a_r = {
+    'state': new_state,
+    'submitted_by': submitted_by
+  };
+
+  let url = base_url + '/flight_declaration_ops/flight_declaration_state/' + flight_declaration_uuid;
+  axios.put(url, JSON.stringify(a_r), {
+
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': "Bearer " + passport_token
+    }
+  })
+    .then(function (blender_response) {
+      if (blender_response.status == 200) {
+        res.send(blender_response.data);
+      } else {
+        // console.log(error);
+        res.send(blender_response.data);
       }
     }).catch(function (error) {
       console.log(error.data);

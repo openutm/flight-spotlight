@@ -26,7 +26,7 @@
     <div class="container">
 
       <div class="row">
-        <div class="col-8">
+        <div class="col-12">
           <br><br>
 
           <h3>Submit a flight plan</h3>
@@ -34,7 +34,7 @@
 
           <br>
           <div class="row">
-            <div class="col-8">
+            <div class="col-12">
               <% if (Object.keys(errors).length !==0) { %>
                 <ul class="list-group list-group-light">
                   <% Object.values(errors).forEach(error=> { %>
@@ -47,7 +47,7 @@
             </div>
           </div>
           <div class="row">
-            <div class="col-10">
+            <div class="col-12">
               <form action="/launchpad/submit-declaration" method="post">
                 <div class="form-group <%= errors.message ? 'form-field-invalid' : '' %>">
                   <label for="geojson_upload_control"><mark>Paste Flightplan GeoJSON</mark></label>
