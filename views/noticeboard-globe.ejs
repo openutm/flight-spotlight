@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -9,15 +8,17 @@
     <link rel="icon" href="/assets/img/favicon.png">
     <link href='https://fonts.googleapis.com/css?family=Karla' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+
     <link type="text/css" rel="stylesheet" href="/assets/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="/assets/css/base.css">
-    <link rel="stylesheet" href="/assets/css/launchpad/launchpad-style.css">
-    <link rel="stylesheet" href="/assets/css/launchpad/leaflet.css">
     <link type="text/css" rel="stylesheet" href="/assets/css/bootstrap-icons.css">
-    <link rel="stylesheet" type="text/css" href="/assets/css/base.css">    
+    <link rel="stylesheet" type="text/css" href="/assets/css/base.css">
+    <link rel="stylesheet" href="/assets/css/launchpad/leaflet.css">
     <link rel="stylesheet" href="/assets/css/timeline/jquery.timeline.min.css">
     <link rel="stylesheet" href="/assets/js/humane/flatty.css">
-
+    <script src="/assets/Build/Cesium/Cesium.js"></script>
+    <style>
+        @import url(/assets/Build/Cesium/Widgets/widgets.css);
+    </style>
 </head>
 <body>
     <%- include('navigation') -%>
@@ -59,8 +60,17 @@
                                                 <%if (user.role=='operator' ) { %>
                                                     <%if (cur_declaration.is_approved =='1'){ %>&nbsp;&nbsp;<i class="bi bi-check-circle"></i> <% } else {%>&nbsp;&nbsp;<i class="bi bi-x-square"></i><%}%>
                                                 <% } %>
-                                            </small>
-                                        </h6>
+                                            </small></h6>
+
+                                        <%if (user.role=='authority' ) { %>
+                                            <div class="form-check form-switch"><input class="form-check-input"
+                                                    type="checkbox" onchange="set_approval('<%- cur_declaration.id %>')"
+                                                    id="<%- cur_declaration.id %>" <% if (cur_declaration.is_approved)
+                                                    {%>checked <%}%>)>
+                                                    <label class="form-check-label" for="' + flight_declaration_details['id'] +
+                                                    '"> Flight Approved?</label>
+                                            </div>
+                                        <% } %>
                                     </li>
                                     <% } } else { %>
                                         <p>No flight declarations found, please select a broader timeframe.</p>
@@ -100,7 +110,7 @@
                 </div>
             </div>  
             <div class="col-sm-8 col-md-8 sidebar">
-                <div id="map_full"></div>
+                <div id="cesiumContainer"></div>
             </div>
         </div>
         <%- include('flight-timeline') -%>
@@ -110,26 +120,12 @@
     <script type="text/javascript" src="/assets/js/humane/humane.min.js"></script>
     <script type="text/javascript" src="/assets/js/timeline/jquery.timeline.min.js"></script>
     <script type="text/javascript" src="/assets/js/bootstrap/bootstrap.bundle.min.js"></script>
-    <script type="application/javascript" src="/assets/js/launchpad/leaflet.js" charset="utf-8"></script>
-
-    <script type="text/javascript">
-        var map = L.map('map_full', { attributionControl: false }).setView([43.659752, -79.378161], 2);
-
-        // Adds the basemap tiles to your web map
-        // Additional providers are available at: https://leaflet-extras.github.io/leaflet-providers/preview/
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 21,
-        dragging: false,
-        }).addTo(map);
-        var geojson_feature_layer = L.featureGroup().addTo(map);
-    </script>
-
+    
     <script type="text/javascript">
         var path_done;
         var all_flight_declarations =  <%- JSON.stringify(data.results) %>;
       
+
         function end_date_update(e) {
                 
                 const selected_date_y = new Date(e.target.value);
@@ -164,7 +160,7 @@
                 Option(dateAsString, date.toISOString());
             }
         }
-        var declaration_layer_lookup ={};
+
         const map_querystring = window.location.search;
         const date_params = new URLSearchParams(map_querystring);
 
@@ -197,48 +193,109 @@
         const s_parse = Date.parse(start_date);
         const timeline_start = new Date(s_parse);
         const user_name = '<%= user.email %>';
-        var orignating_party_popup;
-        var start_time_popup;
-        var end_time_popup;
-        var declaration_id;
+        var bing = new Cesium.BingMapsImageryProvider({
+            url: 'https://dev.virtualearth.net',
+            key: '<%= bing_key %>',
+            mapStyle: Cesium.BingMapsStyle.AERIAL
+        });
+
+        var mapbox = new Cesium.MapboxImageryProvider({
+            mapId: '<&= mapbox_id %>',
+            accessToken: '<%= mapbox_key %>'
+        });
+
+        var viewer = new Cesium.Viewer('cesiumContainer', {
+            "geocoder": false,
+            "homeButton": false,
+            "baseLayerPicker": false,
+            "infoBox": false,
+            "sceneModePicker": false,
+            "timeline": false,
+            "animation": false,
+            "selectionIndicator": false,
+            "fullscreenButton": false,
+            "navigationHelpButton": false,
+            "imageryProvider": bing
+        });
+        //Set bounds of our simulation time
+        // var start = Cesium.JulianDate.fromDate(new Date(2015, 2, 25, 16));
+        // var stop = Cesium.JulianDate.addSeconds(start, 360, new Cesium.JulianDate());
+
+        let scene = viewer.scene;
+        let camera = viewer.camera;
+        var cameralat;
+        var cameralng;
+
+
         function get_flight_declarations() {
             let url = '?start_date=' + start_date + '&end_date=' + end_date;
             window.location.href = url;
         }
 
-        if (start_date == 0 || end_date == 0) { } else {
-            
-            var gj_style = {
-                "color": "#ff7800",
-                "weight": 5,
-                "opacity": 0.65
-            };
-            function onEachFeature(feature, layer) {
-                layer.bindPopup(orignating_party_popup +'<br><b>'+  start_time_popup + '</b> - <b>' +  end_time_popup + '</b>');   
-                L.stamp(layer);
-                declaration_layer_lookup[declaration_id] = layer._leaflet_id;             
-            }
-            for (var x =0; x< all_flight_declarations.length;x++) {
-                const cur_declaration = all_flight_declarations[x];
-                var cur_declaration_fc = cur_declaration.flight_declaration_raw_geojson;
-                orignating_party_popup = cur_declaration.originating_party;    
-                const s_time = new Date(cur_declaration.start_datetime);  
-                const e_time = new Date(cur_declaration.end_datetime);  
-                declaration_id = cur_declaration.id;
-                start_time_popup = s_time.toISOString().substr(11, 8);
-                end_time_popup = e_time.toISOString().substr(11, 8);
-                const gj_layer = L.geoJSON(cur_declaration_fc , {'style':gj_style, onEachFeature: onEachFeature});
-                
-                geojson_feature_layer.addLayer(gj_layer);
-                
 
+        function highlight_flight_declaration(declaration_id) {
+            for (let index = 0; index < all_flight_declarations.length; index++) {
+                const cur_declaration = all_flight_declarations[index];
+                if (cur_declaration['id'] == declaration_id) {
+                    // const current_declaration = JSON.parse(raw_declarations[fd]);
+                    const fd_geo_json = cur_declaration['flight_declaration_raw_geojson'];
+                    viewer.dataSources.removeAll();
+                    var dataSource = Cesium.GeoJsonDataSource.load(fd_geo_json).then(
+                        function (dataSource) {
+
+                            // var p = dataSource.entities.values;
+                            // for (var i = 0; i < p.length; i++) {
+                            //     p[i].polygon.extrudedHeight = 15; // or height property
+                            // }
+                            viewer.dataSources.add(dataSource);
+                            path_done = dataSource;
+                            viewer.zoomTo(dataSource);
+                        }
+                    );
+
+                }
 
             }
-            map.fitBounds(geojson_feature_layer.getBounds());
-
         }
 
-        
+        function set_approval(flight_declaration_id) {
+            let is_approved = 0;
+
+            if (document.getElementById(flight_declaration_id).checked) {
+                is_approved = 1;
+            }
+            let data = {
+                'approve_reject': is_approved,
+                'approved_by': user_name
+            }
+            var promise = $.ajax({
+                url: '/set_flight_approval/' + flight_declaration_id,
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json'
+
+            });
+            promise.done(response => {
+                humane.log("Submitted Approval / Review", {
+                    addnCls: 'humane-flatty-success'
+                });
+
+            });
+            promise.fail(error => {
+
+                if (error.status == 404) {
+                    humane.log("Error in updating declaration", {
+                        addnCls: 'humane-flatty-error'
+                    });
+                } else if (error.status == 422) {
+                    humane.log("Error in updating declaration", {
+                        addnCls: 'humane-flatty-error'
+                    });
+                }
+                console.log(error);
+            });
+        }
+
         if (start_date == 0 || end_date == 0) { } else {
 
             const start_date_str = start_date + ' 00:00';
@@ -272,7 +329,7 @@
                 $('#declaration_timeline').Timeline(timeline_options);
             }
             catch (error) {
-                console.log("Error in Initializing noticeboard");
+                console.log("Error in Initializing noticeboard")
             }
         }
 

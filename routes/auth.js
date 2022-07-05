@@ -131,7 +131,6 @@ router.get("/noticeboard/map", secured(), asyncMiddleware(async (req, response, 
   } = req.user;
   let req_query = req.query;
   const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
-
   const bing_key = process.env.BING_KEY || 'get-yours-at-https://www.bingmapsportal.com/';
   const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
   const mapbox_id = process.env.MAPBOX_ID || 'this_is_my_mapbox_map_id';
@@ -200,6 +199,110 @@ router.get("/noticeboard/map", secured(), asyncMiddleware(async (req, response, 
         if (blender_response.status == 200) {
 
           response.render('noticeboard-map', {
+            title: "Noticeboard",
+            userProfile: userProfile,
+            bing_key: bing_key,
+            mapbox_key: mapbox_key,
+            mapbox_id: mapbox_id,
+            user: req.user,
+            successful: 1,
+            errors: {},
+            data: blender_response.data
+          }, function (ren_err, html) {
+            response.send(html);
+          });
+
+        } else {
+          // console.log(blender_response);
+          if (err) return response.sendStatus(500);
+        }
+      }).catch(function (error) {
+
+        // console.log(error.data);
+        return response.sendStatus(500);
+      });
+
+  }
+}));
+
+
+router.get("/noticeboard/globe", secured(), asyncMiddleware(async (req, response, next) => {
+  const {
+    _raw,
+    _json,
+    ...userProfile
+  } = req.user;
+  let req_query = req.query;
+  const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
+
+  const bing_key = process.env.BING_KEY || 'get-yours-at-https://www.bingmapsportal.com/';
+  const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
+  const mapbox_id = process.env.MAPBOX_ID || 'this_is_my_mapbox_map_id';
+  let s_date = req_query.start_date;
+  let page = 0;
+  function isValidDate(d) {
+    return d instanceof Date && !isNaN(d);
+  }
+  try {
+    page = req_query.page;
+  } catch (err) {
+
+  }
+  let e_date = req_query.end_date;
+  try {
+    s_dt = s_date.split('-');
+    start_date = new Date(s_dt[0], s_dt[1], s_dt[2]);
+  } catch (error) {
+    start_date = 0;
+  }
+  try {
+    e_dt = e_date.split('-');
+    end_date = new Date(e_dt[0], e_dt[1], e_dt[2]);
+  } catch (error) {
+    end_date = 0;
+  }
+
+  if (isValidDate(start_date)) { } else { start_date = 0 };
+  if (isValidDate(end_date)) { } else { end_date = 0 };
+
+  if ((start_date == 0 || end_date == 0)) {
+
+    response.render('noticeboard-globe', {
+      title: "Noticeboard",
+      userProfile: userProfile,
+      bing_key: bing_key,
+      mapbox_key: mapbox_key,
+      mapbox_id: mapbox_id,
+      user: req.user,
+      errors: {},
+      data: {
+        'results': [],
+        'successful': 'NA'
+      }
+    }, function (ren_err, html) {
+      response.send(html);
+    });
+
+  } else {
+
+    const passport_token = await get_passport_token();
+    let cred = "Bearer " + passport_token;
+    let declaration_url = base_url + '/flight_declaration_ops/flight_declaration?start_date=' + s_date + '&end_date=' + e_date;
+    if (page) {
+      declaration_url += '&page=' + page;
+    }
+
+    axios.get(declaration_url, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': cred
+      }
+    })
+      .then(function (blender_response) {
+
+        if (blender_response.status == 200) {
+
+          response.render('noticeboard-globe', {
             title: "Noticeboard",
             userProfile: userProfile,
             bing_key: bing_key,

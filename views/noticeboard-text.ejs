@@ -113,8 +113,8 @@
                         </tbody>
                     </table>
                     <%if (data.successful !='NA' ) { %>
-                        <p>Showing page <%= data.page %> of <%= data.pages%>. <a href="/noticeboard/map">See on <i
-                                            class="bi bi-globe"></i> Globe</a></p>
+                        <p>Showing page <%= data.page %> of <%= data.pages%>. <a href="/noticeboard/globe">See on an <i class="bi bi-globe2"></i> Globe</a>&nbsp;or&nbsp;<a href="/noticeboard/map">See on an <i class="bi bi-map"></i> Map</a></p>
+                        
                         <% if (data.links) { const pagination_links=data.links; %>
                             <ul class="pagination">
                                 <% if (data.links.previous) { const previous_page=data.page -1; let
@@ -140,11 +140,10 @@
                      </div>
             </div>
     <%- include('flight-timeline') -%>
-        </div>
-        <%- include('footer') -%>
+</div>
+    <%- include('footer') -%>
 
     <script type="text/javascript" src="/assets/js/jquery/jquery.min.js"></script>
-
     <script type="text/javascript" src="/assets/js/humane/humane.min.js"></script>
 
     <script type="text/javascript" src="/assets/js/bootstrap/bootstrap.bundle.min.js"></script>
