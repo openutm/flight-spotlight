@@ -159,7 +159,7 @@
             ].join(' ');
             if (day == 0) {
             dateRange.options[dateRange.options.length] = new
-                Option(dateAsString, date.toISOString(), true, true);
+                Option(dateAsString, date.toISOString(), false, false);
             } else {
             dateRange.options[dateRange.options.length] = new
                 Option(dateAsString, date.toISOString());
