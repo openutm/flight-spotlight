@@ -47,7 +47,7 @@
                 <div class="information">
                     <form id="dss-query-form" method="post" action="/spotlight">
                         <!-- <label for="geo_polygon_string">Area of Interest</label><br> -->
-                        <textarea rows="4" cols="50" id="geo_polygon_string" value="<%= data.geo_polygon_string %>"
+                        <textarea onblur="this.value=remove_spaces(this.value);" rows="4" cols="50" id="geo_polygon_string" value="<%= data.geo_polygon_string %>"
                             name="geo_polygon_string"
                             placeholder="Paste a valid GeoJSON of the area of interest as a polygon here.."></textarea>
 
@@ -145,6 +145,10 @@
 
         const dss_form = $('#dss-query-form');
         dss_form.on('submit', submitHandler);
+
+        function remove_spaces(string) {
+        return string.replace(/\n/g, "").replace(/ /g, '');
+      }
 
         function submitHandler(e) {
             e.preventDefault();
