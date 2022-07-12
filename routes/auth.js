@@ -738,6 +738,9 @@ router.post("/set_streaming_aoi", secured(), check('geo_json').custom(submitted_
     const aoi_bbox = bbox(aoi['features'][0]);
     var io = req.app.get('socketio');
     let geo_fence_query = tile38_client.intersectsQuery('geo_fence').object(aoi['features'][0]);
+
+    // TODO: For this AOI BBOX enable openskies network query in Blender
+
     geo_fence_query.execute().then(results => {
       io.sockets.in(email).emit("message", {
         'type': 'message',
