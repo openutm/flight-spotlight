@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="/assets/css/launchpad/leaflet.css">
     <link type="text/css" rel="stylesheet" href="/assets/css/bootstrap-icons.css">
     <link rel="stylesheet" type="text/css" href="/assets/css/base.css">    
-    <link rel="stylesheet" href="/assets/css/timeline/jquery.timeline.min.css">
+    <link rel="stylesheet" href="/assets/css/vis-timeline/vis-timeline-graph2d.min.css">
     <link rel="stylesheet" href="/assets/js/humane/flatty.css">
 
 </head>
@@ -24,8 +24,6 @@
         <div class="container-fluid information">
             <div class="row">
                 <div class="col-sm-4 col-md-4 main">
-                    <div class="">
-                        
 
                         <div class="pt-2 pb-2">
                             <h6><select id="query_date" class="form-control" name="query_date">
@@ -98,20 +96,22 @@
                                     <% } %>
                                 </ul>                            
                             <% } } %>
-                </div>
+               
             </div>  
             <div class="col-sm-8 col-md-8 sidebar">
                 <div id="map_full"></div>
             </div>
         </div>
+
         <%- include('flight-timeline') -%>
         </div>
     <%- include('footer') -%>
     <script type="text/javascript" src="/assets/js/jquery/jquery.min.js"></script>
     <script type="text/javascript" src="/assets/js/humane/humane.min.js"></script>
-    <script type="text/javascript" src="/assets/js/timeline/jquery.timeline.min.js"></script>
     <script type="text/javascript" src="/assets/js/bootstrap/bootstrap.bundle.min.js"></script>
     <script type="application/javascript" src="/assets/js/launchpad/leaflet.js" charset="utf-8"></script>
+    <script type="text/javascript" src="/assets/js/vis-timeline/vis-timeline-graph2d.min.js"></script>
+    <script type="text/javascript" src="/assets/js/vis-timeline/timeline-render.js"></script>
 
     <script type="text/javascript">
         var map = L.map('map_full', { attributionControl: false }).setView([43.659752, -79.378161], 2);
@@ -219,6 +219,7 @@
                 L.stamp(layer);
                 declaration_layer_lookup[declaration_id] = layer._leaflet_id;             
             }
+            const all_flight_declarations_length = all_flight_declarations.length;
             for (var x =0; x< all_flight_declarations.length;x++) {
                 const cur_declaration = all_flight_declarations[x];
                 var cur_declaration_fc = cur_declaration.flight_declaration_raw_geojson;
@@ -231,53 +232,22 @@
                 const gj_layer = L.geoJSON(cur_declaration_fc , {'style':gj_style, onEachFeature: onEachFeature});
                 
                 geojson_feature_layer.addLayer(gj_layer);
-                
-
 
             }
-            map.fitBounds(geojson_feature_layer.getBounds());
+            if (all_flight_declarations_length >0){
+                map.fitBounds(geojson_feature_layer.getBounds());
+            }
 
         }
 
-        
-        if (start_date == 0 || end_date == 0) { } else {
-
-            const start_date_str = start_date + ' 00:00';
-            const end_date_str = end_date + ' 23:59';
-
-            const timeline_options = {
-                headline: {
-                    display: true,
-                    title: "Flight Timeline",
-                },
-                scale: "hour",
-                type:"mixed",
-                rows: 10,
-                rowHeight: 25,
-                startDatetime: start_date_str,
-                endDatetime: end_date_str,
-                ruler: {
-                    top: {
-                        lines: ["day"],
-
-                    },
-                    bottom: {
-                        lines: ["hour"],
-                        format: {
-                            weekday: "short", year: "numeric", month: "long", day: "numeric", hour: "numeric"
-                        }
-                    }
-                }
-            };
-            try {
-                $('#declaration_timeline').Timeline(timeline_options);
-            }
-            catch (error) {
-                console.log("Error in Initializing noticeboard");
-            }
+    /// Timeline specific 
+    if (start_date == 0 || end_date == 0) { } else {
+        if (all_flight_declarations.length > 0){
+        render_timeline(all_flight_declarations);
         }
-
+    }
     </script>
+
 </body>
 
 </html>

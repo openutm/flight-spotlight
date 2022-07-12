@@ -13,7 +13,7 @@
     <link type="text/css" rel="stylesheet" href="/assets/css/bootstrap-icons.css">
     <link rel="stylesheet" type="text/css" href="/assets/css/base.css">
     <link rel="stylesheet" href="/assets/css/launchpad/leaflet.css">
-    <link rel="stylesheet" href="/assets/css/timeline/jquery.timeline.min.css">
+    <link rel="stylesheet" href="/assets/css/vis-timeline/vis-timeline-graph2d.min.css">
     <link rel="stylesheet" href="/assets/js/humane/flatty.css">
     <script src="/assets/Build/Cesium/Cesium.js"></script>
     <style>
@@ -25,10 +25,8 @@
         <div class="container-fluid information">
             <div class="row">
                 <div class="col-sm-4 col-md-4 main">
-                    <div class="">
-                        
-
-                        <div class="pt-2 pb-2">
+                    <div class="row">
+                        <div class="pt-1 pb-1">
                         <h6><select id="query_date" class="form-control" name="query_date">
                                 <option value="" disabled selected>Select a date..</option>
                             </select></h6>
@@ -37,6 +35,7 @@
                             <button type="button" onclick="get_flight_declarations()" id="search-timeframe"
                                 class="btn btn-primary">Show Schedule</button>
                         </div>
+                    </div>
 
                         <div class="d-none loading-spinner" id="spinner-cont"><br>
                             <img src="/assets/img/spinner.gif" height="30px">
@@ -108,7 +107,7 @@
                                     <% } %>
                                 </ul>                            
                             <% } } %>
-                </div>
+          
             </div>  
             <div class="col-sm-8 col-md-8 sidebar">
                 <div id="cesiumContainer"></div>
@@ -119,8 +118,10 @@
     <%- include('footer') -%>
     <script type="text/javascript" src="/assets/js/jquery/jquery.min.js"></script>
     <script type="text/javascript" src="/assets/js/humane/humane.min.js"></script>
-    <script type="text/javascript" src="/assets/js/timeline/jquery.timeline.min.js"></script>
     <script type="text/javascript" src="/assets/js/bootstrap/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="/assets/js/vis-timeline/vis-timeline-graph2d.min.js"></script>
+    <script type="text/javascript" src="/assets/js/vis-timeline/timeline-render.js"></script>
+
     
     <script type="text/javascript">
         var path_done;
@@ -297,43 +298,13 @@
             });
         }
 
-        if (start_date == 0 || end_date == 0) { } else {
-
-            const start_date_str = start_date + ' 00:00';
-            const end_date_str = end_date + ' 23:59';
-
-            const timeline_options = {
-                headline: {
-                    display: true,
-                    title: "Flight Timeline",
-                },
-                scale: "hour",
-                type:"mixed",
-                rows: 10,
-                rowHeight: 25,
-                startDatetime: start_date_str,
-                endDatetime: end_date_str,
-                ruler: {
-                    top: {
-                        lines: ["day"],
-
-                    },
-                    bottom: {
-                        lines: ["hour"],
-                        format: {
-                            weekday: "short", year: "numeric", month: "long", day: "numeric", hour: "numeric"
-                        }
-                    }
-                }
-            };
-            try {
-                $('#declaration_timeline').Timeline(timeline_options);
-            }
-            catch (error) {
-                console.log("Error in Initializing noticeboard")
-            }
+        
+    /// Timeline specific 
+    if (start_date == 0 || end_date == 0) { } else {
+        if (all_flight_declarations.length > 0){
+        render_timeline(all_flight_declarations);
         }
-
+    }
     </script>
 </body>
 

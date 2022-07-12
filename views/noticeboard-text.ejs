@@ -12,8 +12,7 @@
     <link type="text/css" rel="stylesheet" href="/assets/css/bootstrap.min.css">
     <link type="text/css" rel="stylesheet" href="/assets/css/bootstrap-icons.css">
     <link rel="stylesheet" type="text/css" href="/assets/css/base.css">
-
-    <link rel="stylesheet" href="/assets/css/timeline/jquery.timeline.min.css">
+    <link rel="stylesheet" href="/assets/css/vis-timeline/vis-timeline-graph2d.min.css">
     <link rel="stylesheet" href="/assets/js/humane/flatty.css">
 </head>
 
@@ -147,10 +146,12 @@
     <script type="text/javascript" src="/assets/js/humane/humane.min.js"></script>
 
     <script type="text/javascript" src="/assets/js/bootstrap/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="/assets/js/timeline/jquery.timeline.min.js"></script>
+    <script type="text/javascript" src="/assets/js/vis-timeline/vis-timeline-graph2d.min.js"></script>
+    <script type="text/javascript" src="/assets/js/vis-timeline/timeline-render.js"></script>
 
     <script type="text/javascript">
         
+        const all_flight_declarations =  <%- JSON.stringify(data.results) %>;
         const user_name = '<%= user.email %>';
         function end_date_update(e) {
 
@@ -240,43 +241,13 @@
             window.location.href = url;
         }
 
-        if (start_date == 0 || end_date == 0) { } else {
-
-            const start_date_str = start_date + ' 00:00';
-            const end_date_str = end_date + ' 23:59';
-
-            const timeline_options = {
-                headline: {
-                    display: true,
-                    title: "Flight Timeline",
-                },
-                scale: "hour",
-                type: "mixed",
-                rows: 10,
-                rowHeight: 25,
-                startDatetime: start_date_str,
-                endDatetime: end_date_str,
-                ruler: {
-                    top: {
-                        lines: ["day"],
-
-                    },
-                    bottom: {
-                        lines: ["hour"],
-                        format: {
-                            weekday: "short", year: "numeric", month: "long", day: "numeric", hour: "numeric"
-                        }
-                    }
-                }
-            };
-            try {
-                $('#declaration_timeline').Timeline(timeline_options);
-            }
-            catch (error) {
-                console.log("Error in Initializing noticeboard")
-            }
+        
+    /// Timeline specific 
+    if (start_date == 0 || end_date == 0) { } else {
+        if (all_flight_declarations.length > 0){
+        render_timeline(all_flight_declarations);
         }
-
+    }
     </script>
 </body>
 
