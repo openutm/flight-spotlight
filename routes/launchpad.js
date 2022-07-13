@@ -106,6 +106,7 @@ var flight_operation_validate = [
     }
   }),
   check('altitude_agl').isInt({ min: 0, max: 4000 }).withMessage("Altitude must be provided as an integer between 0 to 4000 mts."),
+  check('op_date').isISO8601().withMessage("A valid date must be provided for the operation"),
   check("op_start", "op_end")
     .isInt()
     .custom((op_start, { req }) => {
@@ -152,18 +153,13 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
     const start_hours = Math.floor(start_time / 60);
     const start_minutes = start_time % 60;
     // Set hours
-    const s_date = tmp_s_date.set({ 'hour': start_hours, 'minutes': start_minutes });
+    let s_date = tmp_s_date.set({ 'hour': start_hours, 'minutes': start_minutes });
 
     const end_hours = Math.floor(end_time / 60);
     const end_minutes = end_time % 60;
 
-    const e_date = tmp_e_date.set({ 'hour': end_hours, 'minutes': end_minutes });
-
-    let operation_mode_lookup = {
-      '1': 'vlos',
-      '2': 'bvlos',
-      '3': 'crewed'
-    };
+    let e_date = tmp_e_date.set({ 'hour': end_hours, 'minutes': end_minutes });
+    
     let geo_json_with_altitude = {
       'type': 'FeatureCollection',
       'features': []
