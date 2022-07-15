@@ -69,22 +69,23 @@
                                                     <%}%>
                                         </td>
                                         <td>
-                                            <%if (user.role=='authority' ) { %>
-                                                <p>
-                                                    <%= op_state[cur_declaration.state] %>
-                                                </p>
-                                                <% } else {%>
-                                                    <select id="op-state-<%-cur_declaration.id %>"
-                                                        onchange="update_flight_state('<%- cur_declaration.id %>')"
-                                                        class="custom-select">
-                                                        <option disabled>Update operation state</option>
-                                                        <% for ( var i=1; i < Object.keys(op_state).length+1; i++ ) {
-                                                            var selected=(cur_declaration.state==i ) ? "selected" : "" ;
-                                                            %>
-                                                            <option value="<%= i %>" <%=selected %>><%= op_state[i] %></option>
-                                                            <% } %>
-                                                    </select>
+                                            <%if (user.role=='operator' && user.email == cur_declaration.submitted_by) { %>
+                                                
+                                                <select id="op-state-<%-cur_declaration.id %>"
+                                                    onchange="update_flight_state('<%- cur_declaration.id %>')"
+                                                    class="custom-select">
+                                                    <option disabled>Update operation state</option>
+                                                    <% for ( var i=1; i < Object.keys(op_state).length+1; i++ ) {
+                                                        var selected=(cur_declaration.state==i ) ? "selected" : "" ;
+                                                        %>
+                                                        <option value="<%= i %>" <%=selected %>><%= op_state[i] %></option>
+                                                        <% } %>
+                                                </select>
 
+                                                <% } else {%>
+                                                    <p>
+                                                        <%= op_state[cur_declaration.state] %>
+                                                    </p>
                                                     <%}%>
                                         </td>
                                     </tr>
