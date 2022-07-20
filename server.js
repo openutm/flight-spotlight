@@ -6,9 +6,6 @@
     const expressSession = require('express-session');
     const passport = require('passport');
     const { Issuer, Strategy, custom } = require('openid-client');
-    
-
-    
     const socket = require("socket.io");
     require("dotenv").config();
     var userInViews = require('./lib/middleware/userInViews');

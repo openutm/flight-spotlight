@@ -14,7 +14,8 @@ const querystring = require("querystring");
 var Tile38 = require('tile38');
 
 var tile38_client = new Tile38({ host: tile38_host, port: tile38_port });
-const jwt = require('express-jwt');
+
+const { expressjwt: jwt } = require("express-jwt");
 const jwksRsa = require('jwks-rsa');
 const jwtAuthz = require('express-jwt-authz');
 // const request = require('request');
@@ -80,7 +81,7 @@ async function get_passport_token() {
       "audience": process.env.PASSPORT_BLENDER_AUDIENCE
     };
     let passport_response = async () => {
-
+      
       let res = await axios.request({
         url: process.env.PASSPORT_TOKEN_URL || '/oauth/token/',
         method: "post",

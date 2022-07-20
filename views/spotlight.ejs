@@ -47,7 +47,11 @@
                             <% } %>
                                 <div class="information">
                                    
-                                        <div class="form-actions">
+                                        <div>
+                                            <h6>
+                                                Select Spotlight
+                                                <small id="lat_lng" class="text-muted"></small>
+                                            </h6>
                                             <button onclick="stream_flights()" class="button" id="retrive_flights" type="submit">Stream
                                                 flights</button><br>
                                             <small class="text-muted">Zoom and pan globe with your mouse to your area of
@@ -125,6 +129,13 @@
                 var cameralng;
 
                 
+                camera.moveStart.addEventListener(function() { 
+                    // the camera started to move
+                });
+                camera.moveEnd.addEventListener(function() { 
+                    // the camera stopped moving
+                    get_globe_center();
+                });
                 function remove_spaces(string) {
                     return string.replace(/\n/g, "").replace(/ /g, '');
                 }
@@ -134,9 +145,11 @@
                     var pickPositionCartographic = viewer.scene.globe.ellipsoid.cartesianToCartographic(pickPosition);
                     const lng = pickPositionCartographic.longitude * (180 / Math.PI);
                     const lat = pickPositionCartographic.latitude * (180 / Math.PI);
+                    const lat_lng_str = "Latitude: " + lat.toFixed(2) + ' ' + "Longitude: " + lng.toFixed(2);
+                    const lat_lan_cont = document.getElementById('lat_lng');
+                    lat_lan_cont.innerText = lat_lng_str;
                     return { "lat": lat, "lng": lng };
                 }
-
 
 
                 function stream_flights() {
