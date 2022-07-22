@@ -183,7 +183,7 @@
                         fill: Cesium.Color.WHITE.withAlpha(0.2),
                         strokeWidth: 3
                     }));
-                    viewer.zoomTo(aoi);
+                    viewer.flyTo(aoi);
                     let spinner_cont = document.getElementById("spinner-cont");
                     spinner_cont.classList.remove("d-none");
 
@@ -277,8 +277,7 @@
                                             p[i].polygon.outlineColor = Cesium.Color.PINK.withAlpha(0.2),
                                                 p[i].polygon.material = Cesium.Color.HOTPINK.withAlpha(0.2)
                                         }
-                                        viewer.dataSources.add(dataSource);
-                                        viewer.zoomTo(dataSource);
+                                        viewer.dataSources.add(dataSource);                                        
                                     }
                                 );
 
