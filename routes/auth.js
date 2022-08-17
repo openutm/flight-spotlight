@@ -8,7 +8,7 @@ const util = require("util");
 
 const tile38_host = process.env.TILE38_SERVER || '0.0.0.0';
 const tile38_port = process.env.TILE38_PORT || 9851;
-const redis_url = process.env.REDIS_URL || 'redis://local.test:6379';
+
 
 const querystring = require("querystring");
 var Tile38 = require('tile38');
@@ -31,8 +31,8 @@ const {
   check,
   validationResult
 } = require('express-validator');
-const redis = require("redis");
-const redis_client = redis.createClient(redis_url);
+
+const redis_client = require('./redis-client');
 
 const { v4: uuidv4 } = require('uuid');
 
@@ -49,24 +49,6 @@ const checkJwt = jwt({
   algorithms: ['RS256']
 });
 
-function redis_error_handler(err) {
-  console.debug(`node-redis version is ${require('redis/package.json').version}`);
-  console.debug(err);
-}
-
-
-(async () => {
-  redis_client.on('error', (err) => {
-    console.debug('Redis Client Error', err);
-    process.exit(1);
-  });
-  redis_client.on('ready', () => console.debug('Redis is ready..'));
-
-  const connect = await redis_client.connect().catch(redis_error_handler);;
-
-  const pong = await redis_client.ping().catch(redis_error_handler);
-})();
-
 
 async function get_passport_token() {
   redis_key = 'blender_passport_token';
@@ -81,7 +63,7 @@ async function get_passport_token() {
       "audience": process.env.PASSPORT_BLENDER_AUDIENCE
     };
     let passport_response = async () => {
-      
+
       let res = await axios.request({
         url: process.env.PASSPORT_TOKEN_URL || '/oauth/token/',
         method: "post",
@@ -367,115 +349,120 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
       user: req.user,
       errors: {},
       data: {
-        'successful': 'NA'}
+        'successful': 'NA'
+      }
     });
 
   } else {
 
 
     const passport_token = await get_passport_token();
-  
-      const io = req.app.get('socketio');
-  
-      const res = 7;
-      const h = h3.geoToH3(lat, lng, res);
-      const geo_boundary = h3.h3ToGeoBoundary(h, true);
-      const aoi_hexagon = turf.polygon([geo_boundary]);
-      const email = userProfile.email;
-      const aoi_bbox = turf.bbox(aoi_hexagon);
-      // const area = turf.area(aoi_hexagon);
-  
-      let geo_fence_query = tile38_client.intersectsQuery('geo_fence').object(aoi_hexagon);
-      let cred = "Bearer " + passport_token;
-  
-      // const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
-      // let adsb_feed_url = base_url + '/flight_stream/start_opensky_feed?view=' + aoi_bbox;
-  
-      // axios.get(adsb_feed_url, {
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': cred
-      //   }
-      // })
-      //   .then(function (blender_response) {
-      //     // console.log(blender_response);
-      //     console.log("Openskies Stream started...");
-      //   }).catch(function (error) {
-      //     // console.log(error.data);
-      //     console.log("Error in starting Openskies Stream..");
-      //   });
-  
-  
-      geo_fence_query.execute().then(results => {
+
+    const io = req.app.get('socketio');
+
+    const res = 7;
+    const h = h3.geoToH3(lat, lng, res);
+    const geo_boundary = h3.h3ToGeoBoundary(h, true);
+    const aoi_hexagon = turf.polygon([geo_boundary]);
+    const email = userProfile.email;
+    const aoi_bbox = turf.bbox(aoi_hexagon);
+
+    // TODO: Get geofences that intersect this BBOX
+    // TODO: Get 
+
+    // const area = turf.area(aoi_hexagon);
+
+    let geo_fence_query = tile38_client.intersectsQuery('geo_fence').object(aoi_hexagon);
+    let cred = "Bearer " + passport_token;
+
+    // const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
+    // let adsb_feed_url = base_url + '/flight_stream/start_opensky_feed?view=' + aoi_bbox;
+
+    // axios.get(adsb_feed_url, {
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     'Authorization': cred
+    //   }
+    // })
+    //   .then(function (blender_response) {
+    //     // console.log(blender_response);
+    //     console.log("Openskies Stream started...");
+    //   }).catch(function (error) {
+    //     // console.log(error.data);
+    //     console.log("Error in starting Openskies Stream..");
+    //   });
+
+
+    geo_fence_query.execute().then(results => {
+      io.sockets.in(email).emit("message", {
+        'type': 'message',
+        "alert_type": "aoi_geo_fence",
+        "results": results
+      });
+      return results;
+    }).then(geo_fence => {
+      // Setup a Geofence for the results 
+      for (let index = 0; index < geo_fence.objects.length; index++) {
+        const geo_fence_element = geo_fence.objects[index].object;
+        let geo_fence_bbox = bbox(geo_fence_element);
+        let geo_live_fence_query = tile38_client.intersectsQuery('observation').detect('enter', 'exit').bounds(geo_fence_bbox[0], geo_fence_bbox[1], geo_fence_bbox[2], geo_fence_bbox[3]);
+        let geo_fence_stream = geo_live_fence_query.executeFence((err, geo_fence_results) => {
+          if (err) {
+            console.error("something went wrong! " + err);
+          } else {
+            let status = geo_fence_results.id + ": " + geo_fence_results.detect + " geo fence area";
+            io.sockets.in(email).emit("message", {
+              'type': 'message',
+              "alert_type": "geo_fence_crossed",
+              "results": status
+            });
+          }
+        });
+        geo_fence_stream.onClose(() => {
+          console.log("AOI geofence was closed");
+        });
+      }
+    }).catch(err => {
+      console.error("something went wrong! " + err);
+    });
+
+    let aoi_query = tile38_client.intersectsQuery('observation').object(aoi_hexagon).detect('inside');
+    let flight_aoi_fence = aoi_query.executeFence((err, results) => {
+      if (err) {
+        console.error("something went wrong! " + err);
+      } else {
         io.sockets.in(email).emit("message", {
           'type': 'message',
-          "alert_type": "aoi_geo_fence",
+          "alert_type": "aoi",
           "results": results
         });
-        return results;
-      }).then(geo_fence => {
-        // Setup a Geofence for the results 
-        for (let index = 0; index < geo_fence.objects.length; index++) {
-          const geo_fence_element = geo_fence.objects[index].object;
-          let geo_fence_bbox = bbox(geo_fence_element);
-          let geo_live_fence_query = tile38_client.intersectsQuery('observation').detect('enter', 'exit').bounds(geo_fence_bbox[0], geo_fence_bbox[1], geo_fence_bbox[2], geo_fence_bbox[3]);
-          let geo_fence_stream = geo_live_fence_query.executeFence((err, geo_fence_results) => {
-            if (err) {
-              console.error("something went wrong! " + err);
-            } else {
-              let status = geo_fence_results.id + ": " + geo_fence_results.detect + " geo fence area";
-              io.sockets.in(email).emit("message", {
-                'type': 'message',
-                "alert_type": "geo_fence_crossed",
-                "results": status
-              });
-            }
-          });
-          geo_fence_stream.onClose(() => {
-            console.log("AOI geofence was closed");
-          });
-        }
-      }).catch(err => {
-        console.error("something went wrong! " + err);
-      });
-  
-      let aoi_query = tile38_client.intersectsQuery('observation').object(aoi_hexagon).detect('inside');
-      let flight_aoi_fence = aoi_query.executeFence((err, results) => {
-        if (err) {
-          console.error("something went wrong! " + err);
-        } else {
-          io.sockets.in(email).emit("message", {
-            'type': 'message',
-            "alert_type": "aoi",
-            "results": results
-          });
-        }
-      });
-  
-      flight_aoi_fence.onClose(() => {
-        console.debug("AOI geofence was closed");
-        io.sockets.in(email).emit("message", {
-          'type': 'message',
-          "alert_type": "aoi_closed",
-        });
-      });
-  
-      setTimeout(() => {
-        flight_aoi_fence.close();
-      }, 60000);
-  
-      response.render('spotlight', {
+      }
+    });
 
-        title: "Spotlight",
-        userProfile: userProfile,
-        bing_key: bing_key,
-        mapbox_key: mapbox_key,
-        mapbox_id: mapbox_id,
-        user: req.user,        
-        errors: {},
-        data: {
-          'successful': 1, 'aoi_hexagon':aoi_hexagon, "msg":"Scanning flights in AOI and Geofences for 60 seconds"}
+    flight_aoi_fence.onClose(() => {
+      console.debug("AOI geofence was closed");
+      io.sockets.in(email).emit("message", {
+        'type': 'message',
+        "alert_type": "aoi_closed",
       });
+    });
+
+    setTimeout(() => {
+      flight_aoi_fence.close();
+    }, 60000);
+
+    response.render('spotlight', {
+      title: "Spotlight",
+      userProfile: userProfile,
+      bing_key: bing_key,
+      mapbox_key: mapbox_key,
+      mapbox_id: mapbox_id,
+      user: req.user,
+      errors: {},
+      data: {
+        'successful': 1, 'aoi_hexagon': aoi_hexagon, "msg": "Scanning flights in AOI and Geofences for 60 seconds", "geo_fences":[], "flight_declarations":[]
+      }
+    });
 
 
 
@@ -484,7 +471,7 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
 }));
 
 
-router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic']), [
+router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write']), [
   check('lat_dd').isFloat({
     min: -180.00,
     max: 180.00
@@ -502,7 +489,7 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
   }),
   check('traffic_source').isInt({
     gt: -1,
-    lt: 10
+    lt: 12
   }),
   check('source_type').isInt({
     gt: -1,
@@ -530,7 +517,8 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write.air_traffic
       try {
         tile38_client.set('observation', icao_address, [lon_dd, lat_dd, altitude_mm], {
           'source_type': source_type,
-          'traffic_source': traffic_source
+          'traffic_source': traffic_source, 
+          'metadata':JSON.stringify(obs_metadata)
         }, {
           expire: 300
         });
@@ -568,7 +556,7 @@ router.get('/blender_status', secured(), function (req, response, next) {
   });
 });
 
-router.get("/get_metadata/:icao_address?", checkJwt, jwtAuthz(['spotlight.write.air_traffic']), (req, response, next) => {
+router.get("/get_metadata/:icao_address?", checkJwt, jwtAuthz(['spotlight.write']), (req, response, next) => {
 
   var icao_address = req.params.icao_address;
   if (!icao_address) {
@@ -594,7 +582,7 @@ router.get("/get_metadata/:icao_address?", checkJwt, jwtAuthz(['spotlight.write.
 
 });
 
-router.post("/set_geo_fence", checkJwt, jwtAuthz(['spotlight.write.geo_fence']), check('geo_fence').custom(submitted_geo_fence => {
+router.post("/set_geo_fence", checkJwt, jwtAuthz(['spotlight.write']), check('geo_fence').custom(submitted_geo_fence => {
   let options = {};
   let errors = geojsonhint.hint(submitted_geo_fence, options);
 
@@ -720,36 +708,6 @@ router.post("/update_flight_state/:uuid", secured(), asyncMiddleware(async (req,
 }));
 
 
-router.get("/retrieve_flight_declarations", secured(), asyncMiddleware(async (req, res, next) => {
-  const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
-  redis_key = 'blender_passport_token';
-  let start_date = req.query['start_date'];
-  let end_date = req.query['end_date'];
-  let page = req.query['page'];
-
-  const passport_token = await get_passport_token();
-
-  let url = base_url + '/flight_declaration_ops/flight_declaration?start_date=' + start_date + '&end_date=' + end_date;
-  if (page) {
-    url += '&page=' + page;
-  }
-  axios.get(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': "Bearer " + passport_token
-    }
-  })
-    .then(function (blender_response) {
-
-      if (blender_response.status == 200) {
-        res.send(blender_response.data);
-      } else {
-        // console.log(error);
-        res.send(blender_response.data);
-      }
-    });
-
-}));
 
 router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next) => {
 
@@ -846,116 +804,6 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
 
   }
 }));
-
-// router.post("/set_streaming_aoi", secured(), asyncMiddleware(async (req, response, next) => {
-
-//   const passport_token = await get_passport_token();
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     return response.status(422).json({
-//       errors: errors.array()
-//     });
-//   } else {
-
-//     const io = req.app.get('socketio');
-
-//     const center_coords = JSON.parse(req.body.coords);
-//     const lat = center_coords.lat;
-//     const lng = center_coords.lng;
-//     const res = 7;
-//     const h = h3.geoToH3(lat, lng, res);
-//     const geo_boundary = h3.h3ToGeoBoundary(h, true);
-//     const aoi_hexagon = turf.polygon([geo_boundary]);
-//     const email = req.body.email;
-//     const aoi_bbox = turf.bbox(aoi_hexagon);
-//     // const area = turf.area(aoi_hexagon);
-
-//     let geo_fence_query = tile38_client.intersectsQuery('geo_fence').object(aoi_hexagon);
-//     let cred = "Bearer " + passport_token;
-
-//     // const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
-//     // let adsb_feed_url = base_url + '/flight_stream/start_opensky_feed?view=' + aoi_bbox;
-
-//     // axios.get(adsb_feed_url, {
-//     //   headers: {
-//     //     'Content-Type': 'application/json',
-//     //     'Authorization': cred
-//     //   }
-//     // })
-//     //   .then(function (blender_response) {
-//     //     // console.log(blender_response);
-//     //     console.log("Openskies Stream started...");
-//     //   }).catch(function (error) {
-//     //     // console.log(error.data);
-//     //     console.log("Error in starting Openskies Stream..");
-//     //   });
-
-
-//     geo_fence_query.execute().then(results => {
-//       io.sockets.in(email).emit("message", {
-//         'type': 'message',
-//         "alert_type": "aoi_geo_fence",
-//         "results": results
-//       });
-//       return results;
-//     }).then(geo_fence => {
-//       // Setup a Geofence for the results 
-//       for (let index = 0; index < geo_fence.objects.length; index++) {
-//         const geo_fence_element = geo_fence.objects[index].object;
-//         let geo_fence_bbox = bbox(geo_fence_element);
-//         let geo_live_fence_query = tile38_client.intersectsQuery('observation').detect('enter', 'exit').bounds(geo_fence_bbox[0], geo_fence_bbox[1], geo_fence_bbox[2], geo_fence_bbox[3]);
-//         let geo_fence_stream = geo_live_fence_query.executeFence((err, geo_fence_results) => {
-//           if (err) {
-//             console.error("something went wrong! " + err);
-//           } else {
-//             let status = geo_fence_results.id + ": " + geo_fence_results.detect + " geo fence area";
-//             io.sockets.in(email).emit("message", {
-//               'type': 'message',
-//               "alert_type": "geo_fence_crossed",
-//               "results": status
-//             });
-//           }
-//         });
-//         geo_fence_stream.onClose(() => {
-//           console.log("AOI geofence was closed");
-//         });
-//       }
-//     }).catch(err => {
-//       console.error("something went wrong! " + err);
-//     });
-
-//     let aoi_query = tile38_client.intersectsQuery('observation').object(aoi_hexagon).detect('inside');
-//     let flight_aoi_fence = aoi_query.executeFence((err, results) => {
-//       if (err) {
-//         console.error("something went wrong! " + err);
-//       } else {
-//         io.sockets.in(email).emit("message", {
-//           'type': 'message',
-//           "alert_type": "aoi",
-//           "results": results
-//         });
-//       }
-//     });
-
-//     flight_aoi_fence.onClose(() => {
-//       console.debug("AOI geofence was closed");
-//       io.sockets.in(email).emit("message", {
-//         'type': 'message',
-//         "alert_type": "aoi_closed",
-//       });
-//     });
-
-//     setTimeout(() => {
-//       flight_aoi_fence.close();
-//     }, 45000);
-
-//     response.send({
-//       'msg': "Scanning flights in AOI and Geofences for 60 seconds",
-//       'aoi': JSON.stringify(aoi_hexagon)
-//     });
-
-//   };
-// }));
 
 
 /* GET user profile. */

@@ -8,29 +8,7 @@ const {
   DateTime
 } = require("luxon");
 
-
-var redis_client = require('redis').createClient(process.env.REDIS_URL || {
-  host: '127.0.0.1',
-  port: 6379
-});
-
-function redis_error_handler(err) {
-  console.debug(`node-redis version is ${require('redis/package.json').version}`);
-  console.debug(err);
-}
-
-
-(async () => {
-  redis_client.on('error', (err) => {
-    console.debug('Redis Client Error', err);
-    process.exit(1);
-  });
-  redis_client.on('ready', () => console.debug('Redis is ready..'));
-
-  const connect = await redis_client.connect().catch(redis_error_handler);;
-
-  const pong = await redis_client.ping().catch(redis_error_handler);
-})();
+const redis_client = require('./redis-client');
 
 
 let geojsonhint = require("@mapbox/geojsonhint");
