@@ -302,7 +302,8 @@
     /// Timeline specific 
     if (start_date == 0 || end_date == 0) { } else {
         if (all_flight_declarations.length > 0){
-        render_timeline(all_flight_declarations);
+            const timeline_data = {'flight_declarations':all_flight_declarations, 'view_type':'globe'};
+        render_timeline(timeline_data);
         }
     }
     </script>

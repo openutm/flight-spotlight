@@ -40,9 +40,9 @@
                         </div>
                         <p>&nbsp;</p>
                         <div class="d-none" id="flight-declarations">
-                            <button id="show-flight-declarations" type="button" class="btn btn-link">Get Flight
-                                Declarations</button>
+                            <button id="show-flight-declarations" type="button" class="btn btn-link">Get Flight Declarations</button>
                         </div>
+                        
                         <ul class="list-group list-group-flush">
                             <%if (data.successful !='NA' ) { %>
                                 <% const declarations_len=data.results.length; var op_types={1:'VLOS', 2: 'BVLOS', '3':'CREWED' }; var
@@ -50,8 +50,7 @@
                                     : 'Nonconforming' , '4' : 'Completed' }; if (declarations_len !==0) { for (var j=0;
                                     j < declarations_len; j++ ) { var cur_declaration=data.results[j]; %>
                                     <li class="list-group-item">
-                                        <h6><a href="#"
-                                                onclick="highlight_flight_declaration('<%- cur_declaration.id %>')">
+                                        <h6><a href="#" onclick="highlight_flight_declaration('<%- cur_declaration.id %>')">
                                                 <%= cur_declaration.originating_party %>
                                             </a>&nbsp;<small class="text-muted">
                                                 <%= op_types[cur_declaration.type_of_operation] %>
@@ -96,6 +95,9 @@
                                     <% } %>
                                 </ul>                            
                             <% } } %>
+                            <%if (data.successful !='NA' ) { %>
+                                <p class="text-end"><a href="#" onclick="show_all_declarations()">Show all declarations</a></p>                 
+                            <% }  %>
                
             </div>  
             <div class="col-sm-8 col-md-8 sidebar">
@@ -128,9 +130,9 @@
     </script>
 
     <script type="text/javascript">
-        var path_done;
+        
         var all_flight_declarations =  <%- JSON.stringify(data.results) %>;
-      
+        
         function end_date_update(e) {
                 
                 const selected_date_y = new Date(e.target.value);
@@ -145,7 +147,6 @@
                 end_date =  tmp_t.toISOString().split('T')[0];
 
             }
-
 
         let dateRange = document.getElementById('query_date'),
         monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug","Sep", "Oct", "Nov", "Dec"];
@@ -202,22 +203,59 @@
         var start_time_popup;
         var end_time_popup;
         var declaration_id;
+
+
         function get_flight_declarations() {
             let url = '?start_date=' + start_date + '&end_date=' + end_date;
             window.location.href = url;
         }
 
-        if (start_date == 0 || end_date == 0) { } else {
+        function show_all_declarations(){
             
-            var gj_style = {
-                "color": "#ff7800",
+            geojson_feature_layer.eachLayer(function (layer) {
+                const default_layer_style = default_style();
+                layer.setStyle(default_layer_style);
+            });
+        }
+        function selected_style() {
+            return {
+                "color": "#000000",
                 "weight": 5,
                 "opacity": 0.65
-            };
+            }
+        }
+
+        function highlight_flight_declaration(declaration_id){
+            const layer_id_of_interest = declaration_layer_lookup[declaration_id];
+            geojson_feature_layer.eachLayer(function (layer) {
+             
+                if (layer_id_of_interest === layer._leaflet_id){
+                    const selected_layer_style = selected_style();
+                    layer.setStyle(selected_layer_style);
+                }
+                else{ 
+                    const default_layer_style = default_style(0.2);
+                    layer.setStyle(default_layer_style);
+                }
+            });
+        }
+
+        function default_style(opacity) {
+            return {
+                "color": "#ff7800",
+                "weight": 5,
+                "opacity": opacity || 0.65
+            }
+        }
+
+
+        if (start_date == 0 || end_date == 0) { } else {
+            
+            var gj_style = default_style();
             function onEachFeature(feature, layer) {
                 layer.bindPopup(orignating_party_popup +'<br><b>'+  start_time_popup + '</b> - <b>' +  end_time_popup + '</b>');   
-                L.stamp(layer);
-                declaration_layer_lookup[declaration_id] = layer._leaflet_id;             
+                
+             
             }
             const all_flight_declarations_length = all_flight_declarations.length;
             for (var x =0; x< all_flight_declarations.length;x++) {
@@ -230,9 +268,9 @@
                 start_time_popup = s_time.toISOString().substr(11, 8);
                 end_time_popup = e_time.toISOString().substr(11, 8);
                 const gj_layer = L.geoJSON(cur_declaration_fc , {'style':gj_style, onEachFeature: onEachFeature});
-                
+                L.stamp(gj_layer);
+                declaration_layer_lookup[declaration_id] = gj_layer._leaflet_id;             
                 geojson_feature_layer.addLayer(gj_layer);
-
             }
             if (all_flight_declarations_length >0){
                 map.fitBounds(geojson_feature_layer.getBounds());
@@ -243,7 +281,8 @@
     /// Timeline specific 
     if (start_date == 0 || end_date == 0) { } else {
         if (all_flight_declarations.length > 0){
-        render_timeline(all_flight_declarations);
+        const timeline_data = {'flight_declarations':all_flight_declarations, 'view_type':'map'};
+        render_timeline(timeline_data);
         }
     }
     </script>

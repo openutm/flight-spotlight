@@ -460,7 +460,7 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
       user: req.user,
       errors: {},
       data: {
-        'successful': 1, 'aoi_hexagon': aoi_hexagon, "msg": "Scanning flights in AOI and Geofences for 60 seconds", "geo_fences":[], "flight_declarations":[]
+        'successful': 1, 'aoi_hexagon': aoi_hexagon, "msg": "Scanning flights in AOI and Geofences for 60 seconds", "geo_fences": [], "flight_declarations": []
       }
     });
 
@@ -517,8 +517,8 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write']), [
       try {
         tile38_client.set('observation', icao_address, [lon_dd, lat_dd, altitude_mm], {
           'source_type': source_type,
-          'traffic_source': traffic_source, 
-          'metadata':JSON.stringify(obs_metadata)
+          'traffic_source': traffic_source,
+          'metadata': JSON.stringify(obs_metadata)
         }, {
           expire: 300
         });
@@ -528,9 +528,11 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write']), [
       }
       let metadata_key = icao_address + '-metadata';
       // TODO: Set metatadata
-
-      // redis_client.hmset(metadata_key, 'properties', JSON.stringify(obs_metadata));
-      // redis_client.expire(metadata_key, 300);
+      async function set_metadata(obs_metadata) {
+        await redis_client.set(metadata_key, JSON.stringify(obs_metadata));
+        await redis_client.expire(metadata_key, 300);
+      }
+      set_metadata(obs_metadata);
 
       response.send('OK');
 
@@ -558,27 +560,21 @@ router.get('/blender_status', secured(), function (req, response, next) {
   });
 });
 
-router.get("/get_metadata/:icao_address?", checkJwt, jwtAuthz(['spotlight.write']), (req, response, next) => {
+router.get("/get_metadata/:icao_address?", checkJwt, jwtAuthz(['spotlight.read']), (req, response, next) => {
 
   var icao_address = req.params.icao_address;
   if (!icao_address) {
     next();
     return;
   }
-  function get_meta_data(callback) {
 
-    redis_client.hget(icao_address + '-metadata', 'properties', function (err, object) {
-      if (err) {
-        callback({});
-      } else {
-
-        callback(object);
-      }
-    });
+  async function get_meta_data(callback) {
+    const all_metadata = await redis_client.get(metadata_key);
+    return all_metadata
   };
   get_meta_data(function (metadata) {
     response.send({
-      'metadata': JSON.parse(metadata)
+      'metadata': JSON.parse(all_metadata)
     });
   });
 
