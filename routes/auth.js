@@ -527,8 +527,10 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write']), [
         console.log("Error " + err);
       }
       let metadata_key = icao_address + '-metadata';
-      redis_client.hmset(metadata_key, 'properties', JSON.stringify(obs_metadata));
-      redis_client.expire(metadata_key, 300);
+      // TODO: Set metatadata
+
+      // redis_client.hmset(metadata_key, 'properties', JSON.stringify(obs_metadata));
+      // redis_client.expire(metadata_key, 300);
 
       response.send('OK');
 
