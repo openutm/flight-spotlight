@@ -13,6 +13,20 @@
     const authRouter = require("./routes/auth");    
     const launchpadRouter = require('./routes/launchpad');
 
+    var Queue = require('bullmq');
+    var getAirtraffic = new Queue('Airtraffic', (process.env.REDIS_URL || {
+        host: '127.0.0.1',
+        port: 6379
+    }));
+    getAirtraffic.on('completed', function (job, synthesisid) {
+        // A job successfully completed with a `result`.
+        sendStdMsg(synthesisid, synthesisid);
+    }).on('progress', function (job, progressdata) {
+        console.log(progressdata.percent, progressdata.synthesisid);
+        sendProgressMsg(progressdata.synthesisid, progressdata.percent);
+        // Job progress updated!
+    });
+
     const session = {
         secret: process.env.APP_SECRET,
         cookie: {},

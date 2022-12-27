@@ -36,6 +36,20 @@ const redis_client = require('./redis-client');
 
 const { v4: uuidv4 } = require('uuid');
 
+var Queue = require('bullmq');
+var getAirtrafficQueue = new Queue('Airtraffic', (process.env.REDIS_URL || {
+    host: '127.0.0.1',
+    port: 6379
+}));
+getAirtrafficQueue.on('completed', function (job, job_id) {
+    // A job successfully completed with a `result`.
+}).on('progress', function (job, progressdata) {
+    console.log(progressdata.percent, progressdata.job_i);
+    
+    // Job progress updated!
+});
+
+
 const checkJwt = jwt({
   secret: jwksRsa.expressJwtSecret({
     cache: true,
@@ -354,22 +368,21 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     });
 
   } else {
-
-
     const passport_token = await get_passport_token();
-
     const io = req.app.get('socketio');
-
     const res = 7;
     const h = h3.geoToH3(lat, lng, res);
     const geo_boundary = h3.h3ToGeoBoundary(h, true);
     const aoi_hexagon = turf.polygon([geo_boundary]);
     const email = userProfile.email;
     const aoi_bbox = turf.bbox(aoi_hexagon);
-
     // TODO: Get geofences that intersect this BBOX
-    // TODO: Get 
-
+    // TODO: Start a job for 30 seconds to poll data from Blender
+    getAirtrafficQueue.add({
+      "viewport": aoi_bbox,
+      // "rfc": rfc,
+      "job_id": uuidv4()
+  });
     // const area = turf.area(aoi_hexagon);
 
     let geo_fence_query = tile38_client.intersectsQuery('geo_fence').object(aoi_hexagon);
@@ -425,6 +438,7 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     }).catch(err => {
       console.error("something went wrong! " + err);
     });
+
 
     let aoi_query = tile38_client.intersectsQuery('observation').object(aoi_hexagon).detect('inside');
     let flight_aoi_fence = aoi_query.executeFence((err, results) => {
