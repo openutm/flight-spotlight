@@ -36,19 +36,21 @@ const redis_client = require('./redis-client');
 
 const { v4: uuidv4 } = require('uuid');
 
-var Queue = require('bullmq');
+var Queue = require('bull');
 var getAirtrafficQueue = new Queue('Airtraffic', (process.env.REDIS_URL || {
-    host: '127.0.0.1',
-    port: 6379
+  host: '127.0.0.1',
+  port: 6379
 }));
+getAirtrafficQueue.process(__dirname + '/processor.js');
+
 getAirtrafficQueue.on('completed', function (job, job_id) {
     // A job successfully completed with a `result`.
+    console.log("Job finished..");
 }).on('progress', function (job, progressdata) {
-    console.log(progressdata.percent, progressdata.job_i);
-    
+    console.log(progressdata.percent, progressdata);
+
     // Job progress updated!
 });
-
 
 const checkJwt = jwt({
   secret: jwksRsa.expressJwtSecret({
@@ -382,7 +384,7 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
       "viewport": aoi_bbox,
       // "rfc": rfc,
       "job_id": uuidv4()
-  });
+    });
     // const area = turf.area(aoi_hexagon);
 
     let geo_fence_query = tile38_client.intersectsQuery('geo_fence').object(aoi_hexagon);

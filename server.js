@@ -10,22 +10,8 @@
     require("dotenv").config();
     var userInViews = require('./lib/middleware/userInViews');
     const bodyParser = require("body-parser");
-    const authRouter = require("./routes/auth");    
+    const authRouter = require("./routes/auth");
     const launchpadRouter = require('./routes/launchpad');
-
-    var Queue = require('bullmq');
-    var getAirtraffic = new Queue('Airtraffic', (process.env.REDIS_URL || {
-        host: '127.0.0.1',
-        port: 6379
-    }));
-    getAirtraffic.on('completed', function (job, synthesisid) {
-        // A job successfully completed with a `result`.
-        sendStdMsg(synthesisid, synthesisid);
-    }).on('progress', function (job, progressdata) {
-        console.log(progressdata.percent, progressdata.synthesisid);
-        sendProgressMsg(progressdata.synthesisid, progressdata.percent);
-        // Job progress updated!
-    });
 
     const session = {
         secret: process.env.APP_SECRET,
@@ -35,7 +21,7 @@
     };
     custom.setHttpOptionsDefaults({
         timeout: 5000,
-      });
+    });
     var app = express();
 
     app.use(expressSession(session));
@@ -62,7 +48,7 @@
 
         app.use(passport.initialize());
         app.use(passport.session());
-        
+
         passport.use(
             'oidc',
             new Strategy({ client }, (tokenSet, userinfo, done) => {
@@ -106,13 +92,13 @@
         // authentication callback
         app.get('/auth/callback', (req, res, next) => {
             passport.authenticate('oidc', function (err, user, info) {
-                
+
                 if (err) {
                     return next(err); // will generate a 500 error
                 }
                 // Generate a JSON response reflecting authentication status
                 if (!user) {
-                    return res.send({ success: false, message: 'authentication failed' , 'info':info});
+                    return res.send({ success: false, message: 'authentication failed', 'info': info });
                 }
                 // ***********************************************************************
                 // "Note that when using a custom callback, it becomes the application's
@@ -128,11 +114,11 @@
                 });
             })(req, res, next);
         });
-       
+
         app.use(passport.initialize());
         app.use(passport.session());
 
-        app.use("/", authRouter);        
+        app.use("/", authRouter);
         app.use('/', launchpadRouter);
 
     });
@@ -180,7 +166,7 @@
     server.on('close', function (e) {
         console.log('Cesium development server stopped.');
     });
-    
+
     var isFirstSig = true;
     process.on('SIGINT', function () {
         if (isFirstSig) {
