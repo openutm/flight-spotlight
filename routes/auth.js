@@ -370,7 +370,7 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     });
 
   } else {
-    const passport_token = await get_passport_token();
+
     const io = req.app.get('socketio');
     const res = 7;
     const h = h3.geoToH3(lat, lng, res);
@@ -383,31 +383,20 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     getAirtrafficQueue.add({
       "viewport": aoi_bbox,
       // "rfc": rfc,
-      "job_id": uuidv4()
+      "job_id": uuidv4(),
+      "job_type": 'start_opensky_feed'
+    });
+
+
+    getAirtrafficQueue.add({
+      "viewport": aoi_bbox,
+      // "rfc": rfc,
+      "job_id": uuidv4(),
+      "job_type": 'poll_blender'
     });
     // const area = turf.area(aoi_hexagon);
 
     let geo_fence_query = tile38_client.intersectsQuery('geo_fence').object(aoi_hexagon);
-    let cred = "Bearer " + passport_token;
-
-    // const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
-    // let adsb_feed_url = base_url + '/flight_stream/start_opensky_feed?view=' + aoi_bbox;
-
-    // axios.get(adsb_feed_url, {
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'Authorization': cred
-    //   }
-    // })
-    //   .then(function (blender_response) {
-    //     // console.log(blender_response);
-    //     console.log("Openskies Stream started...");
-    //   }).catch(function (error) {
-    //     // console.log(error.data);
-    //     console.log("Error in starting Openskies Stream..");
-    //   });
-
-
     geo_fence_query.execute().then(results => {
       io.sockets.in(email).emit("message", {
         'type': 'message',
