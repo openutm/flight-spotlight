@@ -78,7 +78,7 @@ module.exports = async function (job) {
 
         let adsb_feed_url = base_url + '/flight_stream/start_opensky_feed?view=' + viewport;
         // Start a feed 
-        console.log(adsb_feed_url);
+        
         axios_instance.get(adsb_feed_url)
             .then(function (blender_response) {
                 console.log(blender_response);
