@@ -36,6 +36,22 @@ const redis_client = require('./redis-client');
 
 const { v4: uuidv4 } = require('uuid');
 
+var Queue = require('bull');
+var getAirtrafficQueue = new Queue('Airtraffic', (process.env.REDIS_URL || {
+  host: '127.0.0.1',
+  port: 6379
+}));
+getAirtrafficQueue.process(__dirname + '/processor.js');
+
+getAirtrafficQueue.on('completed', function (job, job_id) {
+    // A job successfully completed with a `result`.
+    console.log("Job finished..");
+}).on('progress', function (job, progressdata) {
+    console.log(progressdata.percent, progressdata);
+
+    // Job progress updated!
+});
+
 const checkJwt = jwt({
   secret: jwksRsa.expressJwtSecret({
     cache: true,
@@ -355,44 +371,32 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
 
   } else {
 
-
-    const passport_token = await get_passport_token();
-
     const io = req.app.get('socketio');
-
     const res = 7;
     const h = h3.geoToH3(lat, lng, res);
     const geo_boundary = h3.h3ToGeoBoundary(h, true);
     const aoi_hexagon = turf.polygon([geo_boundary]);
     const email = userProfile.email;
     const aoi_bbox = turf.bbox(aoi_hexagon);
-
     // TODO: Get geofences that intersect this BBOX
-    // TODO: Get 
+    // TODO: Start a job for 30 seconds to poll data from Blender
+    getAirtrafficQueue.add({
+      "viewport": aoi_bbox,
+      // "rfc": rfc,
+      "job_id": uuidv4(),
+      "job_type": 'start_opensky_feed'
+    });
 
+
+    getAirtrafficQueue.add({
+      "viewport": aoi_bbox,
+      // "rfc": rfc,
+      "job_id": uuidv4(),
+      "job_type": 'poll_blender'
+    });
     // const area = turf.area(aoi_hexagon);
 
     let geo_fence_query = tile38_client.intersectsQuery('geo_fence').object(aoi_hexagon);
-    let cred = "Bearer " + passport_token;
-
-    // const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
-    // let adsb_feed_url = base_url + '/flight_stream/start_opensky_feed?view=' + aoi_bbox;
-
-    // axios.get(adsb_feed_url, {
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'Authorization': cred
-    //   }
-    // })
-    //   .then(function (blender_response) {
-    //     // console.log(blender_response);
-    //     console.log("Openskies Stream started...");
-    //   }).catch(function (error) {
-    //     // console.log(error.data);
-    //     console.log("Error in starting Openskies Stream..");
-    //   });
-
-
     geo_fence_query.execute().then(results => {
       io.sockets.in(email).emit("message", {
         'type': 'message',
@@ -425,6 +429,7 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     }).catch(err => {
       console.error("something went wrong! " + err);
     });
+
 
     let aoi_query = tile38_client.intersectsQuery('observation').object(aoi_hexagon).detect('inside');
     let flight_aoi_fence = aoi_query.executeFence((err, results) => {

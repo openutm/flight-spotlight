@@ -10,7 +10,7 @@
     require("dotenv").config();
     var userInViews = require('./lib/middleware/userInViews');
     const bodyParser = require("body-parser");
-    const authRouter = require("./routes/auth");    
+    const authRouter = require("./routes/auth");
     const launchpadRouter = require('./routes/launchpad');
 
     const session = {
@@ -21,7 +21,7 @@
     };
     custom.setHttpOptionsDefaults({
         timeout: 5000,
-      });
+    });
     var app = express();
 
     app.use(expressSession(session));
@@ -48,7 +48,7 @@
 
         app.use(passport.initialize());
         app.use(passport.session());
-        
+
         passport.use(
             'oidc',
             new Strategy({ client }, (tokenSet, userinfo, done) => {
@@ -92,13 +92,13 @@
         // authentication callback
         app.get('/auth/callback', (req, res, next) => {
             passport.authenticate('oidc', function (err, user, info) {
-                
+
                 if (err) {
                     return next(err); // will generate a 500 error
                 }
                 // Generate a JSON response reflecting authentication status
                 if (!user) {
-                    return res.send({ success: false, message: 'authentication failed' , 'info':info});
+                    return res.send({ success: false, message: 'authentication failed', 'info': info });
                 }
                 // ***********************************************************************
                 // "Note that when using a custom callback, it becomes the application's
@@ -114,11 +114,11 @@
                 });
             })(req, res, next);
         });
-       
+
         app.use(passport.initialize());
         app.use(passport.session());
 
-        app.use("/", authRouter);        
+        app.use("/", authRouter);
         app.use('/', launchpadRouter);
 
     });
@@ -166,7 +166,7 @@
     server.on('close', function (e) {
         console.log('Cesium development server stopped.');
     });
-    
+
     var isFirstSig = true;
     process.on('SIGINT', function () {
         if (isFirstSig) {
