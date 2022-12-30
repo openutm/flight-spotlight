@@ -3,16 +3,9 @@
 const express = require("express");
 var secured = require('../lib/middleware/secured');
 const router = express.Router();
-const passport = require("passport");
-const util = require("util");
-
 const tile38_host = process.env.TILE38_SERVER || '0.0.0.0';
 const tile38_port = process.env.TILE38_PORT || 9851;
-
-
-const querystring = require("querystring");
 var Tile38 = require('tile38');
-
 var tile38_client = new Tile38({ host: tile38_host, port: tile38_port });
 
 const { expressjwt: jwt } = require("express-jwt");
@@ -27,6 +20,9 @@ const qs = require('qs');
 const asyncMiddleware = require('../util/asyncMiddleware');
 
 let geojsonhint = require("@mapbox/geojsonhint");
+
+const { createNewPollBlenderProcess } = require("../queues/poll-blender-queue");
+
 const {
   check,
   validationResult
@@ -35,22 +31,6 @@ const {
 const redis_client = require('./redis-client');
 
 const { v4: uuidv4 } = require('uuid');
-
-var Queue = require('bull');
-var getAirtrafficQueue = new Queue('Airtraffic', (process.env.REDIS_URL || {
-  host: '127.0.0.1',
-  port: 6379
-}));
-getAirtrafficQueue.process(__dirname + '/processor.js');
-
-getAirtrafficQueue.on('completed', function (job, job_id) {
-    // A job successfully completed with a `result`.
-    console.log("Job finished..");
-}).on('progress', function (job, progressdata) {
-    console.log(progressdata.percent, progressdata);
-
-    // Job progress updated!
-});
 
 const checkJwt = jwt({
   secret: jwksRsa.expressJwtSecret({
@@ -380,17 +360,9 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     const aoi_bbox = turf.bbox(aoi_hexagon);
     // TODO: Get geofences that intersect this BBOX
     // TODO: Start a job for 30 seconds to poll data from Blender
-    getAirtrafficQueue.add({
+    
+    createNewPollBlenderProcess({
       "viewport": aoi_bbox,
-      // "rfc": rfc,
-      "job_id": uuidv4(),
-      "job_type": 'start_opensky_feed'
-    });
-
-
-    getAirtrafficQueue.add({
-      "viewport": aoi_bbox,
-      // "rfc": rfc,
       "job_id": uuidv4(),
       "job_type": 'poll_blender'
     });
@@ -408,7 +380,7 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
       // Setup a Geofence for the results 
       for (let index = 0; index < geo_fence.objects.length; index++) {
         const geo_fence_element = geo_fence.objects[index].object;
-        let geo_fence_bbox = bbox(geo_fence_element);
+        let geo_fence_bbox = turf.bbox(geo_fence_element);
         let geo_live_fence_query = tile38_client.intersectsQuery('observation').detect('enter', 'exit').bounds(geo_fence_bbox[0], geo_fence_bbox[1], geo_fence_bbox[2], geo_fence_bbox[3]);
         let geo_fence_stream = geo_live_fence_query.executeFence((err, geo_fence_results) => {
           if (err) {
