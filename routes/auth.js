@@ -21,7 +21,8 @@ const asyncMiddleware = require('../util/asyncMiddleware');
 
 let geojsonhint = require("@mapbox/geojsonhint");
 
-const { createNewPollBlenderProcess } = require("../queues/poll-blender-queue");
+const { createNewPollBlenderProcess, createNewADSBFeedProcess, createNewBlenderDSSSubscriptionProcess } = require("../queues/live-blender-queue");
+
 
 const {
   check,
@@ -359,12 +360,21 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     const email = userProfile.email;
     const aoi_bbox = turf.bbox(aoi_hexagon);
     // TODO: Get geofences that intersect this BBOX
-    // TODO: Start a job for 30 seconds to poll data from Blender
-    
-    createNewPollBlenderProcess({
+    // TODO: Start a job for 30 seconds to poll data from Blender    
+    // createNewPollBlenderProcess({
+    //   "viewport": aoi_bbox,
+    //   "job_id": uuidv4(),
+    //   "job_type": 'poll_blender'
+    // });
+    // createNewADSBFeedProcess({
+    //   "viewport": aoi_bbox,
+    //   "job_id": uuidv4(),
+    //   "job_type": 'start_opensky_feed'
+    // });
+    createNewBlenderDSSSubscriptionProcess({
       "viewport": aoi_bbox,
       "job_id": uuidv4(),
-      "job_type": 'poll_blender'
+      "job_type": 'create_dss_subscription'
     });
     // const area = turf.area(aoi_hexagon);
 

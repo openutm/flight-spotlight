@@ -101,7 +101,8 @@ const pollBlenderProcess = async (job) => {
     const job_id = job.data.job_id;
     const job_type = job.data.job_type;
 
-    const viewport = view.join(',');
+    const v = [view[1], view[0], view[3], view[2]]; // Flip co-ordinates for Turf
+    const viewport = v.join(',');
     let axios_instance = axios.create({
         headers: {
             'Content-Type': 'application/json',
@@ -110,8 +111,8 @@ const pollBlenderProcess = async (job) => {
     });
 
     let flights_url = base_url + '/flight_stream/get_air_traffic?view=' + viewport;
-    console.log(flights_url);
-    console.log(h);
+    console.debug(flights_url);
+    
     let fullproc = 15;
     for (var h = 0; h < fullproc; h++) { // we will send 40 requests
 
