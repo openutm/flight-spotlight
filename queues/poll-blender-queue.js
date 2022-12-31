@@ -1,5 +1,5 @@
 const Queue = require("bull");
-const { pollBlenderProcess } = require("./orders-queue-consumer");
+const { pollBlenderProcess } = require("./poll-blender-queue-consumer");
 
 // Our job queue
 const pollBlenderQueue = new Queue("pollblender", {

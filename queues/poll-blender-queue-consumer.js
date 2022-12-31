@@ -55,8 +55,39 @@ async function get_passport_token() {
         return raw_a_token['access_token'];
     }
 }
-function delay(time) {
-    return new Promise(resolve => setTimeout(resolve, time));
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
+function setObservationsLocally(observations) {
+
+    for (let index = 0; index < observations.length; index++) {
+        const current_observation = observations[index];
+        let lon_dd = current_observation['lon_dd'];
+        let lat_dd = current_observation['lat_dd'];
+        let icao_address = current_observation['icao_address'];
+        let altitude_mm = current_observation['altitude_mm'];
+        let source_type = current_observation['source_type'];
+        let traffic_source = current_observation['traffic_source'];
+        let obs_metadata = JSON.parse(current_observation['metadata']);
+        try {
+            tile38_client.set('observation', icao_address, [lon_dd, lat_dd, altitude_mm], {
+                'source_type': source_type,
+                'traffic_source': traffic_source,
+                'metadata': JSON.stringify(obs_metadata)
+            }, {
+                expire: 300
+            });
+
+        } catch (err) {
+            console.log("Error " + err);
+        }
+        let metadata_key = icao_address + '-metadata';
+        // TODO: Set metatadata
+        async function set_metadata(obs_metadata) {
+            await redis_client.set(metadata_key, JSON.stringify(obs_metadata));
+            await redis_client.expire(metadata_key, 300);
+        }
+        set_metadata(obs_metadata);
+    }
 }
 
 const pollBlenderProcess = async (job) => {
@@ -81,51 +112,26 @@ const pollBlenderProcess = async (job) => {
     let flights_url = base_url + '/flight_stream/get_air_traffic?view=' + viewport;
     console.log(flights_url);
     console.log(h);
-    let fullproc = 10;
+    let fullproc = 15;
     for (var h = 0; h < fullproc; h++) { // we will send 40 requests
 
         axios_instance.get(flights_url).then(function (blender_response) {
             // response.send(blender_response.data);
             const observations = blender_response.data['observations'];
-            console.log(observations);
-            for (let index = 0; index < observations.length; index++) {
-                const current_observation = observations[index];
-                let lon_dd = current_observation['lon_dd'];
-                let lat_dd = current_observation['lat_dd'];
-                let icao_address = current_observation['icao_address'];
-                let altitude_mm = current_observation['altitude_mm'];
-                let source_type = current_observation['source_type'];
-                let traffic_source = current_observation['traffic_source'];
-                let obs_metadata = JSON.parse(current_observation['metadata']);
-
-                try {
-                    tile38_client.set('observation', icao_address, [lon_dd, lat_dd, altitude_mm], {
-                        'source_type': source_type,
-                        'traffic_source': traffic_source,
-                        'metadata': JSON.stringify(obs_metadata)
-                    }, {
-                        expire: 300
-                    });
-
-                } catch (err) {
-                    console.log("Error " + err);
-                }
-                let metadata_key = icao_address + '-metadata';
-                // TODO: Set metatadata
-                async function set_metadata(obs_metadata) {
-                    await redis_client.set(metadata_key, JSON.stringify(obs_metadata));
-                    await redis_client.expire(metadata_key, 300);
-                }
-                set_metadata(obs_metadata);
+            
+            const obs_len = observations.length;
+            console.log("Processing " + obs_len+ " observations");
+            if (obs_len > 0) {
+                setObservationsLocally(observations);
             }
 
-        delay(1000).then(() => console.log('Waiting 1 second ..'));
 
         }).catch(function (blender_error) {
             console.log("Error in retrieveing data from Blender")
             console.log(blender_error);
         });
 
+        await delay(3000).then(() => console.log('Waiting 3 second ..'));
         // counter += 1;
         // job.progress({
         //     'percent': parseInt((100 * counter) / fullproc),
