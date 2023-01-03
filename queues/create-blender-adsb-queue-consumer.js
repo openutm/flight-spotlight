@@ -62,8 +62,8 @@ const createBlenderADSBFeedProcess = async (job) => {
     const job_id = job.data.job_id;
     const job_type = job.data.job_type;
 
-    const v = [view[1], view[0], view[3], view[2]]; // Flip co-ordinates for Turf
-    const viewport = v.join(',');
+    // const v = [view[1], view[0], view[3], view[2]]; // Flip co-ordinates for Turf
+    const viewport = view.join(',');
 
     let axios_instance = axios.create({
         headers: {

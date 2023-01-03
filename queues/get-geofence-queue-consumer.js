@@ -4,6 +4,8 @@ const redis_client = require('../routes/redis-client');
 const tile38_host = process.env.TILE38_SERVER || '0.0.0.0';
 const tile38_port = process.env.TILE38_PORT || 9851;
 
+const { v4: uuidv4 } = require('uuid');
+
 var Tile38 = require('tile38');
 const axios = require('axios');
 require("dotenv").config();
@@ -55,42 +57,31 @@ async function get_passport_token() {
         return raw_a_token['access_token'];
     }
 }
-const delay = ms => new Promise(res => setTimeout(res, ms));
 
-function setObservationsLocally(observations) {
 
-    for (let index = 0; index < observations.length; index++) {
-        const current_observation = observations[index];
-        let lon_dd = current_observation['lon_dd'];
-        let lat_dd = current_observation['lat_dd'];
-        let icao_address = current_observation['icao_address'];
-        let altitude_mm = current_observation['altitude_mm'];
-        let source_type = current_observation['source_type'];
-        let traffic_source = current_observation['traffic_source'];
-        let obs_metadata = JSON.parse(current_observation['metadata']);
-        try {
-            tile38_client.set('observation', icao_address, [lon_dd, lat_dd, altitude_mm], {
-                'source_type': source_type,
-                'traffic_source': traffic_source,
-                'metadata': JSON.stringify(obs_metadata)
-            }, {
-                expire: 300
-            });
+function setGeoFenceLocally(geo_fence_detail) {
 
-        } catch (err) {
-            console.log("Error " + err);
-        }
-        let metadata_key = icao_address + '-metadata';
-        // TODO: Set metatadata
-        async function set_metadata(obs_metadata) {
-            await redis_client.set(metadata_key, JSON.stringify(obs_metadata));
-            await redis_client.expire(metadata_key, 300);
-        }
-        set_metadata(obs_metadata);
+    const geo_fence_list = geo_fence_detail;
+
+    for (let index = 0; index < geo_fence_list.length; index++) {
+        const geo_fence = geo_fence_list[index];
+        // console.log(geo_fence_properties, typeof(geo_fence_properties));
+
+        let upper_limit = geo_fence['upper_limit'];
+        let lower_limit = geo_fence['lower_limit'];
+        // Create a new geo fence
+        console.info("Setting Geofence..");
+        tile38_client.set('geo_fence', uuidv4(), geo_fence.raw_geo_fence, {
+            'upper_limit': upper_limit,
+            'lower_limit': lower_limit
+        });
+
+
     }
+
 }
 
-const pollBlenderProcess = async (job) => {
+const getGeoFenceConsumerProcess = async (job) => {
 
     const passport_token = await get_passport_token();
     let cred = "Bearer " + passport_token;
@@ -110,39 +101,25 @@ const pollBlenderProcess = async (job) => {
         }
     });
 
-    let flights_url = base_url + '/flight_stream/get_air_traffic?view=' + viewport;
-    console.debug(flights_url);
+    let geo_fence_url = base_url + '/geo_fence_ops/geo_fence?view=' + viewport;
     
-    let fullproc = 15;
-    for (var h = 0; h < fullproc; h++) { // we will send 40 requests
+    axios_instance.get(geo_fence_url).then(function (blender_response) {
+        // response.send(blender_response.data);
+        const geo_fences = blender_response.data;
 
-        axios_instance.get(flights_url).then(function (blender_response) {
-            // response.send(blender_response.data);
-            const observations = blender_response.data['observations'];
-            
-            const obs_len = observations.length;
-            console.log("Processing " + obs_len+ " observations");
-            if (obs_len > 0) {
-                setObservationsLocally(observations);
-            }
+        setGeoFenceLocally(geo_fences);
 
 
-        }).catch(function (blender_error) {
-            console.log("Error in retrieveing data from Blender")
-            console.log(blender_error);
-        });
+    }).catch(function (blender_error) {
+        console.log("Error in retrieveing data from Blender")
+        console.log(blender_error);
+    });
 
-        await delay(3000).then(() => console.log('Waiting 3 second ..'));
-        // counter += 1;
-        // job.progress({
-        //     'percent': parseInt((100 * counter) / fullproc),
-        //     'job_id': job_id
-        // });
-    }
+
 
     console.log('Computation Complete..');
 };
 
 module.exports = {
-    pollBlenderProcess,
+    getGeoFenceConsumerProcess,
 };

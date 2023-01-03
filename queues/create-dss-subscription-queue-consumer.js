@@ -69,8 +69,8 @@ const createBlenderDSSSubscriptionProcess = async (job) => {
             'Authorization': cred
         }
     });
-    const v = [view[1], view[0], view[3], view[2]]; // Flip co-ordinates for Turf
-    const viewport = v.join(',');
+    // const v = [view[1], view[0], view[3], view[2]]; // Flip co-ordinates for Turf
+    const viewport = view.join(',');
   
     let dss_subscription_create_url = base_url + '/rid/create_dss_subscription?view=' + viewport;
     // Start a feed 

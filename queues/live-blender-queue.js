@@ -3,6 +3,8 @@ const { pollBlenderProcess } = require("./poll-blender-queue-consumer");
 const { createBlenderADSBFeedProcess } = require("./create-blender-adsb-queue-consumer");
 const { createBlenderDSSSubscriptionProcess } = require("./create-dss-subscription-queue-consumer");
 
+const { getGeoFenceConsumerProcess } = require("./get-geofence-queue-consumer");
+
 // Our job queues
 const pollBlenderQueue = new Queue("pollblender", {
   redis: process.env.REDIS_URL,
@@ -14,6 +16,18 @@ const adsbBlenderQueue = new Queue("adsbfeed", {
 const dssSubscriptionQueue = new Queue("dsssubscriptiongenerator", {
   redis: process.env.REDIS_URL,
 });
+
+const getGeoFenceQueue = new Queue("getgeofencequeue", {
+  redis: process.env.REDIS_URL,
+});
+getGeoFenceQueue.process(getGeoFenceConsumerProcess);
+
+const createNewGeofenceProcess = (geofenceRequestDetails) => {
+  getGeoFenceQueue.add(geofenceRequestDetails, {
+    attempts: 1,
+  });
+};
+
 
 dssSubscriptionQueue.process(createBlenderDSSSubscriptionProcess);
 
@@ -49,5 +63,8 @@ module.exports = {
 
   dssSubscriptionQueue,
   createNewBlenderDSSSubscriptionProcess,
+
+  getGeoFenceQueue,
+  createNewGeofenceProcess
 
 };

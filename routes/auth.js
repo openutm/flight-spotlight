@@ -21,7 +21,7 @@ const asyncMiddleware = require('../util/asyncMiddleware');
 
 let geojsonhint = require("@mapbox/geojsonhint");
 
-const { createNewPollBlenderProcess, createNewADSBFeedProcess, createNewBlenderDSSSubscriptionProcess } = require("../queues/live-blender-queue");
+const { createNewPollBlenderProcess, createNewADSBFeedProcess, createNewBlenderDSSSubscriptionProcess, createNewGeofenceProcess } = require("../queues/live-blender-queue");
 
 
 const {
@@ -371,11 +371,18 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     //   "job_id": uuidv4(),
     //   "job_type": 'start_opensky_feed'
     // });
-    createNewBlenderDSSSubscriptionProcess({
+    // createNewBlenderDSSSubscriptionProcess({
+    //   "viewport": aoi_bbox,
+    //   "job_id": uuidv4(),
+    //   "job_type": 'create_dss_subscription'
+    // });
+    
+    createNewGeofenceProcess({
       "viewport": aoi_bbox,
       "job_id": uuidv4(),
-      "job_type": 'create_dss_subscription'
+      "job_type": 'get_geo_fence'
     });
+    
     // const area = turf.area(aoi_hexagon);
 
     let geo_fence_query = tile38_client.intersectsQuery('geo_fence').object(aoi_hexagon);
