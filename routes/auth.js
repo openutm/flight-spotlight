@@ -14,12 +14,12 @@ const jwtAuthz = require('express-jwt-authz');
 // const request = require('request');
 const turf = require("@turf/turf");
 const h3 = require("h3-js");
-const axios = require('axios');
 require("dotenv").config();
 const qs = require('qs');
 const asyncMiddleware = require('../util/asyncMiddleware');
-
+const axios = require('axios');
 let geojsonhint = require("@mapbox/geojsonhint");
+let passport_helper = require('./passport_helper');
 
 const { createNewPollBlenderProcess, createNewADSBFeedProcess, createNewBlenderDSSSubscriptionProcess, createNewGeofenceProcess } = require("../queues/live-blender-queue");
 
@@ -45,54 +45,6 @@ const checkJwt = jwt({
   issuer: process.env.PASSPORT_URL + '/',
   algorithms: ['RS256']
 });
-
-
-async function get_passport_token() {
-  redis_key = 'blender_passport_token';
-  const stored_token = await redis_client.get(redis_key);
-
-  if (stored_token == null) {
-    let post_data = {
-      "client_id": process.env.PASSPORT_BLENDER_CLIENT_ID,
-      "client_secret": process.env.PASSPORT_BLENDER_CLIENT_SECRET,
-      "grant_type": "client_credentials",
-      "scope": process.env.PASSPORT_BLENDER_SCOPE,
-      "audience": process.env.PASSPORT_BLENDER_AUDIENCE
-    };
-    let passport_response = async () => {
-
-      let res = await axios.request({
-        url: process.env.PASSPORT_TOKEN_URL || '/oauth/token/',
-        method: "post",
-        header: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        baseURL: process.env.PASSPORT_URL,
-        data: qs.stringify(post_data)
-      });
-      if (res.status == 200) {
-        let a_token = res.data;
-        let access_token = JSON.stringify(a_token);
-        await redis_client.set(redis_key, access_token);
-        await redis_client.expire(redis_key, 3500);
-
-        return a_token['access_token'];
-      } else {
-
-        return {
-          "error": "Error in Passport Query, response not 200"
-        };
-      }
-
-    }
-    return passport_response();
-
-  } else {
-    let raw_a_token = JSON.parse(stored_token);
-    return raw_a_token['access_token'];
-  }
-}
-
 
 
 
@@ -161,7 +113,7 @@ router.get("/noticeboard/map", secured(), asyncMiddleware(async (req, response, 
 
   } else {
 
-    const passport_token = await get_passport_token();
+    const passport_token = await passport_helper.getPassportToken();
     let cred = "Bearer " + passport_token;
     let declaration_url = base_url + '/flight_declaration_ops/flight_declaration?start_date=' + s_date + '&end_date=' + e_date;
     if (page) {
@@ -265,7 +217,7 @@ router.get("/noticeboard/globe", secured(), asyncMiddleware(async (req, response
 
   } else {
 
-    const passport_token = await get_passport_token();
+    const passport_token = await passport_helper.getPassportToken();
     let cred = "Bearer " + passport_token;
     let declaration_url = base_url + '/flight_declaration_ops/flight_declaration?start_date=' + s_date + '&end_date=' + e_date;
     if (page) {
@@ -633,7 +585,7 @@ router.post("/set_flight_approval/:uuid", secured(), asyncMiddleware(async (req,
   redis_key = 'blender_passport_token';
   let approve_reject = req.body['approve_reject'];
   let approved_by = req.body['approved_by'];
-  const passport_token = await get_passport_token();
+  const passport_token = await passport_helper.getPassportToken();
 
   let a_r = {
     'is_approved': approve_reject,
@@ -671,7 +623,7 @@ router.post("/update_flight_state/:uuid", secured(), asyncMiddleware(async (req,
   redis_key = 'blender_passport_token';
   let new_state = req.body['state'];
   let submitted_by = req.body['submitted_by'];
-  const passport_token = await get_passport_token();
+  const passport_token = await passport_helper.getPassportToken();
 
   let a_r = {
     'state': new_state,
@@ -756,7 +708,7 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
 
   } else {
 
-    const passport_token = await get_passport_token();
+    const passport_token = await passport_helper.getPassportToken();
     let cred = "Bearer " + passport_token;
     let declaration_url = base_url + '/flight_declaration_ops/flight_declaration?start_date=' + s_date + '&end_date=' + e_date;
     if (page) {
