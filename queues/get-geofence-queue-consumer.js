@@ -4,7 +4,6 @@ const redis_client = require('../routes/redis-client');
 const tile38_host = process.env.TILE38_SERVER || '0.0.0.0';
 const tile38_port = process.env.TILE38_PORT || 9851;
 
-const { v4: uuidv4 } = require('uuid');
 
 var Tile38 = require('tile38');
 const axios = require('axios');
@@ -20,16 +19,21 @@ function setGeoFenceLocally(geo_fence_detail) {
 
     for (let index = 0; index < geo_fence_list.length; index++) {
         const geo_fence = geo_fence_list[index];
+        const geo_fence_id = geo_fence['id']
         // console.log(geo_fence_properties, typeof(geo_fence_properties));
 
         let upper_limit = geo_fence['upper_limit'];
         let lower_limit = geo_fence['lower_limit'];
         // Create a new geo fence
-        console.info("Setting Geofence..");
-        tile38_client.set('geo_fence', uuidv4(), geo_fence.raw_geo_fence, {
+        console.info("Setting Geozone..");
+        tile38_client.set('geo_fence', geo_fence_id, geo_fence.raw_geo_fence, {
             'upper_limit': upper_limit,
             'lower_limit': lower_limit
+        }, {
+            expire: 60
         });
+        
+
     }
 }
 
@@ -67,9 +71,7 @@ const getGeoFenceConsumerProcess = async (job) => {
         console.log(blender_error);
     });
 
-
-
-    console.log('Computation Complete..');
+    console.log('Geozone query Complete..');
 };
 
 module.exports = {

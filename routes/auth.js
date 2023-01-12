@@ -313,21 +313,21 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     const aoi_bbox = turf.bbox(aoi_hexagon);
     // TODO: Get geofences that intersect this BBOX
     // TODO: Start a job for 30 seconds to poll data from Blender    
-    // createNewPollBlenderProcess({
-    //   "viewport": aoi_bbox,
-    //   "job_id": uuidv4(),
-    //   "job_type": 'poll_blender'
-    // });
-    // createNewADSBFeedProcess({
-    //   "viewport": aoi_bbox,
-    //   "job_id": uuidv4(),
-    //   "job_type": 'start_opensky_feed'
-    // });
-    // createNewBlenderDSSSubscriptionProcess({
-    //   "viewport": aoi_bbox,
-    //   "job_id": uuidv4(),
-    //   "job_type": 'create_dss_subscription'
-    // });
+    createNewPollBlenderProcess({
+      "viewport": aoi_bbox,
+      "job_id": uuidv4(),
+      "job_type": 'poll_blender'
+    });
+    createNewADSBFeedProcess({
+      "viewport": aoi_bbox,
+      "job_id": uuidv4(),
+      "job_type": 'start_opensky_feed'
+    });
+    createNewBlenderDSSSubscriptionProcess({
+      "viewport": aoi_bbox,
+      "job_id": uuidv4(),
+      "job_type": 'create_dss_subscription'
+    });
     
     createNewGeofenceProcess({
       "viewport": aoi_bbox,
@@ -336,9 +336,10 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     });
     
     // const area = turf.area(aoi_hexagon);
-
+    // Query the Geozone database and see if the flight intersects the geozone
     let geo_fence_query = tile38_client.intersectsQuery('geo_fence').object(aoi_hexagon);
     geo_fence_query.execute().then(results => {
+      // Send Geozones to UI
       io.sockets.in(email).emit("message", {
         'type': 'message',
         "alert_type": "aoi_geo_fence",
@@ -364,11 +365,17 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
           }
         });
         geo_fence_stream.onClose(() => {
-          console.log("AOI geofence was closed");
+          console.log("Close Geozone geofence with id:" + geo_fence_element['id']);
         });
+            
+        setTimeout(() => {
+          geo_fence_stream.close();
+        }, 30000);
+
+    
       }
     }).catch(err => {
-      console.error("something went wrong! " + err);
+      console.log("something went wrong! " + err);
     });
 
 
