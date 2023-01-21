@@ -23,13 +23,13 @@ function setObservationsLocally(observations) {
         let altitude_mm = current_observation['altitude_mm'];
         let source_type = current_observation['source_type'];
         let traffic_source = current_observation['traffic_source'];
-        let obs_metadata = JSON.parse(current_observation['metadata']);
+        let obs_metadata = current_observation['metadata'];
+
+        obs_metadata['source_type'] = source_type;
+        obs_metadata['traffic_source'] = traffic_source;
+
         try {
-            tile38_client.set('observation', icao_address, [lon_dd, lat_dd, altitude_mm], {
-                'source_type': source_type,
-                'traffic_source': traffic_source,
-                'metadata': JSON.stringify(obs_metadata)
-            }, {
+            tile38_client.set('observation', icao_address, [lon_dd, lat_dd, altitude_mm], obs_metadata, {
                 expire: 300
             });
 
@@ -67,16 +67,16 @@ const pollBlenderProcess = async (job) => {
 
     let flights_url = base_url + '/flight_stream/get_air_traffic?view=' + viewport;
     console.debug(flights_url);
-    
+
     let fullproc = 15;
     for (var h = 0; h < fullproc; h++) { // we will send 40 requests
 
         axios_instance.get(flights_url).then(function (blender_response) {
             // response.send(blender_response.data);
             const observations = blender_response.data['observations'];
-            
+
             const obs_len = observations.length;
-            console.log("Processing " + obs_len+ " observations");
+            console.log("Processing " + obs_len + " observations");
             if (obs_len > 0) {
                 setObservationsLocally(observations);
             }

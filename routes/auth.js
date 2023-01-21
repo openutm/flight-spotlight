@@ -311,6 +311,8 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     const aoi_hexagon = turf.polygon([geo_boundary]);
     const email = userProfile.email;
     const aoi_bbox = turf.bbox(aoi_hexagon);
+
+    const aoi_hex_bounds = turf.bbox(aoi_hexagon);
     // TODO: Get geofences that intersect this BBOX
     // TODO: Start a job for 30 seconds to poll data from Blender    
     createNewPollBlenderProcess({
@@ -337,7 +339,7 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     
     // const area = turf.area(aoi_hexagon);
     // Query the Geozone database and see if the flight intersects the geozone
-    let geo_fence_query = tile38_client.intersectsQuery('geo_fence').object(aoi_hexagon);
+    let geo_fence_query = tile38_client.intersectsQuery('geo_fence').bounds(aoi_hex_bounds[0],aoi_hex_bounds[1],aoi_hex_bounds[2],aoi_hex_bounds[3]);
     geo_fence_query.execute().then(results => {
       // Send Geozones to UI
       io.sockets.in(email).emit("message", {
@@ -377,10 +379,9 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     }).catch(err => {
       console.log("something went wrong! " + err);
     });
-
-
-    let aoi_query = tile38_client.intersectsQuery('observation').object(aoi_hexagon).detect('inside');
+    let aoi_query = tile38_client.intersectsQuery('observation').bounds(aoi_hex_bounds[0],aoi_hex_bounds[1],aoi_hex_bounds[2],aoi_hex_bounds[3]).detect('inside');
     let flight_aoi_fence = aoi_query.executeFence((err, results) => {
+      
       if (err) {
         console.error("something went wrong! " + err);
       } else {
@@ -393,7 +394,7 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     });
 
     flight_aoi_fence.onClose(() => {
-      console.debug("AOI geofence was closed");
+      console.debug("AOI streaming closed");
       io.sockets.in(email).emit("message", {
         'type': 'message',
         "alert_type": "aoi_closed",
