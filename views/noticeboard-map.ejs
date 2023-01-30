@@ -216,6 +216,8 @@
                 const default_layer_style = default_style();
                 layer.setStyle(default_layer_style);
             });
+            
+            map.fitBounds(geojson_feature_layer.getBounds());
         }
         function selected_style() {
             return {
@@ -232,6 +234,7 @@
                 if (layer_id_of_interest === layer._leaflet_id){
                     const selected_layer_style = selected_style();
                     layer.setStyle(selected_layer_style);
+                    map.fitBounds(layer.getBounds());
                 }
                 else{ 
                     const default_layer_style = default_style(0.2);
