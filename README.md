@@ -13,6 +13,11 @@ This software is compatible with all ASTM and EuroCAE upcoming standards for UTM
 - Display ADS-B and other traffic using streamlined [JSON format](https://github.com/openskies-sh/airtraffic-data-protocol-development) using a Flight Blender backend
 - Upload JSON based [flight declarations](https://github.com/openskies-sh/flight-declaration-protocol-development) and/or mission plans from ground control stations. 
 
+## Join the OpenUTM community 
+
+Join our Discord community via [this link](https://discord.gg/dnRxpZdd9a) 💫
+
+
 ## Screenshots
 
 Initial screen
