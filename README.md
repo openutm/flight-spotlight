@@ -22,15 +22,15 @@ Join our Discord community via [this link](https://discord.gg/dnRxpZdd9a) 💫
 
 Initial screen
 
-<img src="https://i.imgur.com/6kfx13d.png" width="600">
+<img src="images/readme-images/6kfx13d.png" width="600">
 
 Declared Flights
 
-<img src="https://i.imgur.com/zbl6hKx.png" width="600">
+<img src="images/readme-images/zbl6hKx.png" width="600">
 
 All data is in 3D + time
 
-<img src="https://i.imgur.com/gysUdTd.jpgs" width="600">
+<img src="images/readme-images/gysUdTd.jpeg" width="600">
 
 ## Self host / Installation
 
