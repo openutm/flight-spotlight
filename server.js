@@ -69,7 +69,7 @@ const code_challenge = generators.codeChallenge(code_verifier);
         const usePKCE = 'S256'; // optional, defaults to false, when true the code_challenge_method will be
         // resolved from the issuer configuration, instead of true you may provide
         // any of the supported values directly, i.e. "S256" (recommended) or "plain"
-      
+            
 
         app.use(passport.initialize());
         app.use(passport.session());
