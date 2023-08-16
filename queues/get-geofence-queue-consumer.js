@@ -4,7 +4,6 @@ const redis_client = require('../routes/redis-client');
 const tile38_host = process.env.TILE38_SERVER || '0.0.0.0';
 const tile38_port = process.env.TILE38_PORT || 9851;
 
-
 var Tile38 = require('tile38');
 const axios = require('axios');
 require("dotenv").config();
@@ -32,7 +31,6 @@ function setGeoFenceLocally(geo_fence_detail) {
         }, {
             expire: 60
         });
-        
 
     }
 }
@@ -58,12 +56,13 @@ const getGeoFenceConsumerProcess = async (job) => {
     });
 
     let geo_fence_url = base_url + '/geo_fence_ops/geo_fence?view=' + viewport;
-    
+
     axios_instance.get(geo_fence_url).then(function (blender_response) {
         // response.send(blender_response.data);
         const geo_fences = blender_response.data;
-
-        setGeoFenceLocally(geo_fences);
+        if (geo_fences['results']) {
+            setGeoFenceLocally(geo_fences['results']);
+        }
 
 
     }).catch(function (blender_error) {
