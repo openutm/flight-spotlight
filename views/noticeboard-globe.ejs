@@ -195,13 +195,15 @@
         const s_parse = Date.parse(start_date);
         const timeline_start = new Date(s_parse);
         const user_name = '<%= user.email %>';
-        var bing = new Cesium.BingMapsImageryProvider({
-            url: 'https://dev.virtualearth.net',
-            key: '<%= bing_key %>',
+        const bing = new Cesium.ImageryLayer.fromProviderAsync(
+            Cesium.BingMapsImageryProvider.fromUrl(
+        "https://dev.virtualearth.net", {
+            key:'<%= bing_key %>',
             mapStyle: Cesium.BingMapsStyle.AERIAL
-        });
+        })
+        );
 
-        var mapbox = new Cesium.MapboxImageryProvider({
+        const mapbox = new Cesium.MapboxImageryProvider({
             mapId: '<&= mapbox_id %>',
             accessToken: '<%= mapbox_key %>'
         });
@@ -217,7 +219,7 @@
             "selectionIndicator": false,
             "fullscreenButton": false,
             "navigationHelpButton": false,
-            "imageryProvider": bing
+            "imageryLayers": bing
         });
         //Set bounds of our simulation time
         // var start = Cesium.JulianDate.fromDate(new Date(2015, 2, 25, 16));
