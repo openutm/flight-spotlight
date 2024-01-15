@@ -11,12 +11,11 @@ This software is compatible with all ASTM and EuroCAE upcoming standards for UTM
 - Geofencing display compatible with [EuroCAE ED-269](https://eshop.eurocae.net/eurocae-documents-and-reports/ed-269/)
 - Display Network Remote ID via connections to [DSS](https://github.com/interuss/dss) using [Flight Blender](https://flightblender.com)
 - Display ADS-B and other traffic using streamlined [JSON format](https://github.com/openskies-sh/airtraffic-data-protocol-development) using a Flight Blender backend
-- Upload JSON based [flight declarations](https://github.com/openskies-sh/flight-declaration-protocol-development) and/or mission plans from ground control stations. 
+- Upload JSON based [flight declarations](https://github.com/openskies-sh/flight-declaration-protocol-development) and/or mission plans from ground control stations.
 
-## Join the OpenUTM community 
+## Join the OpenUTM community
 
 Join our Discord community via [this link](https://discord.gg/dnRxpZdd9a) 💫
-
 
 ## Screenshots
 
@@ -53,7 +52,7 @@ Once you have the Docker container running, you can follow the instructions belo
 2. Copy paste the sample GeoJSON AOI from the importers [folder](https://raw.githubusercontent.com/openskies-sh/flight-blender/master/importers/aoi_geo_fence/aoi.geojson) in the Flight Blender repository
 3. Click the __Stream flights__ button. This subscribe you to the flights in AOI.
 
-## Openskies stack 
+## Openskies stack
 
 Flight tracking data can be submitted to Flight Spotlight by an Display provider like [Flight Blender](https://github.com/openskies-sh/flight-blender) via the accompanying software like [Flight Launchpad](https://github.com/openskies-sh/flight-launchpad), for more information see the diagram below
 

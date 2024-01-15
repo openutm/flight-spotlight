@@ -1,29 +1,33 @@
-version: '3'
+version: "3"
 services:
-    tile38:
-        image: tile38/tile38
-        ports:
-            - "9851:9851"
-        command: [ "tile38-server"]
-        container_name : "tile38"
-    redis:
-        image: redis:latest
-        ports:
-            - "6379:6379"
-        volumes:
-            - ./config/redis.conf:/redis.conf
-        command: [ "redis-server", "/redis.conf" ]
-        container_name: "redis"
-        
-    spotlight:
-      command : npm start
-      env_file:
-        - .env
-      image: openskiessh/flight-spotlight
-      container_name: flight-spotlight
-      depends_on:
-        - redis
-        - tile38
-      ports:
-        - "5000:5000"
-      
+  tile38:
+    platform: linux/amd64
+    image: tile38/tile38
+    ports:
+      - "9851:9851"
+    command: ["tile38-server"]
+    container_name: "tile38"
+
+  redis:
+    platform: linux/amd64
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./config/redis.conf:/redis.conf
+    command: ["redis-server", "/redis.conf"]
+    container_name: "redis"
+
+  spotlight:
+    platform: linux/amd64
+    command: npm start
+    env_file:
+      - .env
+    build: .
+    image: openskiessh/flight-spotlight
+    container_name: flight-spotlight
+    depends_on:
+      - redis
+      - tile38
+    ports:
+      - "5000:5000"
