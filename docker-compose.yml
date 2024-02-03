@@ -8,7 +8,7 @@ services:
     command: ["tile38-server"]
     container_name: "tile38"
 
-  redis:
+  redis-spotlight:
     platform: linux/amd64
     image: redis:latest
     ports:
@@ -16,7 +16,7 @@ services:
     volumes:
       - ./config/redis.conf:/redis.conf
     command: ["redis-server", "/redis.conf"]
-    container_name: "redis"
+    container_name: "redis-spotlight"
 
   spotlight:
     platform: linux/amd64
@@ -27,7 +27,7 @@ services:
     image: openskiessh/flight-spotlight
     container_name: flight-spotlight
     depends_on:
-      - redis
+      - redis-spotlight
       - tile38
     ports:
       - "5000:5000"
