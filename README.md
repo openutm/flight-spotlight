@@ -31,26 +31,9 @@ All data is in 3D + time
 
 <img src="images/readme-images/gysUdTd.jpeg" width="600">
 
-## Self host / Installation
+## Running locally / Deployment
+Refer to the (deployment)[https://github.com/openutm/deployment] repository to see how you can deploy this server along with instructions and sample environment file. 
 
-Docker and Docker Compose files are available for running this on your own infrastructure. To install a production server please follow our [Installation Guide](https://github.com/openskies-sh/flight-spotlight/blob/master/documents/installation-instructions.md).
-
-This project uses Node JS and Express JS, a Tile 38 and Redis server, and can connect to a DSS instance. If you are using a DSS instance, you will need a JWT token to connect to the airspace. For that, you will need a approved UTM / U-Space OAUTH server (e.g. [Flight Passport](https://www.github.com/openskies-sh/flight_passport)).
-
-1. In the console execute the following command `git clone https://github.com/openskies-sh/flight-spotlight`
-2. Enter the directory `cd flight-spotlight`
-3. Copy the sample .env file: `cp .env.sample .env`
-4. Open the .env file and fill out the credentials `nano .env`
-5. You will need help to fill out all the links, since this is associated with Authentication, in short, it will ask you to point to a Flight Spotlight or any other OAUTH2 provider for credentials. (See below for non-Docker Installation)
-6. Finally run the installation by typing `docker-compose up`
-
-## Test run
-
-Once you have the Docker container running, you can follow the instructions below to "subscribe" to flights in a AOI:
-
-1. Navigate to `http://localhost:5000/spotlight` in your browser to launch the application. You should see a globe and a control to input a Area of Interest (AOI).
-2. Copy paste the sample GeoJSON AOI from the importers [folder](https://raw.githubusercontent.com/openskies-sh/flight-blender/master/importers/aoi_geo_fence/aoi.geojson) in the Flight Blender repository
-3. Click the __Stream flights__ button. This subscribe you to the flights in AOI.
 
 ## Openskies stack
 
