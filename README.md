@@ -32,7 +32,7 @@ All data is in 3D + time
 <img src="images/readme-images/gysUdTd.jpeg" width="600">
 
 ## Running locally / Deployment
-Refer to the (deployment)[https://github.com/openutm/deployment] repository to see how you can deploy this server along with instructions and sample environment file. 
+Refer to the [deployment](https://github.com/openutm/deployment) repository to see how you can deploy this server along with instructions and sample environment file. 
 
 
 ## Openskies stack
