@@ -89,56 +89,17 @@ const code_challenge = generators.codeChallenge(code_verifier);
             done(null, user);
         });
 
-        // start authentication request
         app.get('/auth', function (req, res, next) {
-            passport.authenticate('oidc', function (err, user, info) {
-                if (err) {
-                    return next(err); // will generate a 500 error
-                }
-                // Generate a JSON response reflecting authentication status
-                if (!user) {
-                    return res.send({ success: false, message: 'authentication failed' });
-                }
-                // ***********************************************************************
-                // "Note that when using a custom callback, it becomes the application's
-                // responsibility to establish a session (by calling req.login()) and send
-                // a response."
-                // Source: http://passportjs.org/docs
-                // ***********************************************************************
-                req.login(user, loginErr => {
-                    if (loginErr) {
-                        return next(loginErr);
-                    }
-                    return res.send({ success: true, message: 'authentication succeeded' });
-                });
+            passport.authenticate('oidc')(req, res, next);
+          });
+        
+          // authentication callback
+          app.get('/auth/callback', (req, res, next) => {
+            passport.authenticate('oidc', {
+              successRedirect: '/spotlight',
+              failureRedirect: '/'
             })(req, res, next);
-        });
-
-        // authentication callback
-        app.get('/auth/callback', (req, res, next) => {
-            passport.authenticate('oidc', function (err, user, info) {
-
-                if (err) {
-                    return next(err); // will generate a 500 error
-                }
-                // Generate a JSON response reflecting authentication status
-                if (!user) {
-                    return res.send({ success: false, message: 'authentication failed', 'info': info });
-                }
-                // ***********************************************************************
-                // "Note that when using a custom callback, it becomes the application's
-                // responsibility to establish a session (by calling req.login()) and send
-                // a response."
-                // Source: http://passportjs.org/docs
-                // ***********************************************************************
-                req.login(user, loginErr => {
-                    if (loginErr) {
-                        return next(loginErr);
-                    }
-                    return res.redirect('/spotlight');
-                });
-            })(req, res, next);
-        });
+          });
 
         app.use(passport.initialize());
         app.use(passport.session());

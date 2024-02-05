@@ -96,12 +96,14 @@
                 }
 
                 const email = '<%= userProfile.email %>';
-
-                var bing = new Cesium.BingMapsImageryProvider({
-                    url: 'https://dev.virtualearth.net',
-                    key: '<%= bing_key %>',
-                    mapStyle: Cesium.BingMapsStyle.AERIAL_WITH_LABELS_ON_DEMAND
-                });
+                
+                var bing = new Cesium.ImageryLayer.fromProviderAsync(
+                    Cesium.BingMapsImageryProvider.fromUrl(
+                "https://dev.virtualearth.net", {
+                    key:'<%= bing_key %>',
+                    mapStyle: Cesium.BingMapsStyle.AERIAL
+                })
+                );
 
                 var mapbox = new Cesium.MapboxImageryProvider({
                     mapId: '<&= mapbox_id %>',
@@ -118,7 +120,7 @@
                     "fullscreenButton": false,
                     "timeline": false,
                     "navigationHelpButton": false,
-                    "imageryProvider": bing
+                    "imageryLayers": bing
                 });
 
                 var scene = viewer.scene;
