@@ -15,7 +15,7 @@ services:
       - "6379:6379"
     volumes:
       - ./config/redis.conf:/redis.conf
-    command: ["redis-server", "/redis.conf", "--requirepass", "$REDIS_PASSWORD"]
+    command: ["redis-server", "/redis.conf"]
     container_name: "redis-spotlight"
     env_file:
       - .env
