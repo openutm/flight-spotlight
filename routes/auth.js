@@ -670,7 +670,6 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
   } = req.user;
   let req_query = req.query;
   const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
-
   let s_date = req_query.start_date;
   let page = 0;
   function isValidDate(d) {
@@ -716,13 +715,12 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
 
   } else {
 
-    const passport_token = await passport_helper.getPassportToken();
+    const passport_token = await passport_helper.getPassportToken();    
     let cred = "Bearer " + passport_token;
     let declaration_url = base_url + '/flight_declaration_ops/flight_declaration?start_date=' + s_date + '&end_date=' + e_date;
     if (page) {
       declaration_url += '&page=' + page;
     }
-
     axios.get(declaration_url, {
       headers: {
         'Content-Type': 'application/json',
@@ -745,12 +743,10 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
           });
 
         } else {
-          // console.log(blender_response);
           if (err) return response.sendStatus(500);
         }
-      }).catch(function (error) {
-
-        // console.log(error.data);
+      }).catch(function (error) {        
+        console.debug(error);
         return response.sendStatus(500);
       });
 
