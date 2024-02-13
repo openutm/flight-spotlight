@@ -89,7 +89,7 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
     const end_minutes = end_time % 60;
 
     let e_date = tmp_e_date.set({ 'hour': end_hours, 'minutes': end_minutes });
-    
+
     let geo_json_with_altitude = {
       'type': 'FeatureCollection',
       'features': []
@@ -135,16 +135,26 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
     })
       .then(function (blender_response) {
         // console.log(blender_response.data);
-        res.render('launchpad-operation-submission-status', {
-          title: "Thank you for your submission!",
-          errors: [],
-          data: blender_response.data
-        }, function (ren_err, html) {
-          res.send(html);
-        });
+
+        if (blender_response.status == 200) {
+          res.render('launchpad-operation-submission-status', {
+            title: "Thank you for your submission!",
+            errors: [],
+            data: blender_response.data
+          }, function (ren_err, html) {
+            res.send(html);
+          });
+        }else {
+
+          res.render('error-in-submission', {
+            title: "Error in submission",
+            errors: blender_response.data,
+            data: {}
+          })
+        }
       })
       .catch(function (error) {
-        const e = [{ 'message': error.message, "data": error.data }]
+        const e = [{ 'message': error.message, "data": error.response.data.message }]
         res.render('launchpad-operation-submission-status', {
           title: "Thank you for your submission!",
           errors: e,

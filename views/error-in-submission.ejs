@@ -49,15 +49,6 @@
         <% } %>
       </div>
     </div>  
-    <% } else {%>
-    <div class="row">
-      <div class="col-12">        
-        <% if (data) { %>  
-        <h4>Success <small class="text-muted">Flight declaration submitted!</small></h4>            
-        <div class="alert alert-success" role="alert">Your declaration is submitted, you can check the status of approval at the status page: <a href="/launchpad/operation-status/<%= data.id %>"><%= data.id %></a></div>
-        <% }  %>
-      </div>
-    </div>
 <% } %>
 
       </div>
