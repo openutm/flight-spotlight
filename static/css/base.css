@@ -50,7 +50,11 @@ ol {
     padding: 0;
 }
 
-
+.active{
+    text-decoration: underline;
+    font-weight: 600;
+    
+    }
 a {
     color: #00AED8;
 }
