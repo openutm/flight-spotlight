@@ -37,7 +37,7 @@ Refer to the [deployment](https://github.com/openutm/deployment) repository to s
 
 ## Openskies stack
 
-Flight tracking data can be submitted to Flight Spotlight by an Display provider like [Flight Blender](https://github.com/openskies-sh/flight-blender) via the accompanying software like [Flight Launchpad](https://github.com/openskies-sh/flight-launchpad), for more information see the diagram below
+Flight tracking data can be visualized in Flight Spotlight via an UTM data processing engine like [Flight Blender](https://github.com/openskies-sh/flight-blender), for more information see the diagram below
 
 ![OpenUTMStack](images/openutm-stack.png)
 
