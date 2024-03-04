@@ -35,7 +35,7 @@ All data is in 3D + time
 Refer to the [deployment](https://github.com/openutm/deployment) repository to see how you can deploy this server along with instructions and sample environment file. 
 
 
-## Openskies stack
+## OpenUTM stack
 
 Flight tracking data can be visualized in Flight Spotlight via an UTM data processing engine like [Flight Blender](https://github.com/openskies-sh/flight-blender), for more information see the diagram below
 
