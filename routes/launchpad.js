@@ -116,6 +116,7 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
     const flight_declaration_json = {
       "start_datetime": s_date.toISO(),
       "end_datetime": e_date.toISO(),
+      "aircraft_id": "83a5a039-8fa0-4780-bfae-ee7ba458af0c",
       "type_of_operation": op_mode,
       "submitted_by": submitted_by,
       "is_approved": is_approved,
@@ -154,9 +155,13 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
         }
       })
       .catch(function (error) {
-        const e = [{ 'message': error.message, "data": error.response.data.message }]
+        let error_message = ""; 
+        if (error.response){
+          error_message = error.response.data.message;
+        }
+        const e = [{ 'message': error.message, "data":error_message }]
         res.render('launchpad-operation-submission-status', {
-          title: "Thank you for your submission!",
+          title: "Error in your submission!",
           errors: e,
           data: {}
         }, function (ren_err, html) {

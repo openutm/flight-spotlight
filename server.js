@@ -9,7 +9,6 @@
     const socket = require("socket.io");
     require("dotenv").config();
     var userInViews = require('./lib/middleware/userInViews');
-    const bodyParser = require("body-parser");
     const authRouter = require("./routes/auth");
     const launchpadRouter = require('./routes/launchpad');
 
@@ -22,65 +21,53 @@
     custom.setHttpOptionsDefaults({
         timeout: 5000,
     });
-    
-const code_verifier = generators.codeVerifier();
-// store the code_verifier in your framework's session mechanism, if it is a cookie based solution
-// it should be httpOnly (not readable by javascript) and encrypted.
 
-const code_challenge = generators.codeChallenge(code_verifier);
+    const code_verifier = generators.codeVerifier();
+    // store the code_verifier in your framework's session mechanism, if it is a cookie based solution
+    // it should be httpOnly (not readable by javascript) and encrypted.
 
+    const code_challenge = generators.codeChallenge(code_verifier);
     var app = express();
-
     app.use(expressSession(session));
-
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }))
-
     app.set('view engine', 'ejs');
-
     app.use(express.static(__dirname + '/views'));
-
     app.use('/assets', express.static('static'));
-
     Issuer.discover(process.env.OIDC_DOMAIN).then(passport_issuer => {
         var client = new passport_issuer.Client({
-          client_id: process.env.CLIENT_ID,
-      
-          token_endpoint_auth_method: 'none'
+            client_id: process.env.CLIENT_ID,
+
+            token_endpoint_auth_method: 'none'
         });
-      
+
         client.authorizationUrl({
-          scope: 'openid profile',
-          resource: process.env.OIDC_DOMAIN + '/o/auth',
-          code_challenge,
-          code_challenge_method: 'S256',
+            scope: 'openid profile',
+            resource: process.env.OIDC_DOMAIN + '/auth',
+            code_challenge,
+            code_challenge_method: 'S256',
         });
-      
-      
         const params = {
-          client_id: process.env.CLIENT_ID,
-          redirect_uri: process.env.CALLBACK_URL,
-          scope: 'openid profile',
+            client_id: process.env.CLIENT_ID,
+            redirect_uri: process.env.CALLBACK_URL,
+            scope: 'openid profile',
         }
-      
         const passReqToCallback = false; // optional, defaults to false, when true req is passed as a first
-        // argument to verify fn
-      
         const usePKCE = 'S256'; // optional, defaults to false, when true the code_challenge_method will be
         // resolved from the issuer configuration, instead of true you may provide
         // any of the supported values directly, i.e. "S256" (recommended) or "plain"
-      
+
 
         app.use(passport.initialize());
         app.use(passport.session());
         passport.use(
             'oidc',
             new Strategy({ client, params, passReqToCallback, usePKCE }, (tokenSet, userinfo, done) => {
-        
-              return done(null, tokenSet.claims());
+
+                return done(null, tokenSet.claims());
             })
-          );
-        
+        );
+
         // handles serialization and deserialization of authenticated user
         passport.serializeUser(function (user, done) {
             done(null, user);
@@ -91,15 +78,25 @@ const code_challenge = generators.codeChallenge(code_verifier);
 
         app.get('/auth', function (req, res, next) {
             passport.authenticate('oidc')(req, res, next);
-          });
-        
-          // authentication callback
-          app.get('/auth/callback', (req, res, next) => {
-            passport.authenticate('oidc', {
-              successRedirect: '/spotlight',
-              failureRedirect: '/'
+        });
+
+        // authentication callback
+        app.get('/auth/callback', (req, res, next) => {
+
+            const options = { successRedirect: '/spotlight', failureRedirect: '/' };
+            passport.authenticate('oidc', options, (err, user, info) => {
+
+                if (err) {
+                    console.log(`ERROR: ${err.error}: ${err.error_description}`);
+                    return next(err);
+                }
+                if (!user) return res.redirect(options.failureRedirect);
+                req.logIn(user, err => {
+                    if (err) return next(err);
+                    return res.redirect(options.successRedirect);
+                });
             })(req, res, next);
-          });
+        });
 
         app.use(passport.initialize());
         app.use(passport.session());

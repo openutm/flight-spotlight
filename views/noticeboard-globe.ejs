@@ -203,11 +203,7 @@
         })
         );
 
-        const mapbox = new Cesium.MapboxImageryProvider({
-            mapId: '<&= mapbox_id %>',
-            accessToken: '<%= mapbox_key %>'
-        });
-
+        
         var viewer = new Cesium.Viewer('cesiumContainer', {
             "geocoder": false,
             "homeButton": false,
@@ -219,12 +215,13 @@
             "selectionIndicator": false,
             "fullscreenButton": false,
             "navigationHelpButton": false,
-            "imageryLayers": bing
+            
         });
         //Set bounds of our simulation time
         // var start = Cesium.JulianDate.fromDate(new Date(2015, 2, 25, 16));
         // var stop = Cesium.JulianDate.addSeconds(start, 360, new Cesium.JulianDate());
 
+        viewer.imageryLayers.add(bing);
         let scene = viewer.scene;
         let camera = viewer.camera;
         var cameralat;

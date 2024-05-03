@@ -104,11 +104,6 @@
                     mapStyle: Cesium.BingMapsStyle.AERIAL
                 })
                 );
-
-                var mapbox = new Cesium.MapboxImageryProvider({
-                    mapId: '<&= mapbox_id %>',
-                    accessToken: '<%= mapbox_key %>'
-                });
                 var viewer = new Cesium.Viewer('cesiumContainer', {
                     "geocoder": false,
                     "homeButton": false,
@@ -119,10 +114,10 @@
                     "selectionIndicator": false,
                     "fullscreenButton": false,
                     "timeline": false,
-                    "navigationHelpButton": false,
-                    "imageryLayers": bing
+                    "navigationHelpButton": false
                 });
-
+                
+                viewer.imageryLayers.add(bing);
                 var scene = viewer.scene;
                 var clock = viewer.clock;
                 var camera = viewer.camera;
