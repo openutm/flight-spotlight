@@ -47,6 +47,7 @@
                                 <th>Operation Type</th>
                                 <th>Approved</th>
                                 <th>Operational Intent State</th>
+                                <th>Live View</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -88,6 +89,9 @@
                                                     </p>
                                                     <%}%>
                                         </td>
+                                        <td>
+                                            <a href="<%= getCentroidLink(cur_declaration.bounds) %>"><i class="bi bi-eye"></i> Open</a> </a>
+                                        </td>
                                     </tr>
                                     <% } } else { %>
                                         <tr>
@@ -97,12 +101,14 @@
                                             <td></td>
                                             <td></td>
                                             <td></td>
+                                            <td></td>
                                         </tr>
                                         <% } } else { %>
                                             <tr>
                                                 <td>
                                                     <p>No flight declarations found, please select a timeframe.</p>
                                                 </td>
+                                                <td></td>
                                                 <td></td>
                                                 <td></td>
                                                 <td></td>
@@ -251,6 +257,7 @@
         render_timeline(timeline_data);
         }
     }
+
     </script>
 </body>
 

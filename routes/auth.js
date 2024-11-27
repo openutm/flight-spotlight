@@ -7,7 +7,7 @@ const tile38_host = process.env.TILE38_SERVER || '0.0.0.0';
 const tile38_port = process.env.TILE38_PORT || 9851;
 var Tile38 = require('tile38');
 var tile38_client = new Tile38({ host: tile38_host, port: tile38_port });
-
+const ejsUtilities = require("../util/ejsUtilities");
 const { expressjwt: jwt } = require("express-jwt");
 const jwksRsa = require('jwks-rsa');
 const jwtAuthz = require('express-jwt-authz');
@@ -312,34 +312,35 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     const email = userProfile.email;
     const aoi_bbox = turf.bbox(aoi_hexagon);
 
-    const aoi_hex_bounds = turf.bbox(aoi_hexagon);
+    const lat_lng_formatted_array  = [aoi_bbox[1], aoi_bbox[0], aoi_bbox[3], aoi_bbox[2]]
+    
     // TODO: Get geofences that intersect this BBOX
     // TODO: Start a job for 30 seconds to poll data from Blender    
     createNewPollBlenderProcess({
-      "viewport": aoi_bbox,
+      "viewport": lat_lng_formatted_array,
       "job_id": uuidv4(),
       "job_type": 'poll_blender'
     });
     createNewADSBFeedProcess({
-      "viewport": aoi_bbox,
+      "viewport": lat_lng_formatted_array,
       "job_id": uuidv4(),
       "job_type": 'start_opensky_feed'
     });
     createNewBlenderDSSSubscriptionProcess({
-      "viewport": aoi_bbox,
+      "viewport": lat_lng_formatted_array,
       "job_id": uuidv4(),
       "job_type": 'create_dss_subscription'
     });
     
     createNewGeofenceProcess({
-      "viewport": aoi_bbox,
+      "viewport": lat_lng_formatted_array,
       "job_id": uuidv4(),
       "job_type": 'get_geo_fence'
     });
     
     // const area = turf.area(aoi_hexagon);
     // Query the Geozone database and see if the flight intersects the geozone
-    let geo_fence_query = tile38_client.intersectsQuery('geo_fence').bounds(aoi_hex_bounds[0],aoi_hex_bounds[1],aoi_hex_bounds[2],aoi_hex_bounds[3]);
+    let geo_fence_query = tile38_client.intersectsQuery('geo_fence').bounds(lat_lng_formatted_array[1],lat_lng_formatted_array[0],lat_lng_formatted_array[3],lat_lng_formatted_array[2]);
     geo_fence_query.execute().then(results => {
       // Send Geozones to UI
       io.sockets.in(email).emit("message", {
@@ -353,7 +354,7 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
       for (let index = 0; index < geo_fence.objects.length; index++) {
         const geo_fence_element = geo_fence.objects[index].object;
         let geo_fence_bbox = turf.bbox(geo_fence_element);
-        let geo_live_fence_query = tile38_client.intersectsQuery('observation').detect('enter', 'exit').bounds(geo_fence_bbox[0], geo_fence_bbox[1], geo_fence_bbox[2], geo_fence_bbox[3]);
+        let geo_live_fence_query = tile38_client.intersectsQuery('observation').detect('enter', 'exit').bounds(geo_fence_bbox[1], geo_fence_bbox[0], geo_fence_bbox[3], geo_fence_bbox[2]);
         let geo_fence_stream = geo_live_fence_query.executeFence((err, geo_fence_results) => {
           if (err) {
             console.error("something went wrong! " + err);
@@ -379,7 +380,7 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     }).catch(err => {
       console.log("something went wrong! " + err);
     });
-    let aoi_query = tile38_client.intersectsQuery('observation').bounds(aoi_hex_bounds[0],aoi_hex_bounds[1],aoi_hex_bounds[2],aoi_hex_bounds[3]).detect('inside');
+    let aoi_query = tile38_client.intersectsQuery('observation').bounds(lat_lng_formatted_array[1],lat_lng_formatted_array[0],lat_lng_formatted_array[3],lat_lng_formatted_array[2]).detect('inside');
     let flight_aoi_fence = aoi_query.executeFence((err, results) => {
       
       if (err) {
@@ -701,6 +702,7 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
   if ((start_date == 0 || end_date == 0)) {
 
     response.render('noticeboard-text', {
+      ...ejsUtilities,
       title: "Noticeboard",
       userProfile: userProfile,
       user: req.user,
@@ -732,6 +734,7 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
         if (blender_response.status == 200) {
 
           response.render('noticeboard-text', {
+            ...ejsUtilities,
             title: "Noticeboard",
             userProfile: userProfile,
             user: req.user,
