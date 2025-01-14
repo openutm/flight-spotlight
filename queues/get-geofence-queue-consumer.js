@@ -16,8 +16,8 @@ function setGeoFenceLocally(geo_fence_detail) {
 
     const geo_fence_list = geo_fence_detail;
 
-    for (let index = 0; index < geo_fence_list.length; index++) {
-        const geo_fence = geo_fence_list[index];
+    for (const geo_fence of geo_fence_list) {
+
         const geo_fence_id = geo_fence['id']
         // console.log(geo_fence_properties, typeof(geo_fence_properties));
 

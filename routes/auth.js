@@ -306,8 +306,8 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
 
     const io = req.app.get('socketio');
     const res = 7;
-    const h = h3.geoToH3(lat, lng, res);
-    const geo_boundary = h3.h3ToGeoBoundary(h, true);
+    const h = h3.latLngToCell(lat, lng, res);
+    const geo_boundary = h3.cellToBoundary(h, true);
     const aoi_hexagon = turf.polygon([geo_boundary]);
     const email = userProfile.email;
     const aoi_bbox = turf.bbox(aoi_hexagon);

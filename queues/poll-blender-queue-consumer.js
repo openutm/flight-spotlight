@@ -15,8 +15,8 @@ const delay = ms => new Promise(res => setTimeout(res, ms));
 
 function setObservationsLocally(observations) {
 
-    for (let index = 0; index < observations.length; index++) {
-        const current_observation = observations[index];
+    for (const current_observation of observations) {
+        
         let lon_dd = current_observation['lon_dd'];
         let lat_dd = current_observation['lat_dd'];
         let icao_address = current_observation['icao_address'];
@@ -66,7 +66,7 @@ const pollBlenderProcess = async (job) => {
     });
 
     let flights_url = base_url + '/flight_stream/get_air_traffic?view=' + viewport;
-    console.debug(flights_url);
+    console.debug("Flights url: " +flights_url);
 
     let fullproc = 15;
     for (var h = 0; h < fullproc; h++) { // we will send 40 requests
@@ -86,13 +86,8 @@ const pollBlenderProcess = async (job) => {
             console.log("Error in retrieveing data from Blender")
             console.log(blender_error);
         });
-
-        await delay(3000).then(() => console.log('Waiting 3 second ..'));
-        // counter += 1;
-        // job.progress({
-        //     'percent': parseInt((100 * counter) / fullproc),
-        //     'job_id': job_id
-        // });
+        await delay(3000).then(() => console.log('Waiting 3 seconds ..'));
+        
     }
 
     console.log('Computation Complete..');
