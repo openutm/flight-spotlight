@@ -1,316 +1,358 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <title>Openskies Flight Spotlight</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="icon" href="/assets/img/favicon.png">
-    <link href='https://fonts.googleapis.com/css?family=Karla' rel='stylesheet' type='text/css'>
-    <link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <link rel="icon" href="/assets/img/favicon.png" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Karla"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Inconsolata"
+      rel="stylesheet"
+      type="text/css"
+    />
 
-    <link type="text/css" rel="stylesheet" href="/assets/css/bootstrap.min.css">
-    <link type="text/css" rel="stylesheet" href="/assets/css/bootstrap-icons.css">
-    <link rel="stylesheet" type="text/css" href="/assets/css/base.css">
-    <link rel="stylesheet" href="/assets/js/humane/flatty.css">
-    <script type="text/javascript" src="/assets/js/jquery/jquery.min.js"></script>
-    <script type="text/javascript" src="/assets/js/bootstrap/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="/assets/js/socket.io/socket.io.min.js"></script>
-    <script type="text/javascript" src="/assets/js/humane/humane.min.js"></script>
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="/assets/css/bootstrap.min.css"
+    />
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="/assets/css/bootstrap-icons.css"
+    />
+    <link rel="stylesheet" type="text/css" href="/assets/css/base.css" />
+    <link rel="stylesheet" href="/assets/js/humane/flatty.css" />
+    <script
+      type="text/javascript"
+      src="/assets/js/jquery/jquery.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="/assets/js/bootstrap/bootstrap.bundle.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="/assets/js/socket.io/socket.io.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="/assets/js/humane/humane.min.js"
+    ></script>
     <script src="/assets/Build/Cesium/Cesium.js"></script>
 
     <style>
-        @import url(/assets/Build/Cesium/Widgets/widgets.css);
+      @import url(/assets/Build/Cesium/Widgets/widgets.css);
     </style>
-</head>
+  </head>
 
-<body>
-
+  <body>
     <%- include('navigation') -%>
 
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-sm-4 col-md-4 main">
-                    <br>
-                    <% if (Object.keys(errors).length===0) { %>
-                        <!-- <h6>Welcome <%= user.email %></h6> -->
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-4 col-md-4 main">
+          <br />
+          <% if (Object.keys(errors).length===0) { %>
+          <!-- <h6>Welcome <%= user.email %></h6> -->
 
-                        <% } else { %>
-                            <h5 class="errors-heading">Oops, please correct the following:</h5>
-                            <ul class="errors-list ">
-                                <% Object.values(errors).forEach(error=> { %>
-                                    <li class="">
-                                        <%= error.msg %>
-                                    </li>
-                                    <% }) %>
-                            </ul>
-                            <% } %>
-                                <div class="information">
-                                   
-                                    <div>
-                                        <h6>
-                                            Select Spotlight
-                                            <small id="lat_lng" class="text-muted">Latitude: <span id="spotlight_latitude"></span> Longitude: <span id="spotlight_longitude"></span></small>
-                                        </h6>
-                                       
-                                    </div>
-                                        <div id="manual_spotlight_controls">
-                                            <button onclick="stream_flights()" class="button" id="retrive_flights" type="submit">Stream
-                                                flights</button><br>
-                                            <small class="text-muted">Zoom and pan globe with your mouse to your area of
-                                                interest and click on stream flights</small>
-
-                                        </div>
-                                    
-                                        <div class="d-none loading-spinner" id="spinner-cont"><br>
-                                            <img src="/assets/img/spinner.gif" height="30px">
-                                        </div>
-                                    <div class="live-updates" id="live-updates">
-                                        <ul class="text-right list-inline" id="latest-status">
-                                        </ul>
-                                    </div>
-                                    <hr>
-                                </div>
-
-                </div>
-
-                <div class="col-sm-8 col-md-8 sidebar">
-                    <div id="cesiumContainer"></div>
-                </div>
+          <% } else { %>
+          <h5 class="errors-heading">Oops, please correct the following:</h5>
+          <ul class="errors-list">
+            <% Object.values(errors).forEach(error=> { %>
+            <li class=""><%= error.msg %></li>
+            <% }) %>
+          </ul>
+          <% } %>
+          <div class="information">
+            <div>
+              <h6>
+                Select Spotlight
+                <small id="lat_lng" class="text-muted"
+                  >Latitude: <span id="spotlight_latitude"></span> Longitude:
+                  <span id="spotlight_longitude"></span
+                ></small>
+              </h6>
             </div>
+            <div id="manual_spotlight_controls">
+              <button
+                onclick="stream_flights()"
+                class="button"
+                id="retrive_flights"
+                type="submit"
+              >
+                Stream flights</button
+              ><br />
+              <small class="text-muted"
+                >Zoom and pan globe with your mouse to your area of interest and
+                click on stream flights</small
+              >
+            </div>
+
+            <div class="d-none loading-spinner" id="spinner-cont">
+              <br />
+              <img src="/assets/img/spinner.gif" height="30px" />
+            </div>
+            <div class="live-updates" id="live-updates">
+              <ul class="text-right list-inline" id="latest-status"></ul>
+            </div>
+            <hr />
+          </div>
         </div>
 
-        <%- include('footer') -%>
+        <div class="col-sm-8 col-md-8 sidebar">
+          <div id="cesiumContainer"></div>
+        </div>
+      </div>
+    </div>
 
-            <script type="text/javascript">
-                var socketHost = location.origin.replace(/^http/, 'ws');
-                let list = document.getElementById("latest-status");
-                var addToList = function (item_value) {
-                    while (list.children.length >= 3) {
-                        list.removeChild(list.firstChild);
-                    }
-                    var item = document.createElement("li");
-                    item.innerHTML = item_value;
-                    list.appendChild(item);
-                }
+    <%- include('footer') -%>
 
-                var clearList = function () {
-                    list.innerHTML = "";
-                }
+    <script type="text/javascript">
+          var socketHost = location.origin.replace(/^http/, 'ws');
+          let list = document.getElementById("latest-status");
+          var addToList = function (item_value) {
+              while (list.children.length >= 3) {
+                  list.removeChild(list.firstChild);
+              }
+              var item = document.createElement("li");
+              item.innerHTML = item_value;
+              list.appendChild(item);
+          }
 
-                const email = '<%= userProfile.email %>';
-                
-                var bing = new Cesium.ImageryLayer.fromProviderAsync(
-                    Cesium.BingMapsImageryProvider.fromUrl(
-                "https://dev.virtualearth.net", {
-                    key:'<%= bing_key %>',
-                    mapStyle: Cesium.BingMapsStyle.AERIAL
-                })
-                );
-                var viewer = new Cesium.Viewer('cesiumContainer', {
-                    "geocoder": false,
-                    "homeButton": false,
-                    "baseLayerPicker": false,
-                    "infoBox": false,
-                    "sceneModePicker": false,
-                    "animation": false,
-                    "selectionIndicator": false,
-                    "fullscreenButton": false,
-                    "timeline": false,
-                    "navigationHelpButton": false
-                });
-                
-                viewer.imageryLayers.add(bing);
-                var scene = viewer.scene;
-                var clock = viewer.clock;
-                var camera = viewer.camera;
+          var clearList = function () {
+              list.innerHTML = "";
+          }
 
-                var cameralat;
-                var cameralng;
+          const email = '<%= userProfile.email %>';
 
-                
-                camera.moveStart.addEventListener(function() { 
-                    // the camera started to move
-                });
-                camera.moveEnd.addEventListener(function() { 
-                    // the camera stopped moving
-                    let center =get_globe_center();
-                    const lat_cont = document.getElementById('spotlight_latitude');
-                    const lng_cont = document.getElementById('spotlight_longitude');                    
-                    lat_cont.innerText = parseFloat(center.lat).toFixed(2);
-                    lng_cont.innerText =  parseFloat(center.lng).toFixed(2);
-                });
-                function remove_spaces(string) {
-                    return string.replace(/\n/g, "").replace(/ /g, '');
-                }
-                function get_globe_center() {
-                    var windowPosition = new Cesium.Cartesian2(viewer.container.clientWidth / 2, viewer.container.clientHeight / 2);
-                    var pickPosition = viewer.camera.pickEllipsoid(windowPosition);
-                    var pickPositionCartographic = viewer.scene.globe.ellipsoid.cartesianToCartographic(pickPosition);
-                    const lng = pickPositionCartographic.longitude * (180 / Math.PI);
-                    const lat = pickPositionCartographic.latitude * (180 / Math.PI);
-                    
-                    return { "lat": lat, "lng": lng };
-                }
+          var bing = new Cesium.ImageryLayer.fromProviderAsync(
+              Cesium.BingMapsImageryProvider.fromUrl(
+          "https://dev.virtualearth.net", {
+              key:'<%= bing_key %>',
+              mapStyle: Cesium.BingMapsStyle.AERIAL
+          })
 
 
-                function stream_flights() {
-                    const center = get_globe_center();
-                    let url = '?lat=' + center['lat'] + '&lng=' + center['lng'];
-                    window.location.href = url;
-                }
+          );
+          const osm =
+          new Cesium.ImageryLayer.fromProviderAsync(
+    Cesium.ArcGisMapServerImageryProvider.fromBasemapType(
+      Cesium.ArcGisBaseMapType.SATELLITE,
+      // other supported styles include:
+      // Cesium.ArcGisMapServerImageryProvider.HILLSHADE
+      // Cesium.ArcGisMapServerImageryProvider.OCEANS
+    ),
+  
+        );
+          var viewer = new Cesium.Viewer('cesiumContainer', {
+              "geocoder": false,
+              "homeButton": false,
+              "baseLayerPicker": false,
+              "infoBox": false,
+              "sceneModePicker": false,
+              "animation": false,
+              "selectionIndicator": false,
+              "fullscreenButton": false,
+              "timeline": false,
+              "navigationHelpButton": false
+          });
+
+          viewer.imageryLayers.add(osm);
+          var scene = viewer.scene;
+          var clock = viewer.clock;
+          var camera = viewer.camera;
+
+          var cameralat;
+          var cameralng;
 
 
-                const map_querystring = window.location.search;
-                const date_params = new URLSearchParams(map_querystring);
+          camera.moveStart.addEventListener(function() {
+              // the camera started to move
+          });
+          camera.moveEnd.addEventListener(function() {
+              // the camera stopped moving
+              let center =get_globe_center();
+              const lat_cont = document.getElementById('spotlight_latitude');
+              const lng_cont = document.getElementById('spotlight_longitude');
+              lat_cont.innerText = parseFloat(center.lat).toFixed(2);
+              lng_cont.innerText =  parseFloat(center.lng).toFixed(2);
+          });
+          function remove_spaces(string) {
+              return string.replace(/\n/g, "").replace(/ /g, '');
+          }
+          function get_globe_center() {
+              var windowPosition = new Cesium.Cartesian2(viewer.container.clientWidth / 2, viewer.container.clientHeight / 2);
+              var pickPosition = viewer.camera.pickEllipsoid(windowPosition);
+              var pickPositionCartographic = viewer.scene.globe.ellipsoid.cartesianToCartographic(pickPosition);
+              const lng = pickPositionCartographic.longitude * (180 / Math.PI);
+              const lat = pickPositionCartographic.latitude * (180 / Math.PI);
 
-                let lat = date_params.get('lat');
-                let lng = date_params.get('lng');
-
-                if (!lat) {
-                    lat = 0;
-                }
-
-                if (!lng) {
-                    lng = 0;
-                }
-                
-                let view_data = <%- JSON.stringify(data) %>;
-                
-                if (lat !== 0 && lng !== 0) {
-                    const lat_cont = document.getElementById('spotlight_latitude');
-                    const lng_cont = document.getElementById('spotlight_longitude');                    
-                    lat_cont.innerText = parseFloat(lat).toFixed(2);
-                    lng_cont.innerText =  parseFloat(lng).toFixed(2);
-                    let manual_spotlight_controls_cont  = document.getElementById('manual_spotlight_controls');
-                    manual_spotlight_controls_cont.classList.add('d-none');
-
-                    
-                    let aoi_hex = view_data['aoi_hexagon'];
-                    let aoi = viewer.dataSources.add(Cesium.GeoJsonDataSource.load(aoi_hex, {
-                        stroke: Cesium.Color.BLACK,
-                        fill: Cesium.Color.WHITE.withAlpha(0.2),
-                        strokeWidth: 3
-                    }));
-                    viewer.zoomTo(aoi);
-                    let spinner_cont = document.getElementById("spinner-cont");
-                    spinner_cont.classList.remove("d-none");
-
-                    humane.log(view_data['msg'], {
-                        addnCls: 'humane-flatty-success'
-                    });
-
-                    var socket = io.connect(socketHost);
-                socket.on('connect_failed', function () {
-                    errorMsg('Data connection failed, please contact your administrator.');
-                });
-                socket.on('disconnect', function () {
-                    console.log('disconnected');
-                });
-                socket.on('welcome', function (msg) {
-                    console.log('Welcome message:', msg);
-                });
-                socket.on('connect', function () {
-                    socket.emit('room', email);
-                });
-                socket.on('connect_timeout', function () {
-                    console.log("timed out");
-
-                });
-                    socket.on('message', function (spotlight_data) {
-                    
-                    if (spotlight_data.type == 'message') {
-
-                        if (spotlight_data.alert_type == 'aoi') {
-
-                            const cur_result = spotlight_data.results.object;
-
-                            // console.log(Math.floor(Date.now() / 1000) +":  " + cur_result.coordinates[1], cur_result.coordinates[0], cur_result.coordinates[2]);                    
-                            viewer.entities.add({
-                                position: Cesium.Cartesian3.fromDegrees(cur_result.coordinates[1], cur_result
-                                    .coordinates[0], cur_result.coordinates[2]),
-
-                                // label: {text: s},
-                                label: {
-                                    text: spotlight_data.results.id,
-                                    font: "10px Helvetica",
-                                    fillColor: Cesium.Color.WHITE,
-                                    outlineColor: Cesium.Color.BLACK,
-                                    outlineWidth: 1,
-                                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-                                },
-                                point: {
-                                    pixelSize: 5,
-                                    color: Cesium.Color.RED,
-                                    outlineWidth: 0
-                                },
-                                path: {
-                                    resolution: 1,
-                                    leadTime: 0,
-                                    trailTime: 5,
-                                    material: new Cesium.PolylineGlowMaterialProperty({
-                                        glowPower: 0.1,
-                                        color: Cesium.Color.YELLOW
-                                    }),
-                                    width: 3
-                                },
-
-                            });
-                        } else if (spotlight_data.alert_type == 'aoi_closed') {
-                            // GeoFence Closed
-                            // Clear all traffic
-                            viewer.dataSources.removeAll();
-                            viewer.entities.removeAll();
-                            humane.log("Airspace scanning closed", {
-                                addnCls: 'humane-flatty-info'
-                            });
-
-                            let spinner_cont = document.getElementById("spinner-cont");
-                            spinner_cont.classList.add("d-none");
-                            clearList();
-
-                        }
-                        else if (spotlight_data.alert_type == 'aoi_geo_fence') {
-                            const result_geo_json = spotlight_data.results.objects;
-
-                            for (let index = 0; index < result_geo_json.length; index++) {
-                                const geo_json_element = result_geo_json[index]['object'];
-                                const geo_fence_heights = result_geo_json[index]['fields'];
-                                var dataSource = Cesium.GeoJsonDataSource.load(geo_json_element).then(
-                                    function (dataSource) {
-                                        var p = dataSource.entities.values;
-                                        for (var i = 0; i < p.length; i++) {
-                                            p[i].polygon.height = geo_fence_heights[1]; // or height property
-                                            p[i].polygon.extrudedHeight = geo_fence_heights[
-                                                0]; // or height property
-                                            p[i].polygon.outlineColor = Cesium.Color.PINK.withAlpha(0.2),
-                                                p[i].polygon.material = Cesium.Color.HOTPINK.withAlpha(0.2)
-                                        }
-                                        viewer.dataSources.add(dataSource);                                        
-                                    }
-                                );
-
-                            }
-                        } else if (spotlight_data.alert_type == 'geo_fence_crossed') {
-                            let d = new Date();
-                            addToList('<span class="date">' + d.toLocaleTimeString() + '</span> ' + spotlight_data.results);
-
-                        }
-                    }
-                });
-                }
-                else{
-                    let center =get_globe_center();
-                    const lat_cont = document.getElementById('spotlight_latitude');
-                    const lng_cont = document.getElementById('spotlight_longitude');                    
-                    lat_cont.innerText = parseFloat(center.lat).toFixed(2);
-                    lng_cont.innerText =  parseFloat(center.lng).toFixed(2);
-
-                }
+              return { "lat": lat, "lng": lng };
+          }
 
 
+          function stream_flights() {
+              const center = get_globe_center();
+              let url = '?lat=' + center['lat'] + '&lng=' + center['lng'];
+              window.location.href = url;
+          }
 
-            </script>
-</body>
 
+          const map_querystring = window.location.search;
+          const date_params = new URLSearchParams(map_querystring);
+
+          let lat = date_params.get('lat');
+          let lng = date_params.get('lng');
+
+          if (!lat) {
+              lat = 0;
+          }
+
+          if (!lng) {
+              lng = 0;
+          }
+
+          let view_data = <%- JSON.stringify(data) %>;
+
+          if (lat !== 0 && lng !== 0) {
+              const lat_cont = document.getElementById('spotlight_latitude');
+              const lng_cont = document.getElementById('spotlight_longitude');
+              lat_cont.innerText = parseFloat(lat).toFixed(2);
+              lng_cont.innerText =  parseFloat(lng).toFixed(2);
+              let manual_spotlight_controls_cont  = document.getElementById('manual_spotlight_controls');
+              manual_spotlight_controls_cont.classList.add('d-none');
+
+
+              let aoi_hex = view_data['aoi_hexagon'];
+              let aoi = viewer.dataSources.add(Cesium.GeoJsonDataSource.load(aoi_hex, {
+                  stroke: Cesium.Color.BLACK,
+                  fill: Cesium.Color.WHITE.withAlpha(0.2),
+                  strokeWidth: 3
+              }));
+              viewer.zoomTo(aoi);
+              let spinner_cont = document.getElementById("spinner-cont");
+              spinner_cont.classList.remove("d-none");
+
+              humane.log(view_data['msg'], {
+                  addnCls: 'humane-flatty-success'
+              });
+
+              var socket = io.connect(socketHost);
+          socket.on('connect_failed', function () {
+              errorMsg('Data connection failed, please contact your administrator.');
+          });
+          socket.on('disconnect', function () {
+              console.log('disconnected');
+          });
+          socket.on('welcome', function (msg) {
+              console.log('Welcome message:', msg);
+          });
+          socket.on('connect', function () {
+              socket.emit('room', email);
+          });
+          socket.on('connect_timeout', function () {
+              console.log("timed out");
+
+          });
+              socket.on('message', function (spotlight_data) {
+
+              if (spotlight_data.type == 'message') {
+
+                  if (spotlight_data.alert_type == 'aoi') {
+
+                      const cur_result = spotlight_data.results.object;
+
+                      // console.log(Math.floor(Date.now() / 1000) +":  " + cur_result.coordinates[1], cur_result.coordinates[0], cur_result.coordinates[2]);
+                      viewer.entities.add({
+                          position: Cesium.Cartesian3.fromDegrees(cur_result.coordinates[1], cur_result
+                              .coordinates[0], cur_result.coordinates[2]),
+
+                          // label: {text: s},
+                          label: {
+                              text: spotlight_data.results.id,
+                              font: "10px Helvetica",
+                              fillColor: Cesium.Color.WHITE,
+                              outlineColor: Cesium.Color.BLACK,
+                              outlineWidth: 1,
+                              style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                          },
+                          point: {
+                              pixelSize: 5,
+                              color: Cesium.Color.RED,
+                              outlineWidth: 0
+                          },
+                          path: {
+                              resolution: 1,
+                              leadTime: 0,
+                              trailTime: 5,
+                              material: new Cesium.PolylineGlowMaterialProperty({
+                                  glowPower: 0.1,
+                                  color: Cesium.Color.YELLOW
+                              }),
+                              width: 3
+                          },
+
+                      });
+                  } else if (spotlight_data.alert_type == 'aoi_closed') {
+                      // GeoFence Closed
+                      // Clear all traffic
+                      viewer.dataSources.removeAll();
+                      viewer.entities.removeAll();
+                      humane.log("Airspace scanning closed", {
+                          addnCls: 'humane-flatty-info'
+                      });
+
+                      let spinner_cont = document.getElementById("spinner-cont");
+                      spinner_cont.classList.add("d-none");
+                      clearList();
+
+                  }
+                  else if (spotlight_data.alert_type == 'aoi_geo_fence') {
+                      const result_geo_json = spotlight_data.results.objects;
+
+                      for (let index = 0; index < result_geo_json.length; index++) {
+                          const geo_json_element = result_geo_json[index]['object'];
+                          const geo_fence_heights = result_geo_json[index]['fields'];
+                          var dataSource = Cesium.GeoJsonDataSource.load(geo_json_element).then(
+                              function (dataSource) {
+                                  var p = dataSource.entities.values;
+                                  for (var i = 0; i < p.length; i++) {
+                                      p[i].polygon.height = geo_fence_heights[1]; // or height property
+                                      p[i].polygon.extrudedHeight = geo_fence_heights[
+                                          0]; // or height property
+                                      p[i].polygon.outlineColor = Cesium.Color.PINK.withAlpha(0.2),
+                                          p[i].polygon.material = Cesium.Color.HOTPINK.withAlpha(0.2)
+                                  }
+                                  viewer.dataSources.add(dataSource);
+                              }
+                          );
+
+                      }
+                  } else if (spotlight_data.alert_type == 'geo_fence_crossed') {
+                      let d = new Date();
+                      addToList('<span class="date">' + d.toLocaleTimeString() + '</span> ' + spotlight_data.results);
+
+                  }
+              }
+          });
+          }
+          else{
+              let center =get_globe_center();
+              const lat_cont = document.getElementById('spotlight_latitude');
+              const lng_cont = document.getElementById('spotlight_longitude');
+              lat_cont.innerText = parseFloat(center.lat).toFixed(2);
+              lng_cont.innerText =  parseFloat(center.lng).toFixed(2);
+
+          }
+    </script>
+  </body>
 </html>
