@@ -9,15 +9,22 @@
     const socket = require("socket.io");
     require("dotenv").config();
     var userInViews = require('./lib/middleware/userInViews');
-    const authRouter = require("./routes/auth");
+    const spotlightNoticeboardRouter = require("./routes/spotlight_noticeboard");
     const launchpadRouter = require('./routes/launchpad');
     const auth_strategy = process.env.AUTH_STRATEGY || 'flightpassport';
+    const authHandlers = {
+        'flightpassport': './auth_mechanisms/flight_passport/auth_handler',
+        'auth0': './auth_mechanisms/auth0/auth_handler'
+    };
 
-    if (auth_strategy === 'flightpassport') {
-        const flightpassportConfig = require('./auth_mechanisms/flight_passport/auth_handler');
-        flightpassportConfig();
+    const authHandlerPath = authHandlers[auth_strategy];
+    if (authHandlerPath) {
+        const authHandler = require(authHandlerPath);
+        authHandler();
+    } else {
+        console.error(`Unknown authentication strategy: ${auth_strategy}`);
     }
-    
+
     const session = {
         secret: process.env.APP_SECRET,
         cookie: {},
@@ -37,7 +44,7 @@
     app.use(passport.initialize());
     app.use(passport.session());
 
-    app.use("/", authRouter);
+    app.use("/", spotlightNoticeboardRouter);
     app.use('/', launchpadRouter);
 
     app.get('/auth', function (req, res, next) {
