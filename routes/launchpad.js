@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
-const qs = require('qs');
 
+
+const { requiresAuth } = require('express-openid-connect');
 const asyncMiddleware = require('../util/asyncMiddleware');
 const {
   DateTime
@@ -49,7 +49,7 @@ var flight_operation_validate = [
     }),
 ];
 
-router.post('/launchpad/submit-declaration', flight_operation_validate, async function (req, res, next) {
+router.post('/launchpad/submit-declaration', flight_operation_validate, requiresAuth(), async function (req, res, next) {
   const errors = validationResult(req);
 
   const operators = process.env.OPERATORS || "";
@@ -145,7 +145,7 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
           }, function (ren_err, html) {
             res.send(html);
           });
-        }else {
+        } else {
 
           res.render('error-in-submission', {
             title: "Error in submission",
@@ -155,11 +155,11 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
         }
       })
       .catch(function (error) {
-        let error_message = ""; 
-        if (error.response){
+        let error_message = "";
+        if (error.response) {
           error_message = error.response.data.message;
         }
-        const e = [{ 'message': error.message, "data":error_message }]
+        const e = [{ 'message': error.message, "data": error_message }]
         res.render('launchpad-operation-submission-status', {
           title: "Error in your submission!",
           errors: e,
@@ -172,12 +172,9 @@ router.post('/launchpad/submit-declaration', flight_operation_validate, async fu
 });
 
 
-router.get('/launchpad', ensureLoggedIn('/'), (req, response, next) => {
-  const {
-    _raw,
-    _json,
-    ...userProfile
-  } = req.user;
+router.get('/launchpad', requiresAuth(), async (req, response, next) => {
+
+  const userProfile = await req.oidc.fetchUserInfo();
   const operators = process.env.OPERATORS || "";
   response.render('launchpad', { 'operators': operators, 'user': req.user, 'errors': [], 'userProfile': userProfile });
 });
