@@ -2,11 +2,12 @@
 
 const { auth } = require('express-openid-connect');
 module.exports = function () {
+  
     let config = {
         authRequired: false,
-        clientSecret: ClientSecret,
-        issuerBaseURL: `${OIDC_DOMAIN}`,
-        clientID: ClientId,
+        clientSecret: process.env.CLIENT_SECRET,
+        issuerBaseURL: process.env.OIDC_DOMAIN,
+        clientID: process.env.CLIENT_ID,
         baseURL: process.env.BASE_URL,
       
         authorizationParams: {

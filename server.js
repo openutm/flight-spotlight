@@ -16,16 +16,11 @@
         
     };
 
-    const session = {
-        secret: process.env.APP_SECRET,
-        cookie: {},
-        resave: false,
-        saveUninitialized: true
-    };
 
+    
 
     var app = express();
-    app.use(expressSession(session));
+    
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }))
     app.set('view engine', 'ejs');
@@ -35,12 +30,18 @@
     const authHandlerPath = authHandlers[auth_strategy];
     if (authHandlerPath) {
         const authHandler = require(authHandlerPath);
-        app.use(auth(authHandler()));
+        app.use(authHandler());
         
     } else {
         console.error(`Unknown authentication strategy: ${auth_strategy}`);
     }
 
+    app.get('/auth', (req, res) =>
+        res.oidc.login({
+          returnTo: '/noticeboard',
+        })
+      );
+      
     app.use("/", spotlightNoticeboardRouter);
     app.use('/', launchpadRouter);
 

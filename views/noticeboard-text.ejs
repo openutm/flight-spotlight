@@ -70,7 +70,7 @@
                                                     <%}%>
                                         </td>
                                         <td>
-                                            <%if (user.role=='operator' && user.email == cur_declaration.submitted_by) { %>
+                                            <%if (userProfile.role=='operator' && userProfile.email == cur_declaration.submitted_by) { %>
                                                 
                                                 <select id="op-state-<%-cur_declaration.id %>"
                                                     onchange="update_flight_state('<%- cur_declaration.id %>')"
@@ -160,7 +160,7 @@
     <script type="text/javascript">
         
         const all_flight_declarations =  <%- JSON.stringify(data.results) %>;
-        const user_name = '<%= user.email %>';
+        const user_name = '<%= userProfile.email %>';
         function end_date_update(e) {
 
             const selected_date_y = new Date(e.target.value);
