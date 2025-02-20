@@ -143,16 +143,15 @@
 
 
           );
-          const osm =
-          new Cesium.ImageryLayer.fromProviderAsync(
-    Cesium.ArcGisMapServerImageryProvider.fromBasemapType(
-      Cesium.ArcGisBaseMapType.SATELLITE,
-      // other supported styles include:
-      // Cesium.ArcGisMapServerImageryProvider.HILLSHADE
-      // Cesium.ArcGisMapServerImageryProvider.OCEANS
-    ),
-  
-        );
+        //   const arcgis =
+        //   new Cesium.ImageryLayer.fromProviderAsync(
+        //       Cesium.ArcGisMapServerImageryProvider.fromBasemapType(
+        //       Cesium.ArcGisBaseMapType.SATELLITE,
+        //         // other supported styles include:
+        //         // Cesium.ArcGisMapServerImageryProvider.HILLSHADE
+        //         // Cesium.ArcGisMapServerImageryProvider.OCEANS
+        //       ),
+        // );
           var viewer = new Cesium.Viewer('cesiumContainer', {
               "geocoder": false,
               "homeButton": false,
@@ -166,7 +165,7 @@
               "navigationHelpButton": false
           });
 
-          viewer.imageryLayers.add(osm);
+          viewer.imageryLayers.add(bing);
           var scene = viewer.scene;
           var clock = viewer.clock;
           var camera = viewer.camera;
