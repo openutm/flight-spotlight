@@ -1,7 +1,7 @@
 // auth.js
 
 const express = require("express");
-var secured = require('../lib/middleware/secured');
+
 const router = express.Router();
 const tile38_host = process.env.TILE38_SERVER || '0.0.0.0';
 const tile38_port = process.env.TILE38_PORT || 9851;
@@ -21,6 +21,7 @@ const axios = require('axios');
 let geojsonhint = require("@mapbox/geojsonhint");
 let passport_helper = require('./passport_helper');
 
+const { requiresAuth } = require('express-openid-connect');
 const { createNewPollBlenderProcess, createNewADSBFeedProcess, createNewBlenderDSSSubscriptionProcess, createNewGeofenceProcess } = require("../queues/live-blender-queue");
 
 
@@ -55,12 +56,9 @@ router.get("/", (req, res) => {
   });
 });
 
-router.get("/noticeboard/map", secured(), asyncMiddleware(async (req, response, next) => {
-  const {
-    _raw,
-    _json,
-    ...userProfile
-  } = req.user;
+router.get("/noticeboard/map", requiresAuth(), asyncMiddleware(async (req, response, next) => {
+
+  const userProfile = await req.oidc.fetchUserInfo();
   let req_query = req.query;
   const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
   const bing_key = process.env.BING_KEY || 'get-yours-at-https://www.bingmapsportal.com/';
@@ -158,12 +156,9 @@ router.get("/noticeboard/map", secured(), asyncMiddleware(async (req, response, 
 }));
 
 
-router.get("/noticeboard/globe", secured(), asyncMiddleware(async (req, response, next) => {
-  const {
-    _raw,
-    _json,
-    ...userProfile
-  } = req.user;
+router.get("/noticeboard/globe", requiresAuth(), asyncMiddleware(async (req, response, next) => {
+
+  const userProfile = await req.oidc.fetchUserInfo();
   let req_query = req.query;
   const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
 
@@ -262,12 +257,9 @@ router.get("/noticeboard/globe", secured(), asyncMiddleware(async (req, response
 }));
 
 
-router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) => {
-  const {
-    _raw,
-    _json,
-    ...userProfile
-  } = req.user;
+router.get("/spotlight", requiresAuth(), asyncMiddleware(async (req, response, next) => {
+
+  const userProfile = await req.oidc.fetchUserInfo();
   const bing_key = process.env.BING_KEY || 'get-yours-at-https://www.bingmapsportal.com/';
   const mapbox_key = process.env.MAPBOX_KEY || 'thisIsMyAccessToken';
   const mapbox_id = process.env.MAPBOX_ID || 'this_is_my_mapbox_map_id';
@@ -312,8 +304,8 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
     const email = userProfile.email;
     const aoi_bbox = turf.bbox(aoi_hexagon);
 
-    const lat_lng_formatted_array  = [aoi_bbox[1], aoi_bbox[0], aoi_bbox[3], aoi_bbox[2]]
-    
+    const lat_lng_formatted_array = [aoi_bbox[1], aoi_bbox[0], aoi_bbox[3], aoi_bbox[2]]
+
     // TODO: Get geofences that intersect this BBOX
     // TODO: Start a job for 30 seconds to poll data from Blender    
     createNewPollBlenderProcess({
@@ -331,16 +323,16 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
       "job_id": uuidv4(),
       "job_type": 'create_dss_subscription'
     });
-    
+
     createNewGeofenceProcess({
       "viewport": lat_lng_formatted_array,
       "job_id": uuidv4(),
       "job_type": 'get_geo_fence'
     });
-    
+
     // const area = turf.area(aoi_hexagon);
     // Query the Geozone database and see if the flight intersects the geozone
-    let geo_fence_query = tile38_client.intersectsQuery('geo_fence').bounds(lat_lng_formatted_array[1],lat_lng_formatted_array[0],lat_lng_formatted_array[3],lat_lng_formatted_array[2]);
+    let geo_fence_query = tile38_client.intersectsQuery('geo_fence').bounds(lat_lng_formatted_array[1], lat_lng_formatted_array[0], lat_lng_formatted_array[3], lat_lng_formatted_array[2]);
     geo_fence_query.execute().then(results => {
       // Send Geozones to UI
       io.sockets.in(email).emit("message", {
@@ -370,19 +362,19 @@ router.get("/spotlight", secured(), asyncMiddleware(async (req, response, next) 
         geo_fence_stream.onClose(() => {
           console.log("Close Geozone geofence with id:" + geo_fence_element['id']);
         });
-            
+
         setTimeout(() => {
           geo_fence_stream.close();
         }, 30000);
 
-    
+
       }
     }).catch(err => {
       console.log("something went wrong! " + err);
     });
-    let aoi_query = tile38_client.intersectsQuery('observation').bounds(lat_lng_formatted_array[1],lat_lng_formatted_array[0],lat_lng_formatted_array[3],lat_lng_formatted_array[2]).detect('inside');
+    let aoi_query = tile38_client.intersectsQuery('observation').bounds(lat_lng_formatted_array[1], lat_lng_formatted_array[0], lat_lng_formatted_array[3], lat_lng_formatted_array[2]).detect('inside');
     let flight_aoi_fence = aoi_query.executeFence((err, results) => {
-      
+
       if (err) {
         console.error("something went wrong! " + err);
       } else {
@@ -494,7 +486,7 @@ router.post("/set_air_traffic", checkJwt, jwtAuthz(['spotlight.write']), [
     }
   });
 
-router.get('/blender_status', secured(), function (req, response, next) {
+router.get('/blender_status', requiresAuth(), function (req, response, next) {
 
   const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
   let ping_url = base_url + '/ping';
@@ -570,7 +562,7 @@ router.post("/set_geo_fence", checkJwt, jwtAuthz(['spotlight.write']), check('ge
   }
 });
 
-router.get("/get_flight_declarations", secured(), (req, response, next) => {
+router.get("/get_flight_declarations", requiresAuth(), (req, response, next) => {
   function get_f_d(callback) {
     redis_client.hgetall('fd', function (err, object) {
       callback(object);
@@ -584,7 +576,7 @@ router.get("/get_flight_declarations", secured(), (req, response, next) => {
 
 });
 
-router.post("/set_flight_approval/:uuid", secured(), asyncMiddleware(async (req, res, next) => {
+router.post("/set_flight_approval/:uuid", requiresAuth(), asyncMiddleware(async (req, res, next) => {
 
   let flight_declaration_uuid = req.params.uuid;
   const is_uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(flight_declaration_uuid);
@@ -622,7 +614,7 @@ router.post("/set_flight_approval/:uuid", secured(), asyncMiddleware(async (req,
 
 }));
 
-router.post("/update_flight_state/:uuid", secured(), asyncMiddleware(async (req, res, next) => {
+router.post("/update_flight_state/:uuid", requiresAuth(), asyncMiddleware(async (req, res, next) => {
 
   let flight_declaration_uuid = req.params.uuid;
   const is_uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(flight_declaration_uuid);
@@ -662,13 +654,9 @@ router.post("/update_flight_state/:uuid", secured(), asyncMiddleware(async (req,
 
 
 
-router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next) => {
+router.get("/noticeboard", requiresAuth(), asyncMiddleware(async (req, response, next) => {
 
-  const {
-    _raw,
-    _json,
-    ...userProfile
-  } = req.user;
+  const userProfile = await req.oidc.fetchUserInfo();
   let req_query = req.query;
   const base_url = process.env.BLENDER_BASE_URL || 'http://local.test:8000';
   let s_date = req_query.start_date;
@@ -717,7 +705,7 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
 
   } else {
 
-    const passport_token = await passport_helper.getPassportToken();    
+    const passport_token = await passport_helper.getPassportToken();
     let cred = "Bearer " + passport_token;
     let declaration_url = base_url + '/flight_declaration_ops/flight_declaration?start_date=' + s_date + '&end_date=' + e_date;
     if (page) {
@@ -748,7 +736,7 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
         } else {
           if (err) return response.sendStatus(500);
         }
-      }).catch(function (error) {        
+      }).catch(function (error) {
         console.debug(error);
         return response.sendStatus(500);
       });
@@ -758,12 +746,9 @@ router.get("/noticeboard", secured(), asyncMiddleware(async (req, response, next
 
 
 /* GET user profile. */
-router.get('/user', secured(), function (req, res, next) {
-  const {
-    _raw,
-    _json,
-    ...userProfile
-  } = req.user;
+router.get('/user', requiresAuth(), async function (req, res, next) {
+
+  const userProfile = await req.oidc.fetchUserInfo();
   res.render('user', {
     userProfile: JSON.stringify(userProfile, null, 2),
     title: 'Profile page'
