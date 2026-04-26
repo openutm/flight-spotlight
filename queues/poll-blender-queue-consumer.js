@@ -4,7 +4,7 @@ const redis_client = require('../routes/redis-client');
 const tile38_host = process.env.TILE38_SERVER || '0.0.0.0';
 const tile38_port = process.env.TILE38_PORT || 9851;
 const { sendStdMsg } = require('../util/io');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID: uuidv4 } = require('crypto');
 var Tile38 = require('tile38');
 const axios = require('axios');
 require("dotenv").config();

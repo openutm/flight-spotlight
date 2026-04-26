@@ -2,7 +2,7 @@ const tile38_host = process.env.TILE38_SERVER || "0.0.0.0";
 const tile38_port = process.env.TILE38_PORT || 9851;
 const redis_client = require("../routes/redis-client");
 
-const { v4: uuidv4 } = require("uuid");
+const { randomUUID: uuidv4 } = require("crypto");
 const { sendStdMsg } = require("../util/io");
 var Tile38 = require("tile38");
 const tile38_client = new Tile38({ host: tile38_host, port: tile38_port });

@@ -9,7 +9,8 @@
     "url": "https://www.openutm.net/"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "keywords": [
     "3D",
@@ -26,12 +27,12 @@
     "url": "https://www.github.com/openutm/flight-spotlight"
   },
   "devDependencies": {
-    "nodemon": "^2.0.21"
+    "nodemon": "^3.1.14"
   },
   "dependencies": {
     "@mapbox/geojsonhint": "^3.3.0",
     "@turf/turf": "^7.1.0",
-    "axios":"^1.15.0",
+    "axios": "^1.15.0",
     "body-parser": "^1.20.3",
     "bull": "^4.16.5",
     "dotenv": "^16.4.7",
@@ -39,15 +40,20 @@
     "express": "^4.22.1",
     "express-jwt": "^8.5.1",
     "express-jwt-authz": "^2.4.1",
+    "express-openid-connect": "^2.17.1",
     "express-validator": "^7.3.1",
     "jwks-rsa": "^3.1.0",
     "luxon": "^3.5.0",
-    "express-openid-connect": "^2.17.1",
     "qs": "^6.14.2",
     "redis": "^4.7.0",
-    "request": "^2.88.2",
     "socket.io": "^4.8.1",
-    "tile38": "^0.9.4",
-    "uuid": "^14.0.0"
+    "tile38": "^0.9.4"
+  },
+  "overrides": {
+    "uuid": "^14.0.0",
+    "underscore": "^1.13.7"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

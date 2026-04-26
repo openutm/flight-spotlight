@@ -35,7 +35,7 @@ const {
 
 const redis_client = require('./redis-client');
 
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID: uuidv4 } = require('crypto');
 
 const checkJwt = jwt({
   secret: jwksRsa.expressJwtSecret({
