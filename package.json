@@ -36,7 +36,7 @@
     "body-parser": "^1.20.3",
     "bull": "^4.16.5",
     "dotenv": "^16.4.7",
-    "ejs": "^3.1.10",
+    "ejs": "^6.0.1",
     "express": "^4.22.1",
     "express-jwt": "^8.5.1",
     "express-jwt-authz": "^2.4.1",
