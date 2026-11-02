@@ -33,7 +33,7 @@
     "@mapbox/geojsonhint": "^3.3.0",
     "@turf/turf": "^7.1.0",
     "axios": "^1.20.0",
-    "body-parser": "^1.20.6",
+    "body-parser": "^1.20.9",
     "bull": "^4.16.5",
     "dotenv": "^16.4.7",
     "ejs": "^6.0.1",
